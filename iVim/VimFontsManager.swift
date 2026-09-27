@@ -213,9 +213,11 @@ extension VimFontsManager {
     private func fontInfo(with info: String?) -> (String, CGFloat) {
         guard let i = info else { return (self.currentPostScriptName, self.size) }
         let (n, s) = self.parseFontInfo(i)
+        // exact name, or the first one starting with it ("Menlo")
+        let fi = self.fonts.first { $0.name == n } ?? self.infoForKey(n)
         let postScriptName: String
-        if let fn = self.postScriptName(for: n) {
-            self.name = n
+        if let fi = fi, let fn = self.postScriptName(for: fi.name) {
+            self.name = fi.name
             postScriptName = fn
         } else {
             postScriptName = self.currentPostScriptName
@@ -385,7 +387,10 @@ struct FontCache {
 
 extension String {
     private var number: NSNumber? {
-        return NumberFormatter().number(from: self)
+        // not the region's format: "9.5" must parse everywhere
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f.number(from: self)
     }
     
     var cgFloat: CGFloat? {
