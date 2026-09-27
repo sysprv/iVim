@@ -10,7 +10,6 @@ import UIKit
 
 final class VimMainView: UIView {
     private var top: NSLayoutConstraint!
-    private var bottom: NSLayoutConstraint!
     private var left: NSLayoutConstraint!
     private var right: NSLayoutConstraint!
     
@@ -28,10 +27,13 @@ final class VimMainView: UIView {
         v.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(v)
         self.top = self.constraint(for: v, attribute: .top)
-        self.bottom = self.constraint(for: v, attribute: .bottom)
+        // stay above the on-screen keyboard (incl. the extended bar,
+        // its input accessory view); also covers the bottom safe area
+        let bottom = v.bottomAnchor.constraint(equalTo: self.keyboardLayoutGuide.topAnchor)
+        bottom.priority = UILayoutPriority(750)
         self.left = self.constraint(for: v, attribute: .left)
         self.right = self.constraint(for: v, attribute: .right)
-        self.addConstraints([self.top, self.bottom, self.left, self.right])
+        self.addConstraints([self.top, bottom, self.left, self.right])
         self.layoutIfNeeded()
     }
     
@@ -39,7 +41,6 @@ final class VimMainView: UIView {
     private func updateSubview() {
         let insets = self.safeAreaInsets
         self.top.constant = insets.top
-        self.bottom.constant = -insets.bottom
         self.left.constant = insets.left
         self.right.constant = -insets.right
     }

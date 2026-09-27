@@ -61,8 +61,18 @@ extension VimCursorBlinker {
     func startBlinking(_ inFocus: Bool) {
         self.invalidateTimer()
         guard inFocus else { return }
-        self.state = .on
         gui_update_cursor(1, 0)
+        // like the other vim GUIs: only blink if none of the times is
+        // zero (e.g. 'guicursor' blinkon0), otherwise the cursor
+        // flickers and is hidden most of the time
+        guard self.waitDuration > 0,
+            self.onDuration > 0,
+            self.offDuration > 0
+            else {
+                self.state = .none
+                return
+        }
+        self.state = .on
         self.changeCursor(after: self.waitDuration)
     }
     
@@ -90,7 +100,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     var dictationHypothesis: String?
     var isNormalPending = false
     
-    var shouldTuneFrame = true
     var shouldShowExtendedBar = false
     var extendedBarTemporarilyHidden = false
     
@@ -102,8 +111,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
 
     private func registerNotifications() {
         let nfc = NotificationCenter.default
-        nfc.addObserver(self, selector: #selector(self.keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-        nfc.addObserver(self, selector: #selector(self.keyboardDidChangeFrame(_:)), name: UIResponder.keyboardDidChangeFrameNotification, object: nil)
         self.registerExternalKeyboardNotifications(to: nfc)
     }
     
@@ -141,10 +148,8 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     func resetKeyboard() {
-        self.shouldTuneFrame = false
         self.resignFirstResponder()
         self.becomeFirstResponder()
-        self.shouldTuneFrame = true
     }
     
     private func send(mouseEvent: Int32, at point: CGPoint) {
@@ -256,28 +261,6 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     func toggleExtendedBar() {
         self.shouldShowExtendedBar = !self.shouldShowExtendedBar
         self.reloadInputViews()
-    }
-    
-    //MARK: OnScreen Keyboard Handling
-    private func tuneFrameAccordingToKeyboard(_ notification: Notification) {
-        guard self.shouldTuneFrame,
-            let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
-            let v = self.view,
-            let window = v.window
-            else { return }
-        let windowHeight = window.frame.height
-        let isSplited = windowHeight - frame.origin.y > frame.height
-        let newHeight = isSplited ? windowHeight : window.convert(frame, to: v).origin.y
-        guard v.frame.size.height != newHeight else { return }
-        v.frame.size.height = newHeight
-    }
-    
-    @objc func keyboardWillChangeFrame(_ notification: Notification) {
-        self.tuneFrameAccordingToKeyboard(notification)
-    }
-    
-    @objc func keyboardDidChangeFrame(_ notification: Notification) {
-        self.tuneFrameAccordingToKeyboard(notification)
     }
     
     @objc func pan(_ sender: UIPanGestureRecognizer) {
