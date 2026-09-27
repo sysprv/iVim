@@ -29,6 +29,16 @@ It downloads ios_system (holzschu, pinned release) and builds ivish
     xcrun devicectl device process launch --device <id> --terminate-existing io.github.sysprv.ivim
 
 Launch fails with "Locked" when the phone is locked; ask the user to open it.
+After the app is deleted, the user has to trust the developer certificate
+again (Settings > General > VPN & Device Management).
+
+Copying files to the phone (`devicectl device copy to`) is risky; there's
+no remove command to undo mistakes. Ask the user first, and:
+- with a single `--source`, `--destination Documents/` is taken as the
+  target file name: it replaces the whole Documents folder.
+- a copied directory itself ends up owned by root, so the app can't write
+  in it (mkdir/undo files fail with E739/E828). Copy only files, into
+  directories the app created; or let the user copy via Files/Working Copy.
 Expect many warnings from vim/ctags C code; legacy clang errors are
 downgraded via WARNING_CFLAGS on the iVim target.
 
