@@ -2,6 +2,23 @@
 
 iVim is a project that brings the vim editor to the iOS system.
 
+## About this fork
+
+This fork is some quick cleanup for my own use and taste, done with the
+help of an LLM, not a maintained continuation of iVim. I wanted iVim
+working properly on iOS 27: the vim window wasn't staying above the
+keyboard, so the statusline and command line were hidden. iVim's
+extended keyboard and a real `gui_running` vim are still the best vim
+setup I've found on iOS; Blink Shell, a-Shell and the like don't really
+work for me.
+
+What changed: the vim window stays between the top of the screen and the
+keyboard, the cursor no longer flickers with `blinkon0`, `:q` quits
+again, and `:terminal`/ivish and external commands build against the
+current upstream ios_system (see "Building this fork" below). It's built
+for personal side-loading with a free Apple developer account (own
+bundle ids, no App Group or iCloud); Python isn't included yet.
+
 Type `:help ios` in iVim for more detailed information.
 
 ## Features
@@ -53,6 +70,20 @@ iVim is now on [App Store](https://itunes.apple.com/us/app/ivim/id1266544660?mt=
 4. Run iVim, Xcode will install it onto your device
 5. A free Apple ID may need to do this every 7 days
 6. **Note** that the source code may not be updated as the App Store version.
+
+### Building this fork
+
+The frameworks for external commands, `:terminal` and the `ivish` shell
+aren't part of the repository. Before the first build, fetch and build
+them into `Frameworks/` (needs Xcode, git, curl, unzip):
+
+    scripts/fetch-frameworks.sh
+
+This downloads [ios_system](https://github.com/holzschu/ios_system) and
+builds [ivish](https://github.com/terrychou/ivish), patched to work with
+upstream ios_system. Re-running it only redoes what changed.
+
+Python is not included yet.
 
 ## Quick tips
 
