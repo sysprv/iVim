@@ -1,0 +1,74 @@
+---
+updated: 2026-09-27
+---
+# Fixes: symptoms and root causes
+
+Everything changed relative to upstream iVim, with the reasoning. Code is
+in the three squashed commits on `ios27-keyboard-fix` plus later ones.
+
+## Keyboard layout (the original bug)
+
+- Symptom (iOS 27, App Store iVim): vim full-screen, statusline and command
+  line behind the keyboard.
+- Cause: `VimViewController.tuneFrameAccordingToKeyboard` set the root
+  view's frame height on keyboard notifications; newer iOS re-lays out the
+  root view and undoes it.
+- Fix: `VimMainView` pins the vim view's bottom to `keyboardLayoutGuide`
+  (iOS 15+; includes the extended bar, the input accessory view, and the
+  bottom safe area). Manual frame code removed.
+- Note: the old code also works on the iOS 26 simulator; the bug only
+  showed on iOS 27, verified fixed on the phone.
+
+## Cursor flicker with `blinkon0`
+
+- Cause: vim calls `gui_mch_start_blink()` on every wait for input; iVim's
+  Swift `VimCursorBlinker.startBlinking` lacked the other GUIs' check that
+  no blink time is zero, so the cursor was mostly hidden and flashed.
+- Fix: guard in `startBlinking` (as in `gui_gtk_x11.c`).
+
+## Shell commands hung (`system()`, `:!`)
+
+- `mch_call_shell_fork` only creates pipes when output is shown; for
+  `system()` (temp file) `fd_toshell`/`fd_fromshell` were uninitialised, so
+  `ios_term_run` failed to open streams and returned without an exit code;
+  vim's waitpid loop never ended, and ios_system's fork lock stayed held
+  (next `fork()` deadlocked).
+- Fix: initialise the fds to -1 (`os_unix.c`); `ios_term_run` uses
+  `/dev/null` for missing fds and records exit code 127 if streams still
+  can't be opened.
+- Leftover: `system('cmd > file')` runs but gives E484 (ios_system doesn't
+  handle vim's `(cmd) > tmpfile` wrapping).
+
+## `:terminal` / ivish
+
+- ivish didn't compile, crashed on start, garbled input, and hung on exit:
+  see [ivish](ivish.md) and [ios-system](ios-system.md). Causes:
+  unpublished ios_system APIs, `ivish_context_t` layout, input mode chosen
+  by `ios_progname()` (the app's name), session closing.
+
+## `:q` froze the app
+
+- Cause: upstream ios_system replaces `exit()` with `pthread_exit`; vim's
+  final `exit(r)` in `mch_exit()` only ended the main thread.
+- Fix: `ios_term_exit_process()` calls libSystem's `exit` (via `dlopen` /
+  `dlsym`, falls back to `_Exit`).
+- Still open: quitting with a running `:terminal` hangs
+  ([known-issues](known-issues.md)).
+
+## guifont sizes
+
+- Symptom: `:set guifont=Menlo:h9.0` did nothing; the owner's config
+  (`Menlo:h10.0`) never applied, so the default font at 14 pt was used.
+- Causes: sizes parsed with `NumberFormatter()` in the phone's region
+  format (Norway: decimal comma, so `9.0` → nil; whole numbers worked);
+  font names had to match exactly (`Menlo-Regular`).
+- Fix (`VimFontsManager.swift`): parse with the `en_US_POSIX` locale; fall
+  back to the first font whose name starts with the given one. Shipped in
+  TestFlight build 2.
+
+## Smaller
+
+- Personal bundle ids, team, URL scheme, display name; entitlements for App
+  Group/iCloud removed ([overview](overview.md)).
+- Code coverage off, BOOL prototype, `WARNING_CFLAGS` ([build](build.md)).
+- Deployment target 10 → 15, which allowed dropping the pre-iOS 15 code.

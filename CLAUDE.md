@@ -1,106 +1,30 @@
 # iVim fork
 
-Personal fork of terrychou/iVim (vim for iOS, last upstream commit 2020),
-updated for iOS 27. Bundle id `io.github.sysprv.ivim`, shown as "iVim Dev",
-URL scheme `ivimdev`. Paid Apple developer account (team B9Y5MBFAT8), but
-deliberately no App Group or iCloud. Deployment target iOS 15.
-App Store Connect app: "iVim sysprv fork", distributed via TestFlight
-(internal testing only).
+Personal fork of terrychou/iVim (vim for iOS), updated for iOS 27.
+Bundle id `io.github.sysprv.ivim` ("iVim Dev"), paid team B9Y5MBFAT8,
+TestFlight app "iVim sysprv fork". Details live in the wiki (below); read
+`wiki/index.md` first when a task touches something not covered here.
 
-## Build
+## Essentials
 
-Needs Xcode (26.0 on this Mac, macOS 15; only the iOS 26 simulator is
-available, the user's iPhone runs iOS 27).
-
-    scripts/fetch-frameworks.sh     # required once; re-runs only redo what changed
-
-It downloads ios_system (holzschu, pinned release) and builds ivish
-(terrychou, pinned commit + `scripts/ivish-upstream-ios_system.patch`) into
-`Frameworks/` (git-ignored). The project doesn't build without them.
-
-    # simulator
-    xcodebuild -project iVim.xcodeproj -scheme iVim -configuration Debug \
-      -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-      -derivedDataPath <dir> build
-    xcrun simctl install "iPhone 17 Pro" <dir>/Build/Products/Debug-iphonesimulator/iVim.app
-    xcrun simctl launch "iPhone 17 Pro" io.github.sysprv.ivim
-
-    # iPhone (device id from `xcrun devicectl list devices`)
-    xcodebuild ... -destination 'id=<udid>' -allowProvisioningUpdates build
-    xcrun devicectl device install app --device <id> <dir>/Build/Products/Debug-iphoneos/iVim.app
-    xcrun devicectl device process launch --device <id> --terminate-existing io.github.sysprv.ivim
-
-TestFlight upload (bump CURRENT_PROJECT_VERSION in the pbxproj first; each
-upload needs a higher build number):
-
-    xcodebuild -project iVim.xcodeproj -scheme iVim -configuration Release \
-      -destination 'generic/platform=iOS' -archivePath <dir>/iVim.xcarchive \
-      -allowProvisioningUpdates archive
-    xcodebuild -exportArchive -archivePath <dir>/iVim.xcarchive \
-      -exportOptionsPlist <opts> -exportPath <dir>/upload -allowProvisioningUpdates
-
-with `<opts>` a plist of method `app-store-connect`, destination `upload`,
-teamID B9Y5MBFAT8, signingStyle automatic (destination `export` writes an
-.ipa instead). A "no dSYM for ivish.framework" warning is harmless.
-
-Launch fails with "Locked" when the phone is locked; ask the user to open it.
-After the app is deleted, the user has to trust the developer certificate
-again (Settings > General > VPN & Device Management).
-
-Copying files to the phone (`devicectl device copy to`) is risky; there's
-no remove command to undo mistakes. Ask the user first, and:
-- with a single `--source`, `--destination Documents/` is taken as the
-  target file name: it replaces the whole Documents folder.
-- a copied directory itself ends up owned by root, so the app can't write
-  in it (mkdir/undo files fail with E739/E828). Copy only files, into
-  directories the app created; or let the user copy via Files/Working Copy.
-- `--remove-existing-content true` wipes the whole domain (all of the
-  app's container), not just the destination folder. Never use it there.
-  Root-owned leftovers can only go by reinstalling the app.
-Expect many warnings from vim/ctags C code; legacy clang errors are
-downgraded via WARNING_CFLAGS on the iVim target.
-
-## Testing
-
-- Don't drive the simulator with osascript keystrokes: the Mac's Norwegian
-  layout and simulator shortcuts garble them. Instead put a vim script in
-  the app's `Documents/` (`xcrun simctl get_app_container ... data`),
-  source it from `.vimrc`, drive it with `timer_start()` /
-  `term_sendkeys()`, write results to a file there, and read it from the
-  Mac. Vim is 8.1: no default-argument lambdas; wrap steps in try/catch.
-  Remove the test hook afterwards.
-- iVim restores the last session on launch; start terminal tests with a
-  timer after that (~3 s).
-- `sample <pid>` shows where a hang is; `xcrun simctl spawn <sim> log show
-  --predicate 'process == "iVim"'` shows ios_system's own logging.
-- Simulator: keep I/O > Keyboard > Connect Hardware Keyboard on (off drops
-  Mac keystrokes); Cmd-K shows the software keyboard.
-- The user's vim config is github.com/sysprv/vimrc (its INSTALL script, with
-  HOME pointed at the app's Documents).
-
-## How commands work (ios_system)
-
-Everything is one process: commands are frameworks called on threads
-(`ls_main` etc., looked up in `commandDictionary.plist`), fork() hands out
-fake pids, stdio is thread-local, cwd/env live in ios_system "sessions"
-(`currentSession` is a global). Upstream ios_system differs from the
-unpublished one iVim/ivish were built against:
-
-- `exit()`, `_exit()`, `abort()` only end the calling thread; vim's own
-  exit uses `ios_term_exit_process()` (libSystem's exit).
-- `ios_progname()` returns the app's name; `ios_term.m` records each
-  command's name when it starts (`process_progname()`).
-- `ios_closeSession()` leaves no current session; ivish uses one session
-  per shell.
-- `extraCommandsDictionary.plist` (ivish, ctags) is registered with
-  `addCommandList()`; `commandPersonalities.plist` (termmode/intaction per
-  command, ivish = raw) was recreated, the original wasn't published.
-- ivish needs `ivish_context_t`, not the bare callbacks.
-
-Known issues: `:q` with a running `:terminal` hangs (user accepted: exit
-the terminal first). Programs needing a tty/raw mode (less) and precise
-Ctrl-C don't work (patched-out ios_system APIs). `system()` of a command
-with its own redirection gives E484. Python isn't included yet (planned).
+- Before the first build: `scripts/fetch-frameworks.sh` (ios_system +
+  patched ivish into `Frameworks/`; the project doesn't build without it).
+- Build: `xcodebuild -project iVim.xcodeproj -scheme iVim` for
+  `platform=iOS Simulator,name=iPhone 17 Pro` or the device
+  (`-allowProvisioningUpdates`). Only iOS 26 simulators; the owner's
+  iPhone runs iOS 27. More: `wiki/build.md`.
+- Test behaviour with vim scripts sourced from the app's `.vimrc`, not
+  osascript keystrokes; see `wiki/testing.md`.
+- Ask the owner before writing anything to the phone
+  (`devicectl device copy to`): it has destroyed data before and there is
+  no undo. Never use `--remove-existing-content` on the app container.
+  See `wiki/device.md`.
+- TestFlight: raise `CURRENT_PROJECT_VERSION` (all four entries) before
+  every upload; steps in `wiki/release-testflight.md`.
+- Everything runs in one process via ios_system, whose upstream
+  `exit()`, `ios_progname()` and sessions behave differently from what
+  iVim expected: read `wiki/ios-system.md` before touching `ios_term.m`,
+  `os_unix.c` process code or the ivish patch.
 
 ## Git
 
@@ -113,3 +37,28 @@ Commit messages: minimal, scoped format, no Co-Authored-By trailer, e.g.
     ios_term: fix exit code for commands that fail to start
 
     Optional short body only when the why isn't obvious.
+
+## Wiki (`wiki/`)
+
+An LLM-maintained knowledge base after Karpathy's "LLM Wiki" pattern. The
+LLM writes and maintains it; the owner reads it and directs.
+
+- Layers: raw sources (upstream repos, the owner's vimrc, sessions; listed
+  in `wiki/sources.md`, never copied or modified) → wiki pages → this file
+  (the schema).
+- Pages: one topic each, lowercase-hyphenated file names, YAML front
+  matter with `updated: YYYY-MM-DD`, relative markdown links between pages
+  (`[fixes](fixes.md)`), no duplicated facts — link instead.
+- `wiki/index.md`: every page with a one-line summary, by category. Update
+  it whenever a page is added, renamed or its scope changes.
+- `wiki/log.md`: append-only; each entry starts `## [YYYY-MM-DD] kind |
+  title` with kind ingest, query, lint or update.
+- Ingest: after a fix, finding or decision, update the affected pages
+  (root cause in `fixes.md`, open problems in `known-issues.md`, status in
+  `overview.md`), then index and log. Do it in the same commit as the code
+  change where possible (`wiki:` scope for wiki-only commits).
+- Query: answer from the wiki (index first), cite pages; file useful
+  answers back as pages.
+- Lint (when asked or when pages look stale): contradictions, stale
+  claims, orphan pages, missing links or pages; log it.
+- Keep this file to what every session needs; move detail to the wiki.
