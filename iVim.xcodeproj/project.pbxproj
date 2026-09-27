@@ -9200,7 +9200,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iVim/iVim.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B9Y5MBFAT8;
 				ENABLE_BITCODE = NO;
 				ENABLE_CODE_COVERAGE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9242,7 +9242,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B9Y5MBFAT8;
 				INFOPLIST_FILE = iVimTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.sysprv.ivim.tests;
@@ -9257,7 +9257,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B9Y5MBFAT8;
 				INFOPLIST_FILE = iVimTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.sysprv.ivim.tests;
@@ -9271,7 +9271,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B9Y5MBFAT8;
 				INFOPLIST_FILE = iVimUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.sysprv.ivim.uitests;
@@ -9285,7 +9285,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B9Y5MBFAT8;
 				INFOPLIST_FILE = iVimUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.sysprv.ivim.uitests;
