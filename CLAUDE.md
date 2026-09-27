@@ -76,7 +76,10 @@ with its own redirection gives E484. Python isn't included yet (planned).
 
 ## Git
 
-Branch `ios27-keyboard-fix`, not pushed; no GitHub fork yet (ask first).
+Branch `ios27-keyboard-fix`. Remotes: `origin` = the fork sysprv/iVim,
+`upstream` = terrychou/iVim (don't open PRs there). Push over https with
+`git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`
+(the global helper is osxkeychain).
 Commit messages: minimal, scoped format, no Co-Authored-By trailer, e.g.
 
     ios_term: fix exit code for commands that fail to start
