@@ -39,6 +39,9 @@ no remove command to undo mistakes. Ask the user first, and:
 - a copied directory itself ends up owned by root, so the app can't write
   in it (mkdir/undo files fail with E739/E828). Copy only files, into
   directories the app created; or let the user copy via Files/Working Copy.
+- `--remove-existing-content true` wipes the whole domain (all of the
+  app's container), not just the destination folder. Never use it there.
+  Root-owned leftovers can only go by reinstalling the app.
 Expect many warnings from vim/ctags C code; legacy clang errors are
 downgraded via WARNING_CFLAGS on the iVim target.
 
