@@ -2,8 +2,10 @@
 
 Personal fork of terrychou/iVim (vim for iOS, last upstream commit 2020),
 updated for iOS 27. Bundle id `io.github.sysprv.ivim`, shown as "iVim Dev",
-URL scheme `ivimdev`. Free Apple developer account: no App Group or iCloud,
-builds expire after 7 days. Deployment target iOS 15.
+URL scheme `ivimdev`. Paid Apple developer account (team B9Y5MBFAT8), but
+deliberately no App Group or iCloud. Deployment target iOS 15.
+App Store Connect app: "iVim sysprv fork", distributed via TestFlight
+(internal testing only).
 
 ## Build
 
@@ -27,6 +29,19 @@ It downloads ios_system (holzschu, pinned release) and builds ivish
     xcodebuild ... -destination 'id=<udid>' -allowProvisioningUpdates build
     xcrun devicectl device install app --device <id> <dir>/Build/Products/Debug-iphoneos/iVim.app
     xcrun devicectl device process launch --device <id> --terminate-existing io.github.sysprv.ivim
+
+TestFlight upload (bump CURRENT_PROJECT_VERSION in the pbxproj first; each
+upload needs a higher build number):
+
+    xcodebuild -project iVim.xcodeproj -scheme iVim -configuration Release \
+      -destination 'generic/platform=iOS' -archivePath <dir>/iVim.xcarchive \
+      -allowProvisioningUpdates archive
+    xcodebuild -exportArchive -archivePath <dir>/iVim.xcarchive \
+      -exportOptionsPlist <opts> -exportPath <dir>/upload -allowProvisioningUpdates
+
+with `<opts>` a plist of method `app-store-connect`, destination `upload`,
+teamID B9Y5MBFAT8, signingStyle automatic (destination `export` writes an
+.ipa instead). A "no dSYM for ivish.framework" warning is harmless.
 
 Launch fails with "Locked" when the phone is locked; ask the user to open it.
 After the app is deleted, the user has to trust the developer certificate
