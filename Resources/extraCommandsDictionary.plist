@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Commands iVim adds to ios_system's commandDictionary.plist:
+     name = [framework/binary or SELF, entry function, getopt string, file|directory|no] -->
+<plist version="1.0">
+<dict>
+	<key>ivish</key>
+	<array>
+		<string>ivish.framework/ivish</string>
+		<string>ivish_main</string>
+		<string></string>
+		<string>no</string>
+	</array>
+	<key>ctags</key>
+	<array>
+		<string>SELF</string>
+		<string>ctags_main</string>
+		<string></string>
+		<string>file</string>
+	</array>
+</dict>
+</plist>

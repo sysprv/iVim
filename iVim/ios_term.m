@@ -10,6 +10,7 @@
 #import <ios_system/ios_system.h>
 #import "vim.h"
 #include <pthread.h>
+#include <dlfcn.h>
 #import <ivish/ivish.h>
 
 
@@ -24,6 +25,7 @@ typedef NSMutableDictionary<NSString *, ProcessInfo *> ProcessTable;
 static NSString *kProcessInfoSessionID = @"PISessionID";
 static NSString *kProcessInfoExitCode = @"PIExitCode";
 static NSString *kProcessInfoSAHandler = @"PISAHandler";
+static NSString *kProcessInfoProgName = @"PIProgName";
 typedef void (^SessionSwitchTask)(NSString *sessionID);
 
 static dispatch_queue_t barrier_queue(void)
@@ -152,13 +154,30 @@ static void switch_to_session_for_pid_safely(pid_t pid,
     }
 }
 
+static void set_process_exit_code(pid_t pid, int code)
+{
+    change_process_info_safely(pid, ^(ProcessInfo *info) {
+        info[kProcessInfoExitCode] = [NSNumber numberWithInt:code];
+    });
+}
+
 static void update_process_exit_code(pid_t pid)
 {
     switch_to_session_for_pid_safely(pid, ^(NSString *sessionID) {
-        change_process_info_safely(pid, ^(ProcessInfo *info) {
-            info[kProcessInfoExitCode] = [NSNumber numberWithInt:ios_getCommandStatus()];
-        });
+        set_process_exit_code(pid, ios_getCommandStatus());
     });
+}
+
+// name of the command run as pid (ios_progname() can't be relied on:
+// upstream ios_system returns the app's name outside the command)
+static NSString *process_progname(pid_t pid)
+{
+    __block NSString *ret = nil;
+    read_process_info_safely(pid, ^(ProcessInfo *info) {
+        ret = info[kProcessInfoProgName];
+    });
+
+    return ret;
 }
 
 typedef NSMutableDictionary<NSString *, NSString *> EnvCache;
@@ -335,6 +354,12 @@ static ivish_callbacks_t ivish_callbacks = {
     ivish_expand_filenames,
 };
 
+// ivish (1.20+) expects its context wrapped, with no parent shell
+static ivish_context_t ivish_context = {
+    &ivish_callbacks,
+    NULL,
+};
+
 // --------------- /ivish callbacks ------------------
 
 typedef void (^ __nullable CommandCompletion)(void);
@@ -353,37 +378,36 @@ static void ios_term_run(char_u *name,
                         "com.terrychou.ivim.cmds",
                         DISPATCH_QUEUE_CONCURRENT);
     }
-    FILE *in_file = nil;
-    FILE *out_file = nil;
-    FILE *err_file = nil;
-//    NSLog(@"pid: %d", pid);
-//    NSLog(@"in fd: %d", in_fd);
-//    NSLog(@"out fd: %d", out_fd);
-//    NSLog(@"err fd: %d", err_fd);
-    // setup input stream
-    if ((in_file = fdopen(in_fd, "rb")) == NULL) {
-        log_failure("open stdin stream", name);
-        return;
-    }
-    // setup output stream
-    if ((out_file = fdopen(out_fd, "wb")) == NULL) {
-        log_failure("open stdout stream", name);
-        fclose(in_file);
-        return;
-    }
-    // setup error stream
-    if (err_fd == out_fd) {
-        err_file = out_file;
-    } else if (err_fd >= 0) {
-        if ((err_file = fdopen(err_fd, "wb")) == NULL) {
-            log_failure("open stderr stream", name);
+    // the command's name: first word of a shell command, or a path
+    NSString *progname = [[[[NSString stringWithUTF8String:(char *)name]
+                            componentsSeparatedByString:@" "] firstObject]
+                          lastPathComponent];
+    change_process_info_safely(pid, ^(ProcessInfo *info) {
+        info[kProcessInfoProgName] = progname;
+    });
+    // without a pipe (e.g. system(), whose output goes to a temp
+    // file), there's no descriptor: use /dev/null instead
+    FILE *in_file = fdopen(in_fd >= 0 ? in_fd : open("/dev/null", O_RDONLY), "rb");
+    FILE *out_file = fdopen(out_fd >= 0 ? out_fd : open("/dev/null", O_WRONLY), "wb");
+    FILE *err_file = (err_fd < 0 || err_fd == out_fd) ?
+        out_file : fdopen(err_fd, "wb");
+    if (in_file == NULL || out_file == NULL || err_file == NULL) {
+        log_failure("open standard streams", name);
+        if (in_file != NULL) {
             fclose(in_file);
-            fclose(out_file);
-            return;
         }
+        if (err_file != NULL && err_file != out_file) {
+            fclose(err_file);
+        }
+        if (out_file != NULL) {
+            fclose(out_file);
+        }
+        // mark it exited, so that ios_term_waitpid() doesn't wait forever
+        set_process_exit_code(pid, 127);
+        return;
     }
     
-    BOOL is_ivish = (strstr((char *)name, "ivish") != NULL);
+    BOOL is_ivish = [progname isEqualToString:@"ivish"];
     // start command asynchronously
     dispatch_async(cmd_queue, ^{
         __block NSString *session_id = nil;
@@ -393,7 +417,7 @@ static void ios_term_run(char_u *name,
             thread_stdout = nil;
             thread_stderr = nil;
             if (is_ivish) {
-                ios_setContext(&ivish_callbacks);
+                ios_setContext(&ivish_context);
             }
             ios_setStreams(in_file, out_file, err_file);
             deploy_env_cache(child_env());
@@ -429,6 +453,21 @@ void ios_term_run_shell_cmd(char_u *cmd,
 int ios_term_null_fd(void)
 {
     return [[NSFileHandle fileHandleWithNullDevice] fileDescriptor];
+}
+
+/*
+ * ios_system replaces exit() with a version that only ends the calling
+ * thread (what commands need); when vim itself quits, end the process
+ * with the system's exit()
+ */
+void ios_term_exit_process(int status)
+{
+    void *libsystem = dlopen("/usr/lib/libSystem.B.dylib", RTLD_LAZY | RTLD_NOLOAD);
+    void (*system_exit)(int) = libsystem ? dlsym(libsystem, "exit") : NULL;
+    if (system_exit != NULL) {
+        system_exit(status);
+    }
+    _Exit(status);
 }
 
 static char *replacing_in(const char *ori,
@@ -563,8 +602,7 @@ static void handle_interrupt(pid_t pid,
                              int i,
                              int *nbytes,
                              EchoCharAction echo_char) {
-    NSString *prog_name = [NSString stringWithCString:ios_progname()
-                                             encoding:NSUTF8StringEncoding];
+    NSString *prog_name = process_progname(pid);
     NSString *int_action = (cmd_personalities()[prog_name] ?: @{})[@"intaction"];
     NSLog(@"interrupt command '%@': '%@'", prog_name, int_action);
     if ([int_action isEqualToString:@"thread_kill"]) {
@@ -742,7 +780,6 @@ typedef NSMutableDictionary<NSString *, ChannelInfo *> ChannelInfoTable;
 static NSString *kChannelInfoReadline = @"CIReadline";
 static NSString *kChannelInfoEchoFd = @"CIEchoFd";
 static NSString *kChannelInfoPID = @"CIProcessID";
-static NSString *kChannelInfoProgName = @"CIProgName";
 
 static ChannelInfoTable *channel_info_table(void)
 {
@@ -835,15 +872,7 @@ void ios_term_cmd_execv(const char *path,
 
 static BOOL should_handle_input_for_channel(channel_T *channel)
 {
-    ChannelInfo *ci = info_for_channel(channel);
-    __block NSString *progname = ci[kChannelInfoProgName];
-    if (progname == nil) {
-        pid_t pid = channel->ch_job->jv_pid;
-        switch_to_session_for_pid_safely(pid, ^(NSString *sessionID) {
-            progname = [NSString stringWithUTF8String:ios_progname()];
-        });
-        ci[kChannelInfoProgName] = progname;
-    }
+    NSString *progname = process_progname(channel->ch_job->jv_pid);
     if (progname == nil) {
         NSLog(@"failed to retrieve program name.");
         return NO;
@@ -908,3 +937,4 @@ int ios_term_handle_channel_input(channel_T *channel,
     
     return OK;
 }
+

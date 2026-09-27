@@ -9,8 +9,8 @@
 import Foundation
 
 
-let gSchemeName = "ivimeditor"
-let gAppGroup = "group.com.terrychou.ivim"
+let gSchemeName = "ivimdev"
+let gAppGroup = "group.io.github.sysprv.ivim"
 
 extension UserDefaults {
     static let appGroup = UserDefaults(suiteName: gAppGroup)!

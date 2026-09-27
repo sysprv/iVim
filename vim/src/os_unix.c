@@ -3388,7 +3388,11 @@ mch_exit(int r)
     free_all_mem();
 #endif
 
+#ifdef FEAT_GUI_IOS
+    ios_term_exit_process(r);
+#else
     exit(r);
+#endif
 }
 
     static void
@@ -4685,8 +4689,9 @@ mch_call_shell_fork(
 # ifdef FEAT_GUI
     int		pty_slave_fd = -1;
 # endif
-    int		fd_toshell[2];		/* for pipes */
-    int		fd_fromshell[2];
+    // iOS: -1 when no pipes are used; ios_term_run_shell_cmd() gets them
+    int		fd_toshell[2] = {-1, -1};	/* for pipes */
+    int		fd_fromshell[2] = {-1, -1};
     int		pipe_error = FALSE;
     int		did_settmode = FALSE;	/* settmode(TMODE_RAW) called */
 #if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)

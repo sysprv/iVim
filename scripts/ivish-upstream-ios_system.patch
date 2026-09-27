@@ -1,0 +1,108 @@
+diff --git a/ivish/Shell.swift b/ivish/Shell.swift
+index 488450c..582e89c 100644
+--- a/ivish/Shell.swift
++++ b/ivish/Shell.swift
+@@ -57,6 +57,12 @@ public class Shell: NSObject {
+     
+     private var lastExitCode: Int32 = 0
+     
++    /// one ios_system session for all commands of this shell: upstream
++    /// ios_closeSession() leaves no current session, and ios_exit()
++    /// then crashes when the shell exits. Sessions are keyed by the
++    /// pointer, so it has to stay the same (and is never freed).
++    private let sessionId = strdup(UUID().uuidString)!
++    
+     private var isRootShell = false
+     typealias CommandRunner = (String, UnsafeRawPointer?) -> Int32
+     private var commandRunner: CommandRunner?
+@@ -475,10 +481,10 @@ extension Shell {
+     /// values of `COLUMNS`, `ROWS` or `LINES` are intercepted
+     /// and need to save via `ios_setWindowSize` for each
+     /// session
+-    private func setWindowSize() {
++    private func setWindowSize(_ sid: UnsafePointer<CChar>) {
+         let width = atoi(getenv("COLUMNS"))
+         let height = atoi(getenv("LINES"))
+-        ios_setWindowSize(width, height)
++        ios_setWindowSize(width, height, sid)
+     }
+     
+     private func runCommand(_ cmd: String) -> Int32 {
+@@ -488,30 +494,27 @@ extension Shell {
+         
+         let pid = ios_fork()
+         self.queue.sync {
+-            uuid.withCString {
+-                let sid = $0
+-                thread_stdin = nil
+-                thread_stdout = nil
+-                thread_stderr = nil
+-                self.preCmd(cmd,
+-                            uuid: uuid,
+-                            pid: pid,
+-                            sid: ios_sessionId(sid))
+-                ios_switchSession(sid)
+-                // setup parent shell context
+-                var mself = self
+-                withUnsafeMutablePointer(to: &mself) {
+-                    var psi = ivish_context_t(callbacks: self.callbacks,
+-                                            parent: $0)
+-                    ios_setContext(&psi)
+-                    ios_setTTYProvider(self.ttyProvider)
+-                    ios_setTTYRestorer(self.ttyRestorer)
+-                    ios_setStreams(self.inStream, self.stdoutStream, self.stderrStream)
+-                    self.setWindowSize()
+-                    ret = ios_system(cmd)
+-                    ios_closeSession(sid)
+-                    self.postCmd(cmd, uuid: uuid)
+-                }
++            let sid = UnsafePointer(self.sessionId)
++            thread_stdin = nil
++            thread_stdout = nil
++            thread_stderr = nil
++            self.preCmd(cmd,
++                        uuid: uuid,
++                        pid: pid,
++                        // placeholder, not an ios_system session id:
++                        // only used for intCandidate, see below
++                        sid: UInt(bitPattern: uuid.hashValue))
++            ios_switchSession(sid)
++            // setup parent shell context
++            var mself = self
++            withUnsafeMutablePointer(to: &mself) {
++                var psi = ivish_context_t(callbacks: self.callbacks,
++                                        parent: $0)
++                ios_setContext(&psi)
++                ios_setStreams(self.inStream, self.stdoutStream, self.stderrStream)
++                self.setWindowSize(sid)
++                ret = ios_system(cmd)
++                self.postCmd(cmd, uuid: uuid)
+             }
+         }
+         
+@@ -1028,10 +1031,8 @@ internal struct CommandInfo {
+     let sid: UInt
+     
+     var intCandidate: String? {
+-        let rootCmd = ios_getSessionRootCmdName(self.sid)
+-        let currentCmd = ios_getSessionCurrentCmdName(self.sid)
+-        
+-        return rootCmd == currentCmd ? rootCmd : nil
++        // needs per-session command names, not in upstream ios_system
++        return nil
+     }
+ }
+ 
+@@ -1162,12 +1163,6 @@ extension Shell {
+             }
+             let stdoutFileNo = fileno(stdoutFile)
+             let stderrFileNo = fileno(stderrFile)
+-            // make outputs non-TTY
+-            ios_addNonTTYFileNo(stdoutFileNo)
+-            ios_addNonTTYFileNo(stderrFileNo)
+-            if let inFile = info.inFile {
+-                ios_addNonTTYFileNo(fileno(inFile))
+-            }
+             // make the dummy root shell
+             let shell = Shell(stdoutFileNo: stdoutFileNo,
+                               stderrFileNo: stderrFileNo,

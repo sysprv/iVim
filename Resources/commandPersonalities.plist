@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Per-command terminal behaviour, read by iVim (ios_term.m) and ivish
+     ($IVISH_CMD_DB). The original list wasn't published.
+       termmode:  "line" (default): iVim/ivish edit and echo the input line;
+                  "raw": keys are passed straight to the command
+       intaction: what Ctrl-C does (see ivish InterruptHandler.swift) -->
+<plist version="1.0">
+<dict>
+	<!-- ivish has its own line editor -->
+	<key>ivish</key>
+	<dict>
+		<key>termmode</key>
+		<string>raw</string>
+	</dict>
+</dict>
+</plist>

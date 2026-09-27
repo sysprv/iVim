@@ -93,7 +93,9 @@ void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);
 
 void ex_ios_cmds(exarg_T *eap);
 
+#ifdef __OBJC__
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
+#endif
 void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
 
 // input method
@@ -114,6 +116,7 @@ void ios_term_setenv(const char *name, const char *value);
 void ios_term_cmd_execv(const char *path, char * const argv[], pid_t pid, int in_fd, int out_fd, int err_fd, channel_T *channel);
 void ios_term_run_shell_cmd(char_u *cmd, pid_t pid, int toshell_fd, int fromshell_fd);
 int ios_term_null_fd(void);
+void ios_term_exit_process(int status);
 void ios_term_readline(char_u *ta_buf, int len, int *got_int, pid_t pid, int *toshell_fd);
 char_u *ios_term_translate_msg(char_u *msg);
 pid_t ios_term_waitpid(pid_t pid, int *stat_loc, int options);

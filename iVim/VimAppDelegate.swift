@@ -102,6 +102,13 @@ extension AppDelegate { // env setup
         guard let resPath = Bundle.main.resourcePath else { return false }
         // for ios_system
         initializeEnvironment()
+        // ios_system only reads extraCommandsDictionary.plist by itself
+        // when side-loading; register iVim's commands (ivish, ctags)
+        if let extra = Bundle.main.path(forResource: "extraCommandsDictionary",
+                                        ofType: "plist"),
+            let err = addCommandList(extra) {
+            NSLog("failed to add extra commands: \(err)")
+        }
         
         // setup vim
         let runtimePath = resPath + "/runtime"
