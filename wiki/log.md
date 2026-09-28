@@ -48,3 +48,8 @@ Uploaded build 4 (simplified vim 9.2 patches); release-testflight history.
 
 `:!ls` colour escapes traced to ios_system's per-command environment;
 session scroll after restoring `Session.vim`. Both in known-issues.
+
+## [2026-09-28] update | Command environment fixed
+
+Commands now get vim's child environment via `storeEnvironment()`; no more
+`ls` colour codes in `:!` output. fixes, ios-system, known-issues updated.

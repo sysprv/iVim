@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # ios_system and the one-process model
 
@@ -19,6 +19,10 @@ everything runs inside the iVim process:
   `ios_switchSession()`, and switching `chdir()`s to the session's
   directory. `cd` updates the current session's directory.
 - "Signals" are `pthread_kill`/`pthread_cancel` or registered handlers.
+- Environment: each command gets a copy of the environment of the command
+  started last, not of `environ`; iVim passes one explicitly
+  ([fixes](fixes.md#command-environment-ls-colour-codes)). Swift code
+  (ivish) calls libc `getenv()`, not `ios_getenv()`.
 - Nothing is isolated: a crashing command can take the app down (ios_system
   catches crashes per thread), global state is shared, memory limits are
   the app's.

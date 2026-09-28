@@ -107,6 +107,24 @@ while porting, all checked on the simulator:
   skipped on iOS.
 - Lua support dropped from `ios_prefix.h` (not wanted, never shipped).
 
+## Command environment (`:!ls` colour codes)
+
+- Symptom: `:!ls` showed ANSI colour escapes; jobs and `:terminal` never
+  got vim's child environment (`TERM`, `COLUMNS`/`LINES`, `VIM_TERMINAL`,
+  the `env` option of `job_start()`/`term_start()`). Same on 8.1.
+- Cause: ios_system gives each command its own environment, copied from
+  the command started last (`current_pid` in `libc_replacement.c`), not
+  from `environ`; iVim only did `setenv()`. And ios_system sets
+  `CLICOLOR=1` app-wide while its `ls` takes vim's pipe for a tty.
+- Fix (`ios_term.m`, `take_command_environment()`): the settings still go
+  into the process environment (ivish is Swift and reads `COLUMNS` with
+  libc `getenv()`; without it, `atoi(NULL)` kills ivish on its first
+  command), then a copy of `environ` is handed to `storeEnvironment()`
+  right before the command starts; with `TERM=dumb` (`:!`, `:r !`, jobs)
+  without `CLICOLOR`. `:terminal` keeps colours. `system()` still sees
+  `TERM=xterm` (upstream sets no child environment there), but its output
+  isn't a tty for ls.
+
 ## Smaller
 
 - Personal bundle ids, team, URL scheme, display name; entitlements for App
