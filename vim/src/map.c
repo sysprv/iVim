@@ -8,7 +8,7 @@
  */
 
 /*
- * map.c: functions for maps and abbreviations
+ * map.c: Code for mappings and abbreviations.
  */
 
 #include "vim.h"
@@ -24,6 +24,10 @@ static mapblock_T	*first_abbr = NULL; // first entry in abbrlist
 static mapblock_T	*(maphash[256]);
 static int		maphash_valid = FALSE;
 
+// When non-zero then no mappings can be added or removed.  Prevents mappings
+// to change while listing them.
+static int		map_locked = 0;
+
 /*
  * Make a hash value for a mapping.
  * "mode" is the lower 4 bits of the State for the mapping.
@@ -31,7 +35,7 @@ static int		maphash_valid = FALSE;
  * Returns a value between 0 and 255, index in maphash.
  * Put Normal/Visual mode mappings mostly separately from Insert/Cmdline mode.
  */
-#define MAP_HASH(mode, c1) (((mode) & (NORMAL + VISUAL + SELECTMODE + OP_PENDING + TERMINAL)) ? (c1) : ((c1) ^ 0x80))
+#define MAP_HASH(mode, c1) (((mode) & (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING | MODE_TERMINAL)) ? (c1) : ((c1) ^ 0x80))
 
 /*
  * Get the start of the hashed map list for "state" and first character "c".
@@ -63,11 +67,11 @@ is_maphash_valid(void)
     static void
 validate_maphash(void)
 {
-    if (!maphash_valid)
-    {
-	vim_memset(maphash, 0, sizeof(maphash));
-	maphash_valid = TRUE;
-    }
+    if (maphash_valid)
+	return;
+
+    CLEAR_FIELD(maphash);
+    maphash_valid = TRUE;
 }
 
 /*
@@ -81,9 +85,14 @@ map_free(mapblock_T **mpp)
 
     mp = *mpp;
     vim_free(mp->m_keys);
+    if (mp->m_alt != NULL)
+	mp->m_alt->m_alt = NULL;
     vim_free(mp->m_str);
     vim_free(mp->m_orig_str);
     *mpp = mp->m_next;
+#ifdef FEAT_EVAL
+    reset_last_used_map(mp);
+#endif
     vim_free(mp);
 }
 
@@ -98,32 +107,33 @@ map_mode_to_chars(int mode)
 
     ga_init2(&mapmode, 1, 7);
 
-    if ((mode & (INSERT + CMDLINE)) == INSERT + CMDLINE)
+    if ((mode & (MODE_INSERT | MODE_CMDLINE)) == (MODE_INSERT | MODE_CMDLINE))
 	ga_append(&mapmode, '!');			// :map!
-    else if (mode & INSERT)
+    else if (mode & MODE_INSERT)
 	ga_append(&mapmode, 'i');			// :imap
-    else if (mode & LANGMAP)
+    else if (mode & MODE_LANGMAP)
 	ga_append(&mapmode, 'l');			// :lmap
-    else if (mode & CMDLINE)
+    else if (mode & MODE_CMDLINE)
 	ga_append(&mapmode, 'c');			// :cmap
-    else if ((mode & (NORMAL + VISUAL + SELECTMODE + OP_PENDING))
-				 == NORMAL + VISUAL + SELECTMODE + OP_PENDING)
+    else if ((mode
+		 & (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING))
+		== (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING))
 	ga_append(&mapmode, ' ');			// :map
     else
     {
-	if (mode & NORMAL)
+	if (mode & MODE_NORMAL)
 	    ga_append(&mapmode, 'n');			// :nmap
-	if (mode & OP_PENDING)
+	if (mode & MODE_OP_PENDING)
 	    ga_append(&mapmode, 'o');			// :omap
-	if (mode & TERMINAL)
+	if (mode & MODE_TERMINAL)
 	    ga_append(&mapmode, 't');			// :tmap
-	if ((mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
+	if ((mode & (MODE_VISUAL | MODE_SELECT)) == (MODE_VISUAL | MODE_SELECT))
 	    ga_append(&mapmode, 'v');			// :vmap
 	else
 	{
-	    if (mode & VISUAL)
+	    if (mode & MODE_VISUAL)
 		ga_append(&mapmode, 'x');		// :xmap
-	    if (mode & SELECTMODE)
+	    if (mode & MODE_SELECT)
 		ga_append(&mapmode, 's');		// :smap
 	}
     }
@@ -132,6 +142,9 @@ map_mode_to_chars(int mode)
     return (char_u *)mapmode.ga_data;
 }
 
+/*
+ * Output a line for one mapping.
+ */
     static void
 showmap(
     mapblock_T	*mp,
@@ -143,11 +156,15 @@ showmap(
     if (message_filtered(mp->m_keys) && message_filtered(mp->m_str))
 	return;
 
+    // Prevent mappings to be cleared while at the more prompt.
+    // Must jump to "theend" instead of returning.
+    ++map_locked;
+
     if (msg_didout || msg_silent != 0)
     {
 	msg_putchar('\n');
 	if (got_int)	    // 'q' typed at MORE prompt
-	    return;
+	    goto theend;
     }
 
     mapchars = map_mode_to_chars(mp->m_mode);
@@ -165,7 +182,7 @@ showmap(
     len = msg_outtrans_special(mp->m_keys, TRUE, 0);
     do
     {
-	msg_putchar(' ');		// padd with blanks
+	msg_putchar(' ');		// pad with blanks
 	++len;
     } while (len < 12);
 
@@ -186,22 +203,199 @@ showmap(
     if (*mp->m_str == NUL)
 	msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
     else
-    {
-	// Remove escaping of CSI, because "m_str" is in a format to be used
-	// as typeahead.
-	char_u *s = vim_strsave(mp->m_str);
-	if (s != NULL)
-	{
-	    vim_unescape_csi(s);
-	    msg_outtrans_special(s, FALSE, 0);
-	    vim_free(s);
-	}
-    }
+	msg_outtrans_special(mp->m_str, FALSE, 0);
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
 	last_set_msg(mp->m_script_ctx);
 #endif
+    msg_clr_eos();
     out_flush();			// show one line at a time
+
+theend:
+    --map_locked;
+}
+
+    static mapblock_T *
+map_add(
+	mapblock_T  **map_table,
+	mapblock_T  **abbr_table,
+	char_u	    *keys,
+	char_u	    *rhs,
+	char_u	    *orig_rhs,
+	int	    noremap,
+	int	    nowait,
+	int	    silent,
+	int	    mode,
+	int	    is_abbr,
+#ifdef FEAT_EVAL
+	int	    expr,
+	scid_T	    sid,	    // 0 to use current_sctx
+	int	    scriptversion,
+	linenr_T    lnum,
+#endif
+	int	    simplified)
+{
+    mapblock_T	*mp = ALLOC_CLEAR_ONE(mapblock_T);
+
+    if (mp == NULL)
+	return NULL;
+
+    // If CTRL-C has been mapped, don't always use it for Interrupting.
+    if (*keys == Ctrl_C)
+    {
+	if (map_table == curbuf->b_maphash)
+	    curbuf->b_mapped_ctrl_c |= mode;
+	else
+	    mapped_ctrl_c |= mode;
+    }
+
+    mp->m_keys = vim_strsave(keys);
+    mp->m_str = vim_strsave(rhs);
+    mp->m_orig_str = vim_strsave(orig_rhs);
+    if (mp->m_keys == NULL || mp->m_str == NULL)
+    {
+	vim_free(mp->m_keys);
+	vim_free(mp->m_str);
+	vim_free(mp->m_orig_str);
+	vim_free(mp);
+	return NULL;
+    }
+    mp->m_keylen = (int)STRLEN(mp->m_keys);
+    mp->m_noremap = noremap;
+    mp->m_nowait = nowait;
+    mp->m_silent = silent;
+    mp->m_mode = mode;
+    mp->m_simplified = simplified;
+#ifdef FEAT_EVAL
+    mp->m_expr = expr;
+    if (sid != 0)
+    {
+	mp->m_script_ctx.sc_sid = sid;
+	mp->m_script_ctx.sc_lnum = lnum;
+	mp->m_script_ctx.sc_version = scriptversion;
+    }
+    else
+    {
+	mp->m_script_ctx = current_sctx;
+	if (cmdmod.cmod_flags & CMOD_LEGACY)
+	    mp->m_script_ctx.sc_version = 1;
+	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
+    }
+#endif
+
+    // add the new entry in front of the abbrlist or maphash[] list
+    if (is_abbr)
+    {
+	mp->m_next = *abbr_table;
+	*abbr_table = mp;
+    }
+    else
+    {
+	int n = MAP_HASH(mp->m_mode, mp->m_keys[0]);
+
+	mp->m_next = map_table[n];
+	map_table[n] = mp;
+    }
+    return mp;
+}
+
+/*
+ * List mappings.  When "haskey" is FALSE all mappings, otherwise mappings that
+ * match "keys[keys_len]".
+ */
+    static void
+list_mappings(
+	int	keyround,
+	int	abbrev,
+	int	haskey,
+	char_u	*keys,
+	int	keys_len,
+	int	mode,
+	int	*did_local)
+{
+    // Prevent mappings to be cleared while at the more prompt.
+    ++map_locked;
+
+    if (p_verbose > 0 && keyround == 1)
+    {
+	if (seenModifyOtherKeys)
+	    msg_puts(_("Seen modifyOtherKeys: true\n"));
+
+	if (modify_otherkeys_state != MOKS_INITIAL)
+	{
+	    char *name = _("Unknown");
+	    switch (modify_otherkeys_state)
+	    {
+		case MOKS_INITIAL: break;
+		case MOKS_OFF: name = _("Off"); break;
+		case MOKS_ENABLED: name = _("On"); break;
+		case MOKS_DISABLED: name = _("Disabled"); break;
+		case MOKS_AFTER_T_TE: name = _("Cleared"); break;
+	    }
+
+	    char buf[200];
+	    vim_snprintf(buf, sizeof(buf),
+				    _("modifyOtherKeys detected: %s\n"), name);
+	    msg_puts(buf);
+	}
+
+	if (kitty_protocol_state != KKPS_INITIAL)
+	{
+	    char *name = _("Unknown");
+	    switch (kitty_protocol_state)
+	    {
+		case KKPS_INITIAL: break;
+		case KKPS_OFF: name = _("Off"); break;
+		case KKPS_ENABLED: name = _("On"); break;
+		case KKPS_DISABLED: name = _("Disabled"); break;
+		case KKPS_AFTER_T_TE: name = _("Cleared"); break;
+	    }
+
+	    char buf[200];
+	    vim_snprintf(buf, sizeof(buf),
+				     _("Kitty keyboard protocol: %s\n"), name);
+	    msg_puts(buf);
+	}
+    }
+
+    // need to loop over all global hash lists
+    for (int hash = 0; hash < 256 && !got_int; ++hash)
+    {
+	mapblock_T	*mp;
+
+	if (abbrev)
+	{
+	    if (hash != 0)	// there is only one abbreviation list
+		break;
+	    mp = curbuf->b_first_abbr;
+	}
+	else
+	    mp = curbuf->b_maphash[hash];
+	for ( ; mp != NULL && !got_int; mp = mp->m_next)
+	{
+	    // check entries with the same mode
+	    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
+	    {
+		if (!haskey)		    // show all entries
+		{
+		    showmap(mp, TRUE);
+		    *did_local = TRUE;
+		}
+		else
+		{
+		    int n = mp->m_keylen;
+		    if (STRNCMP(mp->m_keys, keys,
+				   (size_t)(n < keys_len ? n : keys_len)) == 0)
+		    {
+			showmap(mp, TRUE);
+			*did_local = TRUE;
+		    }
+		}
+	    }
+	}
+    }
+
+    --map_locked;
 }
 
 /*
@@ -216,26 +410,30 @@ showmap(
  * noreabbr {lhs} {rhs}	    : same, but no remapping for {rhs}
  * unabbr {lhs}		    : remove abbreviation for {lhs}
  *
- * maptype: 0 for :map, 1 for :unmap, 2 for noremap.
+ * maptype: MAPTYPE_MAP for :map or :abbr
+ *	    MAPTYPE_UNMAP for :unmap or :unabbr
+ *	    MAPTYPE_NOREMAP for :noremap or :noreabbr
+ *	    MAPTYPE_UNMAP_LHS is like MAPTYPE_UNMAP, but doesn't try to match
+ *	    with {rhs} if there is no match with {lhs}.
  *
  * arg is pointer to any arguments. Note: arg cannot be a read-only string,
  * it will be modified.
  *
- * for :map   mode is NORMAL + VISUAL + SELECTMODE + OP_PENDING
- * for :map!  mode is INSERT + CMDLINE
- * for :cmap  mode is CMDLINE
- * for :imap  mode is INSERT
- * for :lmap  mode is LANGMAP
- * for :nmap  mode is NORMAL
- * for :vmap  mode is VISUAL + SELECTMODE
- * for :xmap  mode is VISUAL
- * for :smap  mode is SELECTMODE
- * for :omap  mode is OP_PENDING
- * for :tmap  mode is TERMINAL
+ * for :map   mode is MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING
+ * for :map!  mode is MODE_INSERT | MODE_CMDLINE
+ * for :cmap  mode is MODE_CMDLINE
+ * for :imap  mode is MODE_INSERT
+ * for :lmap  mode is MODE_LANGMAP
+ * for :nmap  mode is MODE_NORMAL
+ * for :vmap  mode is MODE_VISUAL | MODE_SELECT
+ * for :xmap  mode is MODE_VISUAL
+ * for :smap  mode is MODE_SELECT
+ * for :omap  mode is MODE_OP_PENDING
+ * for :tmap  mode is MODE_TERMINAL
  *
- * for :abbr  mode is INSERT + CMDLINE
- * for :iabbr mode is INSERT
- * for :cabbr mode is CMDLINE
+ * for :abbr  mode is MODE_INSERT | MODE_CMDLINE
+ * for :iabbr mode is MODE_INSERT
+ * for :cabbr mode is MODE_CMDLINE
  *
  * Return 0 for success
  *	  1 for invalid arguments
@@ -252,22 +450,20 @@ do_map(
 {
     char_u	*keys;
     mapblock_T	*mp, **mpp;
+    mapblock_T	*mp_result[2] = {NULL, NULL};
     char_u	*rhs;
     char_u	*p;
     int		n;
     int		len = 0;	// init for GCC
-    char_u	*newstr;
     int		hasarg;
     int		haskey;
-    int		did_it = FALSE;
-    int		did_local = FALSE;
-    int		round;
+    int		do_print;
+    int		keyround;
     char_u	*keys_buf = NULL;
+    char_u	*alt_keys_buf = NULL;
     char_u	*arg_buf = NULL;
     int		retval = 0;
     int		do_backslash;
-    int		hash;
-    int		new_hash;
     mapblock_T	**abbr_table;
     mapblock_T	**map_table;
     int		unique = FALSE;
@@ -277,6 +473,8 @@ do_map(
 #ifdef FEAT_EVAL
     int		expr = FALSE;
 #endif
+    int		did_simplify = FALSE;
+    int		unmap_lhs_only = FALSE;
     int		noremap;
     char_u      *orig_rhs;
 
@@ -284,8 +482,14 @@ do_map(
     map_table = maphash;
     abbr_table = &first_abbr;
 
+    if (maptype == MAPTYPE_UNMAP_LHS)
+    {
+	unmap_lhs_only = TRUE;
+	maptype = MAPTYPE_UNMAP;
+    }
+
     // For ":noremap" don't remap, otherwise do remap.
-    if (maptype == 2)
+    if (maptype == MAPTYPE_NOREMAP)
 	noremap = REMAP_NONE;
     else
 	noremap = REMAP_YES;
@@ -361,7 +565,7 @@ do_map(
     // with :unmap white space is included in the keys, no argument possible.
     p = keys;
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
-    while (*p && (maptype == 1 || !VIM_ISWHITE(*p)))
+    while (*p && (maptype == MAPTYPE_UNMAP || !VIM_ISWHITE(*p)))
     {
 	if ((p[0] == Ctrl_V || (do_backslash && p[0] == '\\')) &&
 								  p[1] != NUL)
@@ -375,9 +579,10 @@ do_map(
     rhs = p;
     hasarg = (*rhs != NUL);
     haskey = (*keys != NUL);
+    do_print = !haskey || (maptype != MAPTYPE_UNMAP && !hasarg);
 
     // check for :unmap without argument
-    if (maptype == 1 && !haskey)
+    if (maptype == MAPTYPE_UNMAP && !haskey)
     {
 	retval = 1;
 	goto theend;
@@ -389,373 +594,381 @@ do_map(
     // replace_termcodes() may move the result to allocated memory, which
     // needs to be freed later (*keys_buf and *arg_buf).
     // replace_termcodes() also removes CTRL-Vs and sometimes backslashes.
+    // If something like <C-H> is simplified to 0x08 then mark it as simplified
+    // and also add an entry with a modifier, which will work when using a key
+    // protocol.
     if (haskey)
-	keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, special);
+    {
+	char_u	*new_keys;
+	int	flags = REPTERM_FROM_PART | REPTERM_DO_LT;
+
+	if (special)
+	    flags |= REPTERM_SPECIAL;
+	new_keys = replace_termcodes(keys, &keys_buf, 0, flags, &did_simplify);
+	if (did_simplify)
+	    (void)replace_termcodes(keys, &alt_keys_buf, 0,
+					    flags | REPTERM_NO_SIMPLIFY, NULL);
+	keys = new_keys;
+    }
     orig_rhs = rhs;
     if (hasarg)
     {
 	if (STRICMP(rhs, "<nop>") == 0)	    // "<Nop>" means nothing
 	    rhs = (char_u *)"";
 	else
-	    rhs = replace_termcodes(rhs, &arg_buf, FALSE, TRUE, special);
+	    rhs = replace_termcodes(rhs, &arg_buf, 0,
+			REPTERM_DO_LT | (special ? REPTERM_SPECIAL : 0), NULL);
     }
 
-    // check arguments and translate function keys
-    if (haskey)
+    /*
+     * The following is done twice if we have two versions of keys:
+     * "alt_keys_buf" is not NULL.
+     */
+    for (keyround = 1; keyround <= 2; ++keyround)
     {
-	len = (int)STRLEN(keys);
-	if (len > MAXMAPLEN)		// maximum length of MAXMAPLEN chars
+	int	did_it = FALSE;
+	int	did_local = FALSE;
+	int	keyround1_simplified = keyround == 1 && did_simplify;
+	int	round;
+	int	num_rounds;
+
+	if (keyround == 2)
 	{
-	    retval = 1;
-	    goto theend;
+	    if (alt_keys_buf == NULL)
+		break;
+	    keys = alt_keys_buf;
 	}
+	else if (alt_keys_buf != NULL && do_print)
+	    // when printing always use the not-simplified map
+	    keys = alt_keys_buf;
 
-	if (abbrev && maptype != 1)
+	// check arguments and translate function keys
+	if (haskey)
 	{
-	    // If an abbreviation ends in a keyword character, the
-	    // rest must be all keyword-char or all non-keyword-char.
-	    // Otherwise we won't be able to find the start of it in a
-	    // vi-compatible way.
-	    if (has_mbyte)
+	    len = (int)STRLEN(keys);
+	    if (len > MAXMAPLEN)	// maximum length of MAXMAPLEN chars
 	    {
-		int	first, last;
-		int	same = -1;
-
-		first = vim_iswordp(keys);
-		last = first;
-		p = keys + (*mb_ptr2len)(keys);
-		n = 1;
-		while (p < keys + len)
-		{
-		    ++n;			// nr of (multi-byte) chars
-		    last = vim_iswordp(p);	// type of last char
-		    if (same == -1 && last != first)
-			same = n - 1;		// count of same char type
-		    p += (*mb_ptr2len)(p);
-		}
-		if (last && n > 2 && same >= 0 && same < n - 1)
-		{
-		    retval = 1;
-		    goto theend;
-		}
+		retval = 1;
+		goto theend;
 	    }
-	    else if (vim_iswordc(keys[len - 1]))  // ends in keyword char
+
+	    if (abbrev && maptype != MAPTYPE_UNMAP)
+	    {
+		// If an abbreviation ends in a keyword character, the
+		// rest must be all keyword-char or all non-keyword-char.
+		// Otherwise we won't be able to find the start of it in a
+		// vi-compatible way.
+		if (has_mbyte)
+		{
+		    int		first, last;
+		    int		same = -1;
+		    char_u	keys_unescaped[MAXMAPLEN + 1];
+		    size_t	keys_unescaped_len;
+
+		    mch_memmove(keys_unescaped, keys, (size_t)(len + 1));
+		    keys_unescaped_len = vim_unescape_csi(keys_unescaped);
+		    p = keys_unescaped;
+
+		    first = vim_iswordp(p);
+		    last = first;
+		    MB_PTR_ADV(p);
+		    n = 1;
+		    while (p < keys_unescaped + keys_unescaped_len)
+		    {
+			++n;			// nr of (multi-byte) chars
+			last = vim_iswordp(p);	// type of last char
+			if (same == -1 && last != first)
+			    same = n - 1;	// count of same char type
+			MB_PTR_ADV(p);
+		    }
+		    if (last && n > 2 && same >= 0 && same < n - 1)
+		    {
+			retval = 1;
+			goto theend;
+		    }
+		}
+		else if (vim_iswordc(keys[len - 1]))
+		    // ends in keyword char
 		    for (n = 0; n < len - 2; ++n)
 			if (vim_iswordc(keys[n]) != vim_iswordc(keys[len - 2]))
 			{
 			    retval = 1;
 			    goto theend;
 			}
-	    // An abbreviation cannot contain white space.
-	    for (n = 0; n < len; ++n)
-		if (VIM_ISWHITE(keys[n]))
-		{
-		    retval = 1;
-		    goto theend;
-		}
+		// An abbreviation cannot contain white space.
+		for (n = 0; n < len; ++n)
+		    if (VIM_ISWHITE(keys[n]))
+		    {
+			retval = 1;
+			goto theend;
+		    }
+	    }
 	}
-    }
 
-    if (haskey && hasarg && abbrev)	// if we will add an abbreviation
-	no_abbr = FALSE;		// reset flag that indicates there are
+	if (haskey && hasarg && abbrev)	// if we will add an abbreviation
+	    no_abbr = FALSE;		// reset flag that indicates there are
 					// no abbreviations
 
-    if (!haskey || (maptype != 1 && !hasarg))
-	msg_start();
+	if (do_print)
+	    msg_start();
 
-    // Check if a new local mapping wasn't already defined globally.
-    if (map_table == curbuf->b_maphash && haskey && hasarg && maptype != 1)
-    {
-	// need to loop over all global hash lists
-	for (hash = 0; hash < 256 && !got_int; ++hash)
+	// Check if a new local mapping wasn't already defined globally.
+	if (unique && map_table == curbuf->b_maphash
+			       && haskey && hasarg && maptype != MAPTYPE_UNMAP)
 	{
-	    if (abbrev)
+	    // need to loop over all global hash lists
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
-		if (hash != 0)	// there is only one abbreviation list
-		    break;
-		mp = first_abbr;
-	    }
-	    else
-		mp = maphash[hash];
-	    for ( ; mp != NULL && !got_int; mp = mp->m_next)
-	    {
-		// check entries with the same mode
-		if ((mp->m_mode & mode) != 0
-			&& mp->m_keylen == len
-			&& unique
-			&& STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
+		if (abbrev)
 		{
-		    if (abbrev)
-			semsg(_("E224: global abbreviation already exists for %s"),
-				mp->m_keys);
-		    else
-			semsg(_("E225: global mapping already exists for %s"),
-				mp->m_keys);
-		    retval = 5;
-		    goto theend;
+		    if (hash != 0)	// there is only one abbreviation list
+			break;
+		    mp = first_abbr;
 		}
-	    }
-	}
-    }
-
-    // When listing global mappings, also list buffer-local ones here.
-    if (map_table != curbuf->b_maphash && !hasarg && maptype != 1)
-    {
-	// need to loop over all global hash lists
-	for (hash = 0; hash < 256 && !got_int; ++hash)
-	{
-	    if (abbrev)
-	    {
-		if (hash != 0)	// there is only one abbreviation list
-		    break;
-		mp = curbuf->b_first_abbr;
-	    }
-	    else
-		mp = curbuf->b_maphash[hash];
-	    for ( ; mp != NULL && !got_int; mp = mp->m_next)
-	    {
-		// check entries with the same mode
-		if ((mp->m_mode & mode) != 0)
+		else
+		    mp = maphash[hash];
+		for ( ; mp != NULL && !got_int; mp = mp->m_next)
 		{
-		    if (!haskey)		    // show all entries
+		    // check entries with the same mode
+		    if ((mp->m_mode & mode) != 0
+			    && mp->m_keylen == len
+			    && STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
 		    {
-			showmap(mp, TRUE);
-			did_local = TRUE;
-		    }
-		    else
-		    {
-			n = mp->m_keylen;
-			if (STRNCMP(mp->m_keys, keys,
-					    (size_t)(n < len ? n : len)) == 0)
-			{
-			    showmap(mp, TRUE);
-			    did_local = TRUE;
-			}
+			if (abbrev)
+			    semsg(
+			       _(e_global_abbreviation_already_exists_for_str),
+				    mp->m_keys);
+			else
+			    semsg(_(e_global_mapping_already_exists_for_str),
+				    mp->m_keys);
+			retval = 5;
+			goto theend;
 		    }
 		}
 	    }
 	}
-    }
 
-    // Find an entry in the maphash[] list that matches.
-    // For :unmap we may loop two times: once to try to unmap an entry with a
-    // matching 'from' part, a second time, if the first fails, to unmap an
-    // entry with a matching 'to' part. This was done to allow ":ab foo bar"
-    // to be unmapped by typing ":unab foo", where "foo" will be replaced by
-    // "bar" because of the abbreviation.
-    for (round = 0; (round == 0 || maptype == 1) && round <= 1
-					      && !did_it && !got_int; ++round)
-    {
-	// need to loop over all hash lists
-	for (hash = 0; hash < 256 && !got_int; ++hash)
+	// When listing global mappings, also list buffer-local ones here.
+	if (map_table != curbuf->b_maphash && !hasarg
+						   && maptype != MAPTYPE_UNMAP)
+	    list_mappings(keyround, abbrev, haskey, keys, len,
+							     mode, &did_local);
+
+	// Find an entry in the maphash[] list that matches.
+	// For :unmap we may loop two times: once to try to unmap an entry with
+	// a matching 'from' part, a second time, if the first fails, to unmap
+	// an entry with a matching 'to' part. This was done to allow
+	// ":ab foo bar" to be unmapped by typing ":unab foo", where "foo" will
+	// be replaced by "bar" because of the abbreviation.
+	num_rounds = maptype == MAPTYPE_UNMAP && !unmap_lhs_only ? 2 : 1;
+	for (round = 0; round < num_rounds && !did_it && !got_int; ++round)
 	{
-	    if (abbrev)
+	    // need to loop over all hash lists
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
-		if (hash > 0)	// there is only one abbreviation list
-		    break;
-		mpp = abbr_table;
-	    }
-	    else
-		mpp = &(map_table[hash]);
-	    for (mp = *mpp; mp != NULL && !got_int; mp = *mpp)
-	    {
+		if (abbrev)
+		{
+		    if (hash > 0)	// there is only one abbreviation list
+			break;
+		    mpp = abbr_table;
+		}
+		else
+		    mpp = &(map_table[hash]);
+		for (mp = *mpp; mp != NULL && !got_int; mp = *mpp)
+		{
 
-		if (!(mp->m_mode & mode))   // skip entries with wrong mode
-		{
-		    mpp = &(mp->m_next);
-		    continue;
-		}
-		if (!haskey)		    // show all entries
-		{
-		    showmap(mp, map_table != maphash);
-		    did_it = TRUE;
-		}
-		else			    // do we have a match?
-		{
-		    if (round)	    // second round: Try unmap "rhs" string
+		    if ((mp->m_mode & mode) == 0)
 		    {
-			n = (int)STRLEN(mp->m_str);
-			p = mp->m_str;
+			// skip entries with wrong mode
+			mpp = &(mp->m_next);
+			continue;
 		    }
-		    else
+		    if (!haskey)	// show all entries
 		    {
-			n = mp->m_keylen;
-			p = mp->m_keys;
-		    }
-		    if (STRNCMP(p, keys, (size_t)(n < len ? n : len)) == 0)
-		    {
-			if (maptype == 1)	// delete entry
-			{
-			    // Only accept a full match.  For abbreviations we
-			    // ignore trailing space when matching with the
-			    // "lhs", since an abbreviation can't have
-			    // trailing space.
-			    if (n != len && (!abbrev || round || n > len
-					       || *skipwhite(keys + n) != NUL))
-			    {
-				mpp = &(mp->m_next);
-				continue;
-			    }
-			    // We reset the indicated mode bits. If nothing is
-			    // left the entry is deleted below.
-			    mp->m_mode &= ~mode;
-			    did_it = TRUE;	// remember we did something
-			}
-			else if (!hasarg)	// show matching entry
+			if (!mp->m_simplified)
 			{
 			    showmap(mp, map_table != maphash);
 			    did_it = TRUE;
 			}
-			else if (n != len)	// new entry is ambiguous
+		    }
+		    else	// do we have a match?
+		    {
+			if (round)	// second round: Try unmap "rhs" string
 			{
-			    mpp = &(mp->m_next);
-			    continue;
+			    n = (int)STRLEN(mp->m_str);
+			    p = mp->m_str;
 			}
-			else if (unique)
+			else
 			{
-			    if (abbrev)
-				semsg(_("E226: abbreviation already exists for %s"),
-									   p);
-			    else
-				semsg(_("E227: mapping already exists for %s"), p);
-			    retval = 5;
-			    goto theend;
+			    n = mp->m_keylen;
+			    p = mp->m_keys;
 			}
-			else			// new rhs for existing entry
+			if (STRNCMP(p, keys, (size_t)(n < len ? n : len)) == 0)
 			{
-			    mp->m_mode &= ~mode;	// remove mode bits
-			    if (mp->m_mode == 0 && !did_it) // reuse entry
+			    if (maptype == MAPTYPE_UNMAP)
 			    {
-				newstr = vim_strsave(rhs);
-				if (newstr == NULL)
+				// Delete entry.
+				// Only accept a full match.  For abbreviations
+				// we ignore trailing space when matching with
+				// the "lhs", since an abbreviation can't have
+				// trailing space.
+				if (n != len && (!abbrev || round || n > len
+					       || *skipwhite(keys + n) != NUL))
 				{
-				    retval = 4;		// no mem
-				    goto theend;
+				    mpp = &(mp->m_next);
+				    continue;
 				}
-				vim_free(mp->m_str);
-				mp->m_str = newstr;
-				vim_free(mp->m_orig_str);
-				mp->m_orig_str = vim_strsave(orig_rhs);
-				mp->m_noremap = noremap;
-				mp->m_nowait = nowait;
-				mp->m_silent = silent;
-				mp->m_mode = mode;
+				// In keyround for simplified keys, don't unmap
+				// a mapping without m_simplified flag.
+				if (keyround1_simplified && !mp->m_simplified)
+				    break;
+				// We reset the indicated mode bits. If nothing
+				// is left the entry is deleted below.
+				mp->m_mode &= ~mode;
+				did_it = TRUE;	// remember we did something
+			    }
+			    else if (!hasarg)	// show matching entry
+			    {
+				if (!mp->m_simplified)
+				{
+				    showmap(mp, map_table != maphash);
+				    did_it = TRUE;
+				}
+			    }
+			    else if (n != len)	// new entry is ambiguous
+			    {
+				mpp = &(mp->m_next);
+				continue;
+			    }
+			    else if (unique)
+			    {
+				if (abbrev)
+				    semsg(
+				      _(e_abbreviation_already_exists_for_str),
+					    p);
+				else
+				    semsg(_(e_mapping_already_exists_for_str),
+					    p);
+				retval = 5;
+				goto theend;
+			    }
+			    else
+			    {
+				// new rhs for existing entry
+				mp->m_mode &= ~mode;	// remove mode bits
+				if (mp->m_mode == 0 && !did_it) // reuse entry
+				{
+				    char_u *newstr = vim_strsave(rhs);
+
+				    if (newstr == NULL)
+				    {
+					retval = 4;		// no mem
+					goto theend;
+				    }
+				    if (mp->m_alt != NULL)
+					mp->m_alt = mp->m_alt->m_alt = NULL;
+				    vim_free(mp->m_str);
+				    mp->m_str = newstr;
+				    vim_free(mp->m_orig_str);
+				    mp->m_orig_str = vim_strsave(orig_rhs);
+				    mp->m_noremap = noremap;
+				    mp->m_nowait = nowait;
+				    mp->m_silent = silent;
+				    mp->m_mode = mode;
+				    mp->m_simplified = keyround1_simplified;
 #ifdef FEAT_EVAL
-				mp->m_expr = expr;
-				mp->m_script_ctx = current_sctx;
-				mp->m_script_ctx.sc_lnum += sourcing_lnum;
+				    mp->m_expr = expr;
+				    mp->m_script_ctx = current_sctx;
+				    if (cmdmod.cmod_flags & CMOD_LEGACY)
+					mp->m_script_ctx.sc_version = 1;
+				    mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
-				did_it = TRUE;
+				    mp_result[keyround - 1] = mp;
+				    did_it = TRUE;
+				}
+			    }
+			    if (mp->m_mode == 0)  // entry can be deleted
+			    {
+				map_free(mpp);
+				continue;	// continue with *mpp
+			    }
+
+			    // May need to put this entry into another hash
+			    // list.
+			    int new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
+			    if (!abbrev && new_hash != hash)
+			    {
+				*mpp = mp->m_next;
+				mp->m_next = map_table[new_hash];
+				map_table[new_hash] = mp;
+
+				continue;	// continue with *mpp
 			    }
 			}
-			if (mp->m_mode == 0)	// entry can be deleted
-			{
-			    map_free(mpp);
-			    continue;		// continue with *mpp
-			}
-
-			// May need to put this entry into another hash list.
-			new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
-			if (!abbrev && new_hash != hash)
-			{
-			    *mpp = mp->m_next;
-			    mp->m_next = map_table[new_hash];
-			    map_table[new_hash] = mp;
-
-			    continue;		// continue with *mpp
-			}
 		    }
+		    mpp = &(mp->m_next);
 		}
-		mpp = &(mp->m_next);
 	    }
 	}
-    }
 
-    if (maptype == 1)			    // delete entry
-    {
-	if (!did_it)
-	    retval = 2;			    // no match
-	else if (*keys == Ctrl_C)
+	if (maptype == MAPTYPE_UNMAP)
 	{
-	    // If CTRL-C has been unmapped, reuse it for Interrupting.
-	    if (map_table == curbuf->b_maphash)
-		curbuf->b_mapped_ctrl_c &= ~mode;
-	    else
-		mapped_ctrl_c &= ~mode;
+	    // delete entry
+	    if (!did_it)
+	    {
+		if (!keyround1_simplified)
+		    retval = 2;		// no match
+	    }
+	    else if (*keys == Ctrl_C)
+	    {
+		// If CTRL-C has been unmapped, reuse it for Interrupting.
+		if (map_table == curbuf->b_maphash)
+		    curbuf->b_mapped_ctrl_c &= ~mode;
+		else
+		    mapped_ctrl_c &= ~mode;
+	    }
+	    continue;
 	}
-	goto theend;
-    }
 
-    if (!haskey || !hasarg)		    // print entries
-    {
-	if (!did_it && !did_local)
+	if (!haskey || !hasarg)
 	{
-	    if (abbrev)
-		msg(_("No abbreviation found"));
-	    else
-		msg(_("No mapping found"));
+	    // print entries
+	    if (!did_it && !did_local)
+	    {
+		if (abbrev)
+		    msg(_("No abbreviation found"));
+		else
+		    msg(_("No mapping found"));
+	    }
+	    goto theend;    // listing finished
 	}
-	goto theend;			    // listing finished
-    }
 
-    if (did_it)			// have added the new entry already
-	goto theend;
+	if (did_it)
+	    continue;	// have added the new entry already
 
-    // Get here when adding a new entry to the maphash[] list or abbrlist.
-    mp = ALLOC_ONE(mapblock_T);
-    if (mp == NULL)
-    {
-	retval = 4;	    // no mem
-	goto theend;
-    }
-
-    // If CTRL-C has been mapped, don't always use it for Interrupting.
-    if (*keys == Ctrl_C)
-    {
-	if (map_table == curbuf->b_maphash)
-	    curbuf->b_mapped_ctrl_c |= mode;
-	else
-	    mapped_ctrl_c |= mode;
-    }
-
-    mp->m_keys = vim_strsave(keys);
-    mp->m_str = vim_strsave(rhs);
-    mp->m_orig_str = vim_strsave(orig_rhs);
-    if (mp->m_keys == NULL || mp->m_str == NULL)
-    {
-	vim_free(mp->m_keys);
-	vim_free(mp->m_str);
-	vim_free(mp->m_orig_str);
-	vim_free(mp);
-	retval = 4;	// no mem
-	goto theend;
-    }
-    mp->m_keylen = (int)STRLEN(mp->m_keys);
-    mp->m_noremap = noremap;
-    mp->m_nowait = nowait;
-    mp->m_silent = silent;
-    mp->m_mode = mode;
+	// Get here when adding a new entry to the maphash[] list or abbrlist.
+	mp_result[keyround - 1] = map_add(map_table, abbr_table, keys,
+		    rhs, orig_rhs, noremap, nowait, silent, mode, abbrev,
 #ifdef FEAT_EVAL
-    mp->m_expr = expr;
-    mp->m_script_ctx = current_sctx;
-    mp->m_script_ctx.sc_lnum += sourcing_lnum;
+		    expr, /* sid */ 0, /* scriptversion */ 0, /* lnum */ 0,
 #endif
-
-    // add the new entry in front of the abbrlist or maphash[] list
-    if (abbrev)
-    {
-	mp->m_next = *abbr_table;
-	*abbr_table = mp;
+		    keyround1_simplified);
+	if (mp_result[keyround - 1] == NULL)
+	{
+	    retval = 4;	    // no mem
+	    goto theend;
+	}
     }
-    else
+
+    if (mp_result[0] != NULL && mp_result[1] != NULL)
     {
-	n = MAP_HASH(mp->m_mode, mp->m_keys[0]);
-	mp->m_next = map_table[n];
-	map_table[n] = mp;
+	mp_result[0]->m_alt = mp_result[1];
+	mp_result[1]->m_alt = mp_result[0];
     }
 
 theend:
     vim_free(keys_buf);
+    vim_free(alt_keys_buf);
     vim_free(arg_buf);
     return retval;
 }
@@ -773,30 +986,31 @@ get_map_mode(char_u **cmdp, int forceit)
     p = *cmdp;
     modec = *p++;
     if (modec == 'i')
-	mode = INSERT;				// :imap
+	mode = MODE_INSERT;				// :imap
     else if (modec == 'l')
-	mode = LANGMAP;				// :lmap
+	mode = MODE_LANGMAP;				// :lmap
     else if (modec == 'c')
-	mode = CMDLINE;				// :cmap
+	mode = MODE_CMDLINE;				// :cmap
     else if (modec == 'n' && *p != 'o')		    // avoid :noremap
-	mode = NORMAL;				// :nmap
+	mode = MODE_NORMAL;				// :nmap
     else if (modec == 'v')
-	mode = VISUAL + SELECTMODE;		// :vmap
+	mode = MODE_VISUAL | MODE_SELECT;		// :vmap
     else if (modec == 'x')
-	mode = VISUAL;				// :xmap
+	mode = MODE_VISUAL;				// :xmap
     else if (modec == 's')
-	mode = SELECTMODE;			// :smap
+	mode = MODE_SELECT;			// :smap
     else if (modec == 'o')
-	mode = OP_PENDING;			// :omap
+	mode = MODE_OP_PENDING;			// :omap
     else if (modec == 't')
-	mode = TERMINAL;			// :tmap
+	mode = MODE_TERMINAL;			// :tmap
     else
     {
 	--p;
 	if (forceit)
-	    mode = INSERT + CMDLINE;		// :map !
+	    mode = MODE_INSERT | MODE_CMDLINE;		// :map !
 	else
-	    mode = VISUAL + SELECTMODE + NORMAL + OP_PENDING;// :map
+	    mode = MODE_VISUAL | MODE_SELECT | MODE_NORMAL | MODE_OP_PENDING;
+							// :map
     }
 
     *cmdp = p;
@@ -804,13 +1018,13 @@ get_map_mode(char_u **cmdp, int forceit)
 }
 
 /*
- * Clear all mappings or abbreviations.
- * 'abbr' should be FALSE for mappings, TRUE for abbreviations.
+ * Clear all mappings (":mapclear") or abbreviations (":abclear").
+ * "abbr" should be FALSE for mappings, TRUE for abbreviations.
  */
     static void
 map_clear(
     char_u	*cmdp,
-    char_u	*arg UNUSED,
+    char_u	*arg,
     int		forceit,
     int		abbr)
 {
@@ -820,19 +1034,34 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_invalid_argument));
 	return;
     }
 
     mode = get_map_mode(&cmdp, forceit);
-    map_clear_int(curbuf, mode, local, abbr);
+    map_clear_mode(curbuf, mode, local, abbr);
+}
+
+/*
+ * If "map_locked" is set then give an error and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+is_map_locked(void)
+{
+    if (map_locked > 0)
+    {
+	emsg(_(e_cannot_change_mappings_while_listing));
+	return TRUE;
+    }
+    return FALSE;
 }
 
 /*
  * Clear all mappings in "mode".
  */
     void
-map_clear_int(
+map_clear_mode(
     buf_T	*buf,		// buffer for local mappings
     int		mode,		// mode in which to delete
     int		local,		// TRUE for buffer-local mappings
@@ -841,6 +1070,9 @@ map_clear_int(
     mapblock_T	*mp, **mpp;
     int		hash;
     int		new_hash;
+
+    if (is_map_locked())
+	return;
 
     validate_maphash();
 
@@ -896,28 +1128,28 @@ map_clear_int(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
     int
 mode_str2flags(char_u *modechars)
 {
     int		mode = 0;
 
     if (vim_strchr(modechars, 'n') != NULL)
-	mode |= NORMAL;
+	mode |= MODE_NORMAL;
     if (vim_strchr(modechars, 'v') != NULL)
-	mode |= VISUAL + SELECTMODE;
+	mode |= MODE_VISUAL | MODE_SELECT;
     if (vim_strchr(modechars, 'x') != NULL)
-	mode |= VISUAL;
+	mode |= MODE_VISUAL;
     if (vim_strchr(modechars, 's') != NULL)
-	mode |= SELECTMODE;
+	mode |= MODE_SELECT;
     if (vim_strchr(modechars, 'o') != NULL)
-	mode |= OP_PENDING;
+	mode |= MODE_OP_PENDING;
     if (vim_strchr(modechars, 'i') != NULL)
-	mode |= INSERT;
+	mode |= MODE_INSERT;
     if (vim_strchr(modechars, 'l') != NULL)
-	mode |= LANGMAP;
+	mode |= MODE_LANGMAP;
     if (vim_strchr(modechars, 'c') != NULL)
-	mode |= CMDLINE;
+	mode |= MODE_CMDLINE;
 
     return mode;
 }
@@ -934,7 +1166,7 @@ map_to_exists(char_u *str, char_u *modechars, int abbr)
     char_u	*buf;
     int		retval;
 
-    rhs = replace_termcodes(str, &buf, FALSE, TRUE, FALSE);
+    rhs = replace_termcodes(str, &buf, 0, REPTERM_DO_LT, NULL);
 
     retval = map_to_exists_mode(rhs, mode_str2flags(modechars), abbr);
     vim_free(buf);
@@ -997,6 +1229,81 @@ static int	expand_isabbrev = 0;
 static int	expand_buffer = FALSE;
 
 /*
+ * Translate an internal mapping/abbreviation representation into the
+ * corresponding external one recognized by :map/:abbrev commands.
+ * Respects the current B/k/< settings of 'cpoption'.
+ *
+ * This function is called when expanding mappings/abbreviations on the
+ * command-line.
+ *
+ * It uses a growarray to build the translation string since the latter can be
+ * wider than the original description. The caller has to free the string
+ * afterwards.
+ *
+ * Returns NULL when there is a problem.
+ */
+    static char_u *
+translate_mapping(char_u *str)
+{
+    garray_T	ga;
+    int		c;
+    int		modifiers;
+    int		cpo_bslash;
+    int		cpo_special;
+
+    ga_init(&ga);
+    ga.ga_itemsize = 1;
+    ga.ga_growsize = 40;
+
+    cpo_bslash = (vim_strchr(p_cpo, CPO_BSLASH) != NULL);
+    cpo_special = (vim_strchr(p_cpo, CPO_SPECI) != NULL);
+
+    for (; *str; ++str)
+    {
+	c = *str;
+	if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+	{
+	    modifiers = 0;
+	    if (str[1] == KS_MODIFIER)
+	    {
+		str++;
+		modifiers = *++str;
+		c = *++str;
+	    }
+	    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+	    {
+		if (cpo_special)
+		{
+		    ga_clear(&ga);
+		    return NULL;
+		}
+		c = TO_SPECIAL(str[1], str[2]);
+		if (c == K_ZERO)	// display <Nul> as ^@
+		    c = NUL;
+		str += 2;
+	    }
+	    if (IS_SPECIAL(c) || modifiers)	// special key
+	    {
+		if (cpo_special)
+		{
+		    ga_clear(&ga);
+		    return NULL;
+		}
+		ga_concat(&ga, get_special_key_name(c, modifiers));
+		continue; // for (str)
+	    }
+	}
+	if (c == ' ' || c == '\t' || c == Ctrl_J || c == Ctrl_V
+	    || (c == '<' && !cpo_special) || (c == '\\' && !cpo_bslash))
+	    ga_append(&ga, cpo_bslash ? Ctrl_V : '\\');
+	if (c)
+	    ga_append(&ga, c);
+    }
+    ga_append(&ga, NUL);
+    return (char_u *)(ga.ga_data);
+}
+
+/*
  * Work out what to complete when doing command line completion of mapping
  * or abbreviation names.
  */
@@ -1018,9 +1325,10 @@ set_context_in_map_cmd(
 	    expand_mapmodes = get_map_mode(&cmd, forceit || isabbrev);
 	else
 	{
-	    expand_mapmodes = INSERT + CMDLINE;
+	    expand_mapmodes = MODE_INSERT | MODE_CMDLINE;
 	    if (!isabbrev)
-		expand_mapmodes += VISUAL + SELECTMODE + NORMAL + OP_PENDING;
+		expand_mapmodes += MODE_VISUAL | MODE_SELECT | MODE_NORMAL
+							     | MODE_OP_PENDING;
 	}
 	expand_isabbrev = isabbrev;
 	xp->xp_context = EXPAND_MAPPINGS;
@@ -1080,101 +1388,154 @@ set_context_in_map_cmd(
  */
     int
 ExpandMappings(
+    char_u	*pat,
     regmatch_T	*regmatch,
-    int		*num_file,
-    char_u	***file)
+    int		*numMatches,
+    char_u	***matches)
 {
     mapblock_T	*mp;
+    garray_T	ga;
     int		hash;
     int		count;
-    int		round;
     char_u	*p;
     int		i;
+    int		fuzzy;
+    int		match;
+    int		score = 0;
+    fuzmatch_str_T  *fuzmatch;
+
+    fuzzy = cmdline_fuzzy_complete(pat);
 
     validate_maphash();
 
-    *num_file = 0;		    // return values in case of FAIL
-    *file = NULL;
+    *numMatches = 0;		    // return values in case of FAIL
+    *matches = NULL;
 
-    // round == 1: Count the matches.
-    // round == 2: Build the array to keep the matches.
-    for (round = 1; round <= 2; ++round)
+    if (!fuzzy)
+	ga_init2(&ga, sizeof(char *), 3);
+    else
+	ga_init2(&ga, sizeof(fuzmatch_str_T), 3);
+
+    // First search in map modifier arguments
+    for (i = 0; i < 7; ++i)
     {
-	count = 0;
-
-	for (i = 0; i < 7; ++i)
-	{
-	    if (i == 0)
-		p = (char_u *)"<silent>";
-	    else if (i == 1)
-		p = (char_u *)"<unique>";
+	if (i == 0)
+	    p = (char_u *)"<silent>";
+	else if (i == 1)
+	    p = (char_u *)"<unique>";
 #ifdef FEAT_EVAL
-	    else if (i == 2)
-		p = (char_u *)"<script>";
-	    else if (i == 3)
-		p = (char_u *)"<expr>";
+	else if (i == 2)
+	    p = (char_u *)"<script>";
+	else if (i == 3)
+	    p = (char_u *)"<expr>";
 #endif
-	    else if (i == 4 && !expand_buffer)
-		p = (char_u *)"<buffer>";
-	    else if (i == 5)
-		p = (char_u *)"<nowait>";
-	    else if (i == 6)
-		p = (char_u *)"<special>";
-	    else
+	else if (i == 4 && !expand_buffer)
+	    p = (char_u *)"<buffer>";
+	else if (i == 5)
+	    p = (char_u *)"<nowait>";
+	else if (i == 6)
+	    p = (char_u *)"<special>";
+	else
+	    continue;
+
+	if (!fuzzy)
+	    match = vim_regexec(regmatch, p, (colnr_T)0);
+	else
+	{
+	    score = fuzzy_match_str(p, pat);
+	    match = (score != FUZZY_SCORE_NONE);
+	}
+
+	if (!match)
+	    continue;
+
+	if (ga_grow(&ga, 1) == FAIL)
+	    break;
+
+	if (fuzzy)
+	{
+	    fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[ga.ga_len];
+	    fuzmatch->idx = ga.ga_len;
+	    fuzmatch->str = vim_strsave(p);
+	    fuzmatch->score = score;
+	}
+	else
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strsave(p);
+	++ga.ga_len;
+    }
+
+    for (hash = 0; hash < 256; ++hash)
+    {
+	if (expand_isabbrev)
+	{
+	    if (hash > 0)	// only one abbrev list
+		break; // for (hash)
+	    mp = first_abbr;
+	}
+	else if (expand_buffer)
+	    mp = curbuf->b_maphash[hash];
+	else
+	    mp = maphash[hash];
+	for (; mp; mp = mp->m_next)
+	{
+	    if (mp->m_simplified || !(mp->m_mode & expand_mapmodes))
 		continue;
 
-	    if (vim_regexec(regmatch, p, (colnr_T)0))
-	    {
-		if (round == 1)
-		    ++count;
-		else
-		    (*file)[count++] = vim_strsave(p);
-	    }
-	}
+	    p = translate_mapping(mp->m_keys);
+	    if (p == NULL)
+		continue;
 
-	for (hash = 0; hash < 256; ++hash)
-	{
-	    if (expand_isabbrev)
-	    {
-		if (hash > 0)	// only one abbrev list
-		    break; // for (hash)
-		mp = first_abbr;
-	    }
-	    else if (expand_buffer)
-		mp = curbuf->b_maphash[hash];
+	    if (!fuzzy)
+		match = vim_regexec(regmatch, p, (colnr_T)0);
 	    else
-		mp = maphash[hash];
-	    for (; mp; mp = mp->m_next)
 	    {
-		if (mp->m_mode & expand_mapmodes)
-		{
-		    p = translate_mapping(mp->m_keys);
-		    if (p != NULL && vim_regexec(regmatch, p, (colnr_T)0))
-		    {
-			if (round == 1)
-			    ++count;
-			else
-			{
-			    (*file)[count++] = p;
-			    p = NULL;
-			}
-		    }
-		    vim_free(p);
-		}
-	    } // for (mp)
-	} // for (hash)
+		score = fuzzy_match_str(p, pat);
+		match = (score != FUZZY_SCORE_NONE);
+	    }
 
-	if (count == 0)			// no match found
-	    break; // for (round)
+	    if (!match)
+	    {
+		vim_free(p);
+		continue;
+	    }
 
-	if (round == 1)
-	{
-	    *file = ALLOC_MULT(char_u *, count);
-	    if (*file == NULL)
-		return FAIL;
-	}
-    } // for (round)
+	    if (ga_grow(&ga, 1) == FAIL)
+	    {
+		vim_free(p);
+		break;
+	    }
 
+	    if (fuzzy)
+	    {
+		fuzmatch = &((fuzmatch_str_T *)ga.ga_data)[ga.ga_len];
+		fuzmatch->idx = ga.ga_len;
+		fuzmatch->str = p;
+		fuzmatch->score = score;
+	    }
+	    else
+		((char_u **)ga.ga_data)[ga.ga_len] = p;
+
+	    ++ga.ga_len;
+	} // for (mp)
+    } // for (hash)
+
+    if (ga.ga_len == 0)
+	return FAIL;
+
+    if (!fuzzy)
+    {
+	*matches = ga.ga_data;
+	*numMatches = ga.ga_len;
+    }
+    else
+    {
+	if (fuzzymatches_to_strmatches(ga.ga_data, matches, ga.ga_len,
+							FALSE) == FAIL)
+	    return FAIL;
+	*numMatches = ga.ga_len;
+    }
+
+    count = *numMatches;
     if (count > 1)
     {
 	char_u	**ptr1;
@@ -1182,16 +1543,18 @@ ExpandMappings(
 	char_u	**ptr3;
 
 	// Sort the matches
-	sort_strings(*file, count);
+	// Fuzzy matching already sorts the matches
+	if (!fuzzy)
+	    sort_strings(*matches, count);
 
 	// Remove multiple entries
-	ptr1 = *file;
+	ptr1 = *matches;
 	ptr2 = ptr1 + 1;
 	ptr3 = ptr1 + count;
 
 	while (ptr2 < ptr3)
 	{
-	    if (STRCMP(*ptr1, *ptr2))
+	    if (STRCMP(*ptr1, *ptr2) != 0)
 		*++ptr1 = *ptr2++;
 	    else
 	    {
@@ -1201,7 +1564,7 @@ ExpandMappings(
 	}
     }
 
-    *num_file = count;
+    *numMatches = count;
     return (count == 0 ? FAIL : OK);
 }
 
@@ -1324,15 +1687,14 @@ check_abbr(
 		if (qe != NULL)
 		{
 		    q = qe;
-		    vim_unescape_csi(q);
-		    qlen = (int)STRLEN(q);
+		    qlen = (int)vim_unescape_csi(q);
 		}
 	    }
 
 	    // find entries with right mode and keys
 	    match =    (mp->m_mode & State)
 		    && qlen == len
-		    && !STRNCMP(q, ptr, (size_t)len);
+		    && STRNCMP(q, ptr, (size_t)len) == 0;
 	    if (q != mp->m_keys)
 		vim_free(q);
 	    if (match)
@@ -1340,6 +1702,12 @@ check_abbr(
 	}
 	if (mp != NULL)
 	{
+	    int	noremap;
+	    int silent;
+#ifdef FEAT_EVAL
+	    int expr;
+#endif
+
 	    // Found a match:
 	    // Insert the rest of the abbreviation in typebuf.tb_buf[].
 	    // This goes from end to start.
@@ -1367,10 +1735,23 @@ check_abbr(
 			tb[j++] = Ctrl_V;	// special char needs CTRL-V
 		    if (has_mbyte)
 		    {
+			int	newlen;
+			char_u	*escaped;
+
 			// if ABBR_OFF has been added, remove it here
 			if (c >= ABBR_OFF)
 			    c -= ABBR_OFF;
-			j += (*mb_char2bytes)(c, tb + j);
+			newlen = (*mb_char2bytes)(c, tb + j);
+			tb[j + newlen] = NUL;
+			// Need to escape K_SPECIAL.
+			escaped = vim_strsave_escape_csi(tb + j);
+			if (escaped != NULL)
+			{
+			    newlen = (int)STRLEN(escaped);
+			    mch_memmove(tb + j, escaped, newlen);
+			    j += newlen;
+			    vim_free(escaped);
+			}
 		    }
 		    else
 			tb[j++] = c;
@@ -1379,20 +1760,26 @@ check_abbr(
 					// insert the last typed char
 		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
 	    }
+
+	    // copy values here, calling eval_map_expr() may make "mp" invalid!
+	    noremap = mp->m_noremap;
+	    silent = mp->m_silent;
 #ifdef FEAT_EVAL
-	    if (mp->m_expr)
-		s = eval_map_expr(mp->m_str, c);
+	    expr = mp->m_expr;
+
+	    if (expr)
+		s = eval_map_expr(mp, c);
 	    else
 #endif
 		s = mp->m_str;
 	    if (s != NULL)
 	    {
 					// insert the to string
-		(void)ins_typebuf(s, mp->m_noremap, 0, TRUE, mp->m_silent);
+		(void)ins_typebuf(s, noremap, 0, TRUE, silent);
 					// no abbrev. for these chars
 		typebuf.tb_no_abbr_cnt += (int)STRLEN(s) + j + 1;
 #ifdef FEAT_EVAL
-		if (mp->m_expr)
+		if (expr)
 		    vim_free(s);
 #endif
 	    }
@@ -1402,7 +1789,7 @@ check_abbr(
 	    if (has_mbyte)
 		len = clen;	// Delete characters instead of bytes
 	    while (len-- > 0)		// delete the from string
-		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
+		(void)ins_typebuf(tb, 1, 0, TRUE, silent);
 	    return TRUE;
 	}
     }
@@ -1413,10 +1800,11 @@ check_abbr(
 /*
  * Evaluate the RHS of a mapping or abbreviations and take care of escaping
  * special characters.
+ * Careful: after this "mp" will be invalid if the mapping was deleted.
  */
     char_u *
 eval_map_expr(
-    char_u	*str,
+    mapblock_T	*mp,
     int		c)	    // NUL or typed character for abbreviation
 {
     char_u	*res;
@@ -1425,10 +1813,12 @@ eval_map_expr(
     pos_T	save_cursor;
     int		save_msg_col;
     int		save_msg_row;
+    scid_T	save_sctx_sid = current_sctx.sc_sid;
+    int		save_sctx_version = current_sctx.sc_version;
 
     // Remove escaping of CSI, because "str" is in a format to be used as
     // typeahead.
-    expr = vim_strsave(str);
+    expr = vim_strsave(mp->m_str);
     if (expr == NULL)
 	return NULL;
     vim_unescape_csi(expr);
@@ -1441,12 +1831,21 @@ eval_map_expr(
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
-    p = eval_to_string(expr, NULL, FALSE);
+
+    current_sctx.sc_version = mp->m_script_ctx.sc_version;
+    if (mp->m_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
+	current_sctx.sc_sid = mp->m_script_ctx.sc_sid;
+
+    // Note: the evaluation may make "mp" invalid.
+    p = eval_to_string(expr, FALSE, FALSE);
+
     --textlock;
     --ex_normal_lock;
     curwin->w_cursor = save_cursor;
     msg_col = save_msg_col;
     msg_row = save_msg_row;
+    current_sctx.sc_sid = save_sctx_sid;
+    current_sctx.sc_version = save_sctx_version;
 
     vim_free(expr);
 
@@ -1466,8 +1865,7 @@ eval_map_expr(
  * Returns NULL when out of memory.
  */
     char_u *
-vim_strsave_escape_csi(
-    char_u *p)
+vim_strsave_escape_csi(char_u *p)
 {
     char_u	*res;
     char_u	*s, *d;
@@ -1476,36 +1874,42 @@ vim_strsave_escape_csi(
     // illegal utf-8 byte:
     // 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER
     res = alloc(STRLEN(p) * 4 + 1);
-    if (res != NULL)
+    if (res == NULL)
+	return NULL;
+
+    d = res;
+    for (s = p; *s != NUL; )
     {
-	d = res;
-	for (s = p; *s != NUL; )
+	if ((s[0] == K_SPECIAL
+#ifdef FEAT_GUI
+		    || (gui.in_use && s[0] == CSI)
+#endif
+	    ) && s[1] != NUL && s[2] != NUL)
 	{
-	    if (s[0] == K_SPECIAL && s[1] != NUL && s[2] != NUL)
-	    {
-		// Copy special key unmodified.
-		*d++ = *s++;
-		*d++ = *s++;
-		*d++ = *s++;
-	    }
-	    else
-	    {
-		// Add character, possibly multi-byte to destination, escaping
-		// CSI and K_SPECIAL. Be careful, it can be an illegal byte!
-		d = add_char2buf(PTR2CHAR(s), d);
-		s += MB_CPTR2LEN(s);
-	    }
+	    // Copy special key unmodified.
+	    *d++ = *s++;
+	    *d++ = *s++;
+	    *d++ = *s++;
 	}
-	*d = NUL;
+	else
+	{
+	    // Add character, possibly multi-byte to destination, escaping
+	    // CSI and K_SPECIAL. Be careful, it can be an illegal byte!
+	    d = add_char2buf(PTR2CHAR(s), d);
+	    s += MB_CPTR2LEN(s);
+	}
     }
+    *d = NUL;
+
     return res;
 }
 
 /*
  * Remove escaping from CSI and K_SPECIAL characters.  Reverse of
  * vim_strsave_escape_csi().  Works in-place.
+ * Returns the number of bytes in the unescaped string.
  */
-    void
+    size_t
 vim_unescape_csi(char_u *p)
 {
     char_u	*s = p, *d = p;
@@ -1527,6 +1931,7 @@ vim_unescape_csi(char_u *p)
 	    *d++ = *s++;
     }
     *d = NUL;
+    return (size_t)(d - p);
 }
 
 /*
@@ -1573,6 +1978,10 @@ makemap(
 
 	    for ( ; mp; mp = mp->m_next)
 	    {
+		// simplified map blocks are not created explicitly
+		if (mp->m_simplified)
+		    continue;
+
 		// skip script-local mappings
 		if (mp->m_noremap == REMAP_SCRIPT)
 		    continue;
@@ -1598,79 +2007,80 @@ makemap(
 		    cmd = "map";
 		switch (mp->m_mode)
 		{
-		    case NORMAL + VISUAL + SELECTMODE + OP_PENDING:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_SELECT
+							     | MODE_OP_PENDING:
 			break;
-		    case NORMAL:
+		    case MODE_NORMAL:
 			c1 = 'n';
 			break;
-		    case VISUAL:
+		    case MODE_VISUAL:
 			c1 = 'x';
 			break;
-		    case SELECTMODE:
+		    case MODE_SELECT:
 			c1 = 's';
 			break;
-		    case OP_PENDING:
+		    case MODE_OP_PENDING:
 			c1 = 'o';
 			break;
-		    case NORMAL + VISUAL:
+		    case MODE_NORMAL | MODE_VISUAL:
 			c1 = 'n';
 			c2 = 'x';
 			break;
-		    case NORMAL + SELECTMODE:
+		    case MODE_NORMAL | MODE_SELECT:
 			c1 = 'n';
 			c2 = 's';
 			break;
-		    case NORMAL + OP_PENDING:
+		    case MODE_NORMAL | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 'o';
 			break;
-		    case VISUAL + SELECTMODE:
+		    case MODE_VISUAL | MODE_SELECT:
 			c1 = 'v';
 			break;
-		    case VISUAL + OP_PENDING:
+		    case MODE_VISUAL | MODE_OP_PENDING:
 			c1 = 'x';
 			c2 = 'o';
 			break;
-		    case SELECTMODE + OP_PENDING:
+		    case MODE_SELECT | MODE_OP_PENDING:
 			c1 = 's';
 			c2 = 'o';
 			break;
-		    case NORMAL + VISUAL + SELECTMODE:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_SELECT:
 			c1 = 'n';
 			c2 = 'v';
 			break;
-		    case NORMAL + VISUAL + OP_PENDING:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 'x';
 			c3 = 'o';
 			break;
-		    case NORMAL + SELECTMODE + OP_PENDING:
+		    case MODE_NORMAL | MODE_SELECT | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 's';
 			c3 = 'o';
 			break;
-		    case VISUAL + SELECTMODE + OP_PENDING:
+		    case MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING:
 			c1 = 'v';
 			c2 = 'o';
 			break;
-		    case CMDLINE + INSERT:
+		    case MODE_CMDLINE | MODE_INSERT:
 			if (!abbr)
 			    cmd = "map!";
 			break;
-		    case CMDLINE:
+		    case MODE_CMDLINE:
 			c1 = 'c';
 			break;
-		    case INSERT:
+		    case MODE_INSERT:
 			c1 = 'i';
 			break;
-		    case LANGMAP:
+		    case MODE_LANGMAP:
 			c1 = 'l';
 			break;
-		    case TERMINAL:
+		    case MODE_TERMINAL:
 			c1 = 't';
 			break;
 		    default:
-			iemsg(_("E228: makemap: Illegal mode"));
+			iemsg(e_makemap_illegal_mode);
 			return FAIL;
 		}
 		do	// do this twice if c2 is set, 3 times with c3
@@ -1688,13 +2098,19 @@ makemap(
 					did_cpo = TRUE;
 			if (did_cpo)
 			{
-			    if (fprintf(fd, "let s:cpo_save=&cpo") < 0
+			    if (fprintf(fd, "cpo_save = &cpo") < 0
 				    || put_eol(fd) < 0
 				    || fprintf(fd, "set cpo&vim") < 0
 				    || put_eol(fd) < 0)
 				return FAIL;
 			}
 		    }
+#ifdef FEAT_EVAL
+		    // If it is not vim9 use legacy
+		    if (mp->m_expr && mp->m_script_ctx.sc_version < SCRIPT_VERSION_VIM9
+			    && fputs("legacy ", fd) < 0)
+			return FAIL;
+#endif
 		    if (c1 && putc(c1, fd) < 0)
 			return FAIL;
 		    if (mp->m_noremap != REMAP_YES && fprintf(fd, "nore") < 0)
@@ -1729,9 +2145,7 @@ makemap(
 	}
 
     if (did_cpo)
-	if (fprintf(fd, "let &cpo=s:cpo_save") < 0
-		|| put_eol(fd) < 0
-		|| fprintf(fd, "unlet s:cpo_save") < 0
+	if (fprintf(fd, "&cpo = cpo_save") < 0
 		|| put_eol(fd) < 0)
 	    return FAIL;
     return OK;
@@ -1779,12 +2193,23 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	// when they are read back.
 	if (c == K_SPECIAL && what != 2)
 	{
-	    modifiers = 0x0;
+	    modifiers = 0;
 	    if (str[1] == KS_MODIFIER)
 	    {
 		modifiers = str[2];
 		str += 3;
-		c = *str;
+
+		// Modifiers can be applied too to multi-byte characters.
+		p = mb_unescape(&str);
+
+		if (p == NULL)
+		    c = *str;
+		else
+		{
+		    // retrieve codepoint (character number) from unescaped string
+		    c = (*mb_ptr2char)(p);
+		    --str;
+		}
 	    }
 	    if (c == K_SPECIAL)
 	    {
@@ -1805,7 +2230,7 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	{
 	    if (what == 2)
 	    {
-		if (fprintf(fd, IF_EB("\\\026\n", "\\" CTRL_V_STR "\n")) < 0)
+		if (fprintf(fd, "\\\026\n") < 0)
 		    return FAIL;
 	    }
 	    else
@@ -1855,16 +2280,17 @@ check_map_keycodes(void)
     char_u	*p;
     int		i;
     char_u	buf[3];
-    char_u	*save_name;
     int		abbr;
     int		hash;
     buf_T	*bp;
+    ESTACK_CHECK_DECLARATION;
 
     validate_maphash();
-    save_name = sourcing_name;
-    sourcing_name = (char_u *)"mappings"; // avoids giving error messages
+    // avoids giving error messages
+    estack_push(ETYPE_INTERNAL, (char_u *)"mappings", 0);
+    ESTACK_CHECK_SETUP;
 
-    // This this once for each buffer, and then once for global
+    // Do this once for each buffer, and then once for global
     // mappings/abbreviations with bp == NULL
     for (bp = firstbuf; ; bp = bp->b_next)
     {
@@ -1919,10 +2345,11 @@ check_map_keycodes(void)
 	if (bp == NULL)
 	    break;
     }
-    sourcing_name = save_name;
+    ESTACK_CHECK_NOW;
+    estack_pop();
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Check the string "keys" against the lhs of all mappings.
  * Return pointer to rhs of mapping (mapblock->m_str).
@@ -1997,19 +2424,96 @@ check_map(
     return NULL;
 }
 
+/*
+ * "hasmapto()" function
+ */
     void
+f_hasmapto(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*name;
+    char_u	*mode;
+    char_u	buf[NUMBUFLEN];
+    int		abbr = FALSE;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
+    name = tv_get_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	mode = (char_u *)"nvo";
+    else
+    {
+	mode = tv_get_string_buf(&argvars[1], buf);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    abbr = (int)tv_get_bool(&argvars[2]);
+    }
+
+    if (map_to_exists(name, mode, abbr))
+	rettv->vval.v_number = TRUE;
+    else
+	rettv->vval.v_number = FALSE;
+}
+
+/*
+ * Fill in the empty dictionary with items as defined by maparg builtin.
+ */
+    static void
+mapblock2dict(
+	mapblock_T  *mp,
+	dict_T	    *dict,
+	char_u	    *lhsrawalt,	    // may be NULL
+	int	    buffer_local,   // false if not buffer local mapping
+	int	    abbr)	    // true if abbreviation
+{
+    char_u	    *lhs = str2special_save(mp->m_keys, TRUE, FALSE);
+    char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
+
+    dict_add_string(dict, "lhs", lhs);
+    vim_free(lhs);
+    dict_add_string(dict, "lhsraw", mp->m_keys);
+    if (lhsrawalt)
+	// Also add the value for the simplified entry.
+	dict_add_string(dict, "lhsrawalt", lhsrawalt);
+    dict_add_string(dict, "rhs", mp->m_orig_str);
+    dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
+    dict_add_number(dict, "script", mp->m_noremap == REMAP_SCRIPT
+		    ? 1L : 0L);
+    dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
+    dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
+    dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
+    dict_add_number(dict, "scriptversion",
+		    (long)mp->m_script_ctx.sc_version);
+    dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
+    dict_add_number(dict, "buffer", (long)buffer_local);
+    dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
+    dict_add_string(dict, "mode", mapmode);
+    dict_add_number(dict, "abbr", abbr ? 1L : 0L);
+    dict_add_number(dict, "mode_bits", mp->m_mode);
+
+    vim_free(mapmode);
+}
+
+    static void
 get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 {
     char_u	*keys;
+    char_u	*keys_simplified;
     char_u	*which;
     char_u	buf[NUMBUFLEN];
     char_u	*keys_buf = NULL;
+    char_u	*alt_keys_buf = NULL;
+    int		did_simplify = FALSE;
     char_u	*rhs;
     int		mode;
     int		abbr = FALSE;
     int		get_dict = FALSE;
-    mapblock_T	*mp;
+    mapblock_T	*mp = NULL;
     int		buffer_local;
+    int		flags = REPTERM_FROM_PART | REPTERM_DO_LT;
 
     // return empty string for failure
     rettv->v_type = VAR_STRING;
@@ -2024,9 +2528,9 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	which = tv_get_string_buf_chk(&argvars[1], buf);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    abbr = (int)tv_get_number(&argvars[2]);
+	    abbr = (int)tv_get_bool(&argvars[2]);
 	    if (argvars[3].v_type != VAR_UNKNOWN)
-		get_dict = (int)tv_get_number(&argvars[3]);
+		get_dict = (int)tv_get_bool(&argvars[3]);
 	}
     }
     else
@@ -2036,9 +2540,19 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 
     mode = get_map_mode(&which, 0);
 
-    keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, FALSE);
-    rhs = check_map(keys, mode, exact, FALSE, abbr, &mp, &buffer_local);
-    vim_free(keys_buf);
+    keys_simplified = replace_termcodes(keys, &keys_buf, 0, flags,
+								&did_simplify);
+    rhs = check_map(keys_simplified, mode, exact, FALSE, abbr,
+							   &mp, &buffer_local);
+    if (did_simplify)
+    {
+	// When the lhs is being simplified the not-simplified keys are
+	// preferred for printing, like in do_map().
+	(void)replace_termcodes(keys, &alt_keys_buf, 0,
+					flags | REPTERM_NO_SIMPLIFY, NULL);
+	rhs = check_map(alt_keys_buf, mode, exact, FALSE, abbr, &mp,
+								&buffer_local);
+    }
 
     if (!get_dict)
     {
@@ -2048,37 +2562,328 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	    if (*rhs == NUL)
 		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
 	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
+		rettv->vval.v_string = str2special_save(rhs, FALSE, FALSE);
 	}
 
     }
-    else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
+    else if (rettv_dict_alloc(rettv) == OK && rhs != NULL)
+	mapblock2dict(mp, rettv->vval.v_dict,
+			  did_simplify ? keys_simplified : NULL,
+			  buffer_local, abbr);
+
+    vim_free(keys_buf);
+    vim_free(alt_keys_buf);
+}
+
+/*
+ * "maplist()" function
+ */
+    void
+f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    dict_T	*d;
+    mapblock_T	*mp;
+    int		buffer_local;
+    char_u	*keys_buf;
+    int		did_simplify;
+    int		hash;
+    char_u	*lhs;
+    const int	flags = REPTERM_FROM_PART | REPTERM_DO_LT;
+    int		abbr = FALSE;
+
+    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+	return;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	abbr = tv_get_bool(&argvars[0]);
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    validate_maphash();
+
+    // Do it twice: once for global maps and once for local maps.
+    for (buffer_local = 0; buffer_local <= 1; ++buffer_local)
     {
-	// Return a dictionary.
-	char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
-	char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
-	dict_T	    *dict = rettv->vval.v_dict;
+	for (hash = 0; hash < 256; ++hash)
+	{
+	    if (abbr)
+	    {
+		if (hash > 0)		// there is only one abbr list
+		    break;
+		if (buffer_local)
+		    mp = curbuf->b_first_abbr;
+		else
+		    mp = first_abbr;
+	    }
+	    else if (buffer_local)
+		mp = curbuf->b_maphash[hash];
+	    else
+		mp = maphash[hash];
+	    for (; mp; mp = mp->m_next)
+	    {
+		if (mp->m_simplified)
+		    continue;
+		if ((d = dict_alloc()) == NULL)
+		    return;
+		if (list_append_dict(rettv->vval.v_list, d) == FAIL)
+		{
+		    dict_unref(d);
+		    return;
+		}
 
-	dict_add_string(dict, "lhs", lhs);
-	dict_add_string(dict, "rhs", mp->m_orig_str);
-	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
-	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
-	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
-	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
-	dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
-	dict_add_number(dict, "buffer", (long)buffer_local);
-	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
-	dict_add_string(dict, "mode", mapmode);
+		keys_buf = NULL;
+		did_simplify = FALSE;
 
-	vim_free(lhs);
-	vim_free(mapmode);
+		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
+		(void)replace_termcodes(lhs, &keys_buf, 0, flags,
+								&did_simplify);
+		vim_free(lhs);
+
+		mapblock2dict(mp, d,
+				 did_simplify ? keys_buf : NULL,
+				 buffer_local, abbr);
+		vim_free(keys_buf);
+	    }
+	}
     }
+}
+
+/*
+ * "maparg()" function
+ */
+    void
+f_maparg(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && (check_for_opt_bool_arg(argvars, 2) == FAIL
+			|| (argvars[2].v_type != VAR_UNKNOWN
+			    && check_for_opt_bool_arg(argvars, 3) == FAIL)))))
+		return;
+
+    get_maparg(argvars, rettv, TRUE);
+}
+
+/*
+ * "mapcheck()" function
+ */
+    void
+f_mapcheck(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 2) == FAIL)))
+	return;
+
+    get_maparg(argvars, rettv, FALSE);
+}
+
+/*
+ * Get the mapping mode from the mode string.
+ * It may contain multiple characters, eg "nox", or "!", or ' '
+ * Return 0 if there is an error.
+ */
+    static int
+get_map_mode_string(char_u *mode_string, int abbr)
+{
+    char_u	*p = mode_string;
+    int		mode = 0;
+    int		tmode;
+    int		modec;
+    const int	MASK_V = MODE_VISUAL | MODE_SELECT;
+    const int	MASK_MAP = MODE_VISUAL | MODE_SELECT | MODE_NORMAL
+							     | MODE_OP_PENDING;
+    const int	MASK_BANG = MODE_INSERT | MODE_CMDLINE;
+
+    if (*p == NUL)
+	p = (char_u *)" ";	// compatibility
+    while ((modec = *p++))
+    {
+	switch (modec)
+	{
+	    case 'i': tmode = MODE_INSERT;	break;
+	    case 'l': tmode = MODE_LANGMAP;	break;
+	    case 'c': tmode = MODE_CMDLINE;	break;
+	    case 'n': tmode = MODE_NORMAL;	break;
+	    case 'x': tmode = MODE_VISUAL;	break;
+	    case 's': tmode = MODE_SELECT;	break;
+	    case 'o': tmode = MODE_OP_PENDING;	break;
+	    case 't': tmode = MODE_TERMINAL;	break;
+	    case 'v': tmode = MASK_V;		break;
+	    case '!': tmode = MASK_BANG;	break;
+	    case ' ': tmode = MASK_MAP;		break;
+	    default:
+		      return 0; // error, unknown mode character
+	}
+	mode |= tmode;
+    }
+    if ((abbr && (mode & ~MASK_BANG) != 0)
+	|| (!abbr && (mode & (mode-1)) != 0 // more than one bit set
+	    && (
+		// false if multiple bits set in mode and mode is fully
+		// contained in one mask
+		!(((mode & MASK_BANG) != 0 && (mode & ~MASK_BANG) == 0)
+		    || ((mode & MASK_MAP) != 0 && (mode & ~MASK_MAP) == 0)))))
+	return 0;
+
+    return mode;
+}
+
+/*
+ * "mapset()" function
+ */
+    void
+f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u	*which;
+    int		mode;
+    char_u	buf[NUMBUFLEN];
+    int		is_abbr;
+    dict_T	*d;
+    char_u	*lhs;
+    char_u	*lhsraw;
+    char_u	*lhsrawalt;
+    char_u	*rhs;
+    char_u	*orig_rhs;
+    char_u	*arg_buf = NULL;
+    int		noremap;
+    int		expr;
+    int		silent;
+    int		buffer;
+    scid_T	sid;
+    int		scriptversion;
+    linenr_T	lnum;
+    mapblock_T	**map_table = maphash;
+    mapblock_T  **abbr_table = &first_abbr;
+    int		nowait;
+    char_u	*arg;
+    int		dict_only;
+    mapblock_T	*mp_result[2] = {NULL, NULL};
+
+    if (check_secure())
+	return;
+
+    // If first arg is a dict, then that's the only arg permitted.
+    dict_only = argvars[0].v_type == VAR_DICT;
+    if (in_vim9script()
+	    && (check_for_string_or_dict_arg(argvars, 0) == FAIL
+		|| (dict_only && check_for_unknown_arg(argvars, 1) == FAIL)
+		|| (!dict_only
+		    && (check_for_string_arg(argvars, 0) == FAIL
+			|| check_for_bool_arg(argvars, 1) == FAIL
+			|| check_for_dict_arg(argvars, 2) == FAIL))))
+	return;
+
+    if (dict_only)
+    {
+	d = argvars[0].vval.v_dict;
+	which = dict_get_string(d, "mode", FALSE);
+	is_abbr = dict_get_bool(d, "abbr", -1);
+	if (which == NULL || is_abbr < 0)
+	{
+	    emsg(_(e_entries_missing_in_mapset_dict_argument));
+	    return;
+	}
+    }
+    else
+    {
+	which = tv_get_string_buf_chk(&argvars[0], buf);
+	if (which == NULL)
+	    return;
+	is_abbr = (int)tv_get_bool(&argvars[1]);
+
+	if (check_for_dict_arg(argvars, 2) == FAIL)
+	    return;
+	d = argvars[2].vval.v_dict;
+    }
+    mode = get_map_mode_string(which, is_abbr);
+    if (mode == 0)
+    {
+	semsg(_(e_illegal_map_mode_string_str), which);
+	return;
+    }
+
+
+    // Get the values in the same order as above in get_maparg().
+    lhs = dict_get_string(d, "lhs", FALSE);
+    lhsraw = dict_get_string(d, "lhsraw", FALSE);
+    lhsrawalt = dict_get_string(d, "lhsrawalt", FALSE);
+    rhs = dict_get_string(d, "rhs", FALSE);
+    if (lhs == NULL || lhsraw == NULL || rhs == NULL)
+    {
+	emsg(_(e_entries_missing_in_mapset_dict_argument));
+	return;
+    }
+    orig_rhs = rhs;
+
+    noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
+    if (dict_get_number(d, "script") != 0)
+	noremap = REMAP_SCRIPT;
+    expr = dict_get_number(d, "expr") != 0;
+    silent = dict_get_number(d, "silent") != 0;
+    sid = dict_get_number(d, "sid");
+    scriptversion = dict_get_number(d, "scriptversion");
+    lnum = dict_get_number(d, "lnum");
+    buffer = dict_get_number(d, "buffer");
+    nowait = dict_get_number(d, "nowait") != 0;
+    // mode from the dict is not used
+
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf, sid,
+					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
+
+    if (buffer)
+    {
+	map_table = curbuf->b_maphash;
+	abbr_table = &curbuf->b_first_abbr;
+    }
+
+    // Delete any existing mapping for this lhs and mode.
+    if (buffer)
+    {
+	arg = alloc(STRLEN(lhs) + STRLEN("<buffer>") + 1);
+	if (arg == NULL)
+	    return;
+	STRCPY(arg, "<buffer>");
+	STRCPY(arg + 8, lhs);
+    }
+    else
+    {
+	arg = vim_strsave(lhs);
+	if (arg == NULL)
+	    return;
+    }
+    do_map(MAPTYPE_UNMAP_LHS, arg, mode, is_abbr);
+    vim_free(arg);
+
+    mp_result[0] = map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+			    scriptversion, lnum, 0);
+    if (lhsrawalt != NULL)
+	mp_result[1] = map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs,
+			    noremap, nowait, silent, mode, is_abbr, expr, sid,
+			    scriptversion, lnum, 1);
+
+    if (mp_result[0] != NULL && mp_result[1] != NULL)
+    {
+	mp_result[0]->m_alt = mp_result[1];
+	mp_result[1]->m_alt = mp_result[0];
+    }
+
+    vim_free(arg_buf);
 }
 #endif
 
+
 #if defined(MSWIN) || defined(MACOS_X)
 
-# define VIS_SEL	(VISUAL+SELECTMODE)	// abbreviation
+# define VIS_SEL	(MODE_VISUAL | MODE_SELECT)	// abbreviation
 
 /*
  * Default mappings for some often used keys.
@@ -2094,9 +2899,9 @@ struct initmap
 static struct initmap initmappings[] =
 {
 	// paste, copy and cut
-	{(char_u *)"<S-Insert> \"*P", NORMAL},
+	{(char_u *)"<S-Insert> \"*P", MODE_NORMAL},
 	{(char_u *)"<S-Insert> \"-d\"*P", VIS_SEL},
-	{(char_u *)"<S-Insert> <C-R><C-O>*", INSERT+CMDLINE},
+	{(char_u *)"<S-Insert> <C-R><C-O>*", MODE_INSERT | MODE_CMDLINE},
 	{(char_u *)"<C-Insert> \"*y", VIS_SEL},
 	{(char_u *)"<S-Del> \"*d", VIS_SEL},
 	{(char_u *)"<C-Del> \"*d", VIS_SEL},
@@ -2109,24 +2914,24 @@ static struct initmap initmappings[] =
 // Use the Windows (CUA) keybindings. (Console)
 static struct initmap cinitmappings[] =
 {
-	{(char_u *)"\316w <C-Home>", NORMAL+VIS_SEL},
-	{(char_u *)"\316w <C-Home>", INSERT+CMDLINE},
-	{(char_u *)"\316u <C-End>", NORMAL+VIS_SEL},
-	{(char_u *)"\316u <C-End>", INSERT+CMDLINE},
+	{(char_u *)"\316w <C-Home>", MODE_NORMAL | VIS_SEL},
+	{(char_u *)"\316w <C-Home>", MODE_INSERT | MODE_CMDLINE},
+	{(char_u *)"\316u <C-End>", MODE_NORMAL | VIS_SEL},
+	{(char_u *)"\316u <C-End>", MODE_INSERT | MODE_CMDLINE},
 
 	// paste, copy and cut
 #  ifdef FEAT_CLIPBOARD
-	{(char_u *)"\316\324 \"*P", NORMAL},	    // SHIFT-Insert is "*P
+	{(char_u *)"\316\324 \"*P", MODE_NORMAL},   // SHIFT-Insert is "*P
 	{(char_u *)"\316\324 \"-d\"*P", VIS_SEL},   // SHIFT-Insert is "-d"*P
-	{(char_u *)"\316\324 \022\017*", INSERT},  // SHIFT-Insert is ^R^O*
+	{(char_u *)"\316\324 \022\017*", MODE_INSERT},  // SHIFT-Insert is ^R^O*
 	{(char_u *)"\316\325 \"*y", VIS_SEL},	    // CTRL-Insert is "*y
 	{(char_u *)"\316\327 \"*d", VIS_SEL},	    // SHIFT-Del is "*d
 	{(char_u *)"\316\330 \"*d", VIS_SEL},	    // CTRL-Del is "*d
 	{(char_u *)"\030 \"*d", VIS_SEL},	    // CTRL-X is "*d
 #  else
-	{(char_u *)"\316\324 P", NORMAL},	    // SHIFT-Insert is P
+	{(char_u *)"\316\324 P", MODE_NORMAL},	    // SHIFT-Insert is P
 	{(char_u *)"\316\324 \"-dP", VIS_SEL},	    // SHIFT-Insert is "-dP
-	{(char_u *)"\316\324 \022\017\"", INSERT}, // SHIFT-Insert is ^R^O"
+	{(char_u *)"\316\324 \022\017\"", MODE_INSERT}, // SHIFT-Insert is ^R^O"
 	{(char_u *)"\316\325 y", VIS_SEL},	    // CTRL-Insert is y
 	{(char_u *)"\316\327 d", VIS_SEL},	    // SHIFT-Del is d
 	{(char_u *)"\316\330 d", VIS_SEL},	    // CTRL-Del is d
@@ -2139,9 +2944,9 @@ static struct initmap initmappings[] =
 {
 	// Use the Standard MacOS binding.
 	// paste, copy and cut
-	{(char_u *)"<D-v> \"*P", NORMAL},
+	{(char_u *)"<D-v> \"*P", MODE_NORMAL},
 	{(char_u *)"<D-v> \"-d\"*P", VIS_SEL},
-	{(char_u *)"<D-v> <C-R>*", INSERT+CMDLINE},
+	{(char_u *)"<D-v> <C-R>*", MODE_INSERT | MODE_CMDLINE},
 	{(char_u *)"<D-c> \"*y", VIS_SEL},
 	{(char_u *)"<D-x> \"*d", VIS_SEL},
 	{(char_u *)"<Backspace> \"-d", VIS_SEL},
@@ -2165,42 +2970,39 @@ init_mappings(void)
     if (!gui.starting)
 #  endif
     {
-	for (i = 0;
-		i < (int)(sizeof(cinitmappings) / sizeof(struct initmap)); ++i)
-	    add_map(cinitmappings[i].arg, cinitmappings[i].mode);
+	for (i = 0; i < (int)ARRAY_LENGTH(cinitmappings); ++i)
+	    add_map(cinitmappings[i].arg, cinitmappings[i].mode, FALSE);
     }
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(MACOS_X)
-    for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
-	add_map(initmappings[i].arg, initmappings[i].mode);
+    for (i = 0; i < (int)ARRAY_LENGTH(initmappings); ++i)
+	add_map(initmappings[i].arg, initmappings[i].mode, FALSE);
 # endif
 #endif
 }
 
-#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
-							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
+ * When "nore" is TRUE use MAPTYPE_NOREMAP.
  * Need to put string in allocated memory, because do_map() will modify it.
  */
     void
-add_map(char_u *map, int mode)
+add_map(char_u *map, int mode, int nore)
 {
     char_u	*s;
     char_u	*cpo_save = p_cpo;
 
-    p_cpo = (char_u *)"";	// Allow <> notation
+    p_cpo = empty_option;	// Allow <> notation
     s = vim_strsave(map);
     if (s != NULL)
     {
-	(void)do_map(0, s, mode, FALSE);
+	(void)do_map(nore ? MAPTYPE_NOREMAP : MAPTYPE_MAP, s, mode, FALSE);
 	vim_free(s);
     }
     p_cpo = cpo_save;
 }
-#endif
 
-#if defined(FEAT_LANGMAP) || defined(PROTO)
+#if defined(FEAT_LANGMAP)
 /*
  * Any character has an equivalent 'langmap' character.  This is used for
  * keyboards that have a special language mode that sends characters above
@@ -2251,7 +3053,7 @@ langmap_set_entry(int from, int to)
 	    b = i;
     }
 
-    if (ga_grow(&langmap_mapga, 1) != OK)
+    if (ga_grow(&langmap_mapga, 1) == FAIL)
 	return;  // out of memory
 
     // insert new entry at position "a"
@@ -2302,8 +3104,8 @@ langmap_init(void)
  * Called when langmap option is set; the language map can be
  * changed at any time!
  */
-    void
-langmap_set(void)
+    char *
+did_set_langmap(optset_T *args UNUSED)
 {
     char_u  *p;
     char_u  *p2;
@@ -2356,9 +3158,10 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		semsg(_("E357: 'langmap': Matching character missing for %s"),
-							     transchar(from));
-		return;
+		sprintf(args->os_errbuf,
+			_(e_langmap_matching_character_missing_for_str),
+			transchar(from));
+		return args->os_errbuf;
 	    }
 
 	    if (from >= 256)
@@ -2378,8 +3181,10 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    semsg(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
-			    return;
+			    vim_snprintf(args->os_errbuf, args->os_errbuflen,
+				    _(e_langmap_extra_characters_after_semicolon_str),
+				    p);
+			    return args->os_errbuf;
 			}
 			++p;
 		    }
@@ -2388,6 +3193,8 @@ langmap_set(void)
 	    }
 	}
     }
+
+    return NULL;
 }
 #endif
 
@@ -2400,12 +3207,14 @@ do_exmap(exarg_T *eap, int isabbrev)
     cmdp = eap->cmd;
     mode = get_map_mode(&cmdp, eap->forceit || isabbrev);
 
-    switch (do_map((*cmdp == 'n') ? 2 : (*cmdp == 'u'),
+    switch (do_map(*cmdp == 'n' ? MAPTYPE_NOREMAP
+				: *cmdp == 'u' ? MAPTYPE_UNMAP : MAPTYPE_MAP,
 						    eap->arg, mode, isabbrev))
     {
-	case 1: emsg(_(e_invarg));
+	case 1: emsg(_(e_invalid_argument));
 		break;
-	case 2: emsg((isabbrev ? _(e_noabbr) : _(e_nomap)));
+	case 2: emsg((isabbrev ? _(e_no_such_abbreviation)
+						      : _(e_no_such_mapping)));
 		break;
     }
 }

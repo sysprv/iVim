@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # Build
 
@@ -46,6 +46,9 @@ Distribution: [release-testflight](release-testflight.md).
 - `ENABLE_CODE_COVERAGE = NO` on the iVim target: Xcode 26 enables coverage
   for Debug, and the app then writes `default.profraw` into its Documents
   folder (visible in Files).
+- Vim's `.c` files are listed one by one in the iVim target; keep them in
+  sync with `src/Makefile` when upgrading vim ([vim-upgrade](vim-upgrade.md)).
+  libvterm's `screen.c`/`mouse.c` share names with vim's; Xcode handles it.
 - `vim/src/proto/gui_ios.pro` hides a BOOL/block prototype from plain C
   files with `#ifdef __OBJC__`.
 - Xcode dependency tracking doesn't notice changes in `__has_include`

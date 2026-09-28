@@ -1,10 +1,11 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # Overview
 
 Personal fork of [terrychou/iVim](https://github.com/terrychou/iVim) (vim 8.1
-for iOS; last upstream commit 2020) at
+for iOS; last upstream commit 2020), updated to vim 9.2
+([vim-upgrade](vim-upgrade.md)), at
 [sysprv/iVim](https://github.com/sysprv/iVim), branch `ios27-keyboard-fix`.
 Quick cleanup for the owner's own use, done with an LLM; not a maintained
 continuation. Why iVim rather than Blink Shell or a-Shell: its extended
@@ -17,7 +18,8 @@ statusline and command line hidden behind the keyboard. Fixed and verified
 on the owner's iPhone (iOS 27). Since then, also working: `:terminal` with
 ivish and external commands ([ios-system](ios-system.md), [ivish](ivish.md)),
 `:q`, the cursor with `blinkon0`, `guifont` sizes. All fixes with root
-causes: [fixes](fixes.md). Open problems: [known-issues](known-issues.md).
+causes: [fixes](fixes.md). Vim 9.2.1135 (branch `vim9-rebase`)
+works on the simulator; not yet tried on the phone. Open problems: [known-issues](known-issues.md).
 
 ## Identity and decisions
 

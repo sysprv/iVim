@@ -21,8 +21,8 @@
 #	the first column of a line is removed.
 #	- If you want a version of Vim that is small and starts up quickly,
 #	  you might want to disable the GUI, X11, Perl, Python and Tcl.
-#	- Uncomment the line with --disable-gui if you have Motif, GTK and/or
-#	  Athena but don't want to make gvim (the GUI version of Vim with nice
+#	- Uncomment the line with --disable-gui if you have Motif and/or GTK
+#	  but don't want to make gvim (the GUI version of Vim with nice
 #	  menus and scrollbars, but makes Vim bigger and startup slower).
 #	- Uncomment --disable-darwin if on Mac OS X but you want to compile a
 #	  Unix version.
@@ -102,7 +102,7 @@
 #	  something wrong you may need to change one of the other files. If
 #	  you find a clean way to fix the problem, consider sending a note to
 #	  the author of autoconf (bug-gnu-utils@prep.ai.mit.edu) or Vim
-#	  (Bram@vim.org). Don't bother to do that when you made a hack
+#	  (vim-dev@vim.org). Don't bother to do that when you made a hack
 #	  solution for a non-standard system.
 #
 # 4. "make test"  {{{1
@@ -169,7 +169,6 @@
 #AIX 4.2.1	      cc				5.2k (C) Will Fiveash
 #AIX 4.3.3.12	      xic 3.6.6				5.6  (5) David R. Favor
 #A/UX 3.1.1	      gcc	     +X11		4.0  (6) Jim Jagielski
-#BeOS PR	      mwcc DR3				5.0n (T) Olaf Seibert
 #BSDI 2.1 (x86)       shlicc2 gcc-2.6.3 -X11 X11R6	4.5  (1) Jos Backus
 #BSD/OS 3.0 (x86)     gcc gcc-2.7.2.1 -X11 X11R6	4.6c (1) Jos Backus
 #CX/UX 6.2	      cc	     +X11 +GUI_Mofif	5.4  (V) Kipp E. Howard
@@ -177,15 +176,8 @@
 #DG/UX 5.4R4.20       gcc 2.7.2      GUI		5.0s (H) Rocky Olive
 #HP-UX (most)	      c89 cc				5.1  (2) Bram Moolenaar
 #HP-UX_9.04	      cc	     +X11 +Motif	5.0  (2) Carton Lao
-#Irix 6.3 (O2)	      cc	     ?			4.5  (L) Edouard Poor
-#Irix 6.4	      cc	     ?			5.0m (S) Rick Sayre
-#Irix 6.5	      cc	     ?			6.0  (S) David Harrison
-#Irix 64 bit						4.5  (K) Jon Wright
 #Linux 2.0	      gcc-2.7.2      Infomagic Motif	4.3  (3) Ronald Rietman
-#Linux 2.0.31	      gcc	     +X11 +GUI Athena	5.0w (U) Darren Hiebert
-#LynxOS 3.0.1	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#LynxOS 3.1.0	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif,Athena4.6b (Q) Lennart Schultz
+#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif	4.6b (Q) Lennart Schultz
 #NetBSD 1.0A	      gcc-2.4.5      -X11 -GUI		3.21 (X) Juergen Weigert
 #QNX 4.2	      wcc386-10.6    -X11		4.2  (D) G.F. Desrochers
 #QNX 4.23	      Watcom	     -X11		4.2  (F) John Oleynick
@@ -199,18 +191,15 @@
 #Solaris 2.4 (Sparc)  cc	     +X11 +GUI		3.29 (9) Glauber
 #Solaris 2.4/2.5      clcc	     +X11 -GUI openwin	3.20 (7) Robert Colon
 #Solaris 2.5 (sun4m)  cc (SC4.0)     +X11R6 +GUI (CDE)	4.6b (E) Andrew Large
-#Solaris 2.5	      cc	     +X11 +GUI Athena	4.2  (9) Sonia Heimann
 #Solaris 2.5	      gcc 2.5.6      +X11 Motif		5.0m (R) Ant. Colombo
 #Solaris 2.6	      gcc 2.8.1      ncurses		5.3  (G) Larry W. Virden
 #Solaris with -lthread					5.5  (W) K. Nagano
 #Solaris	      gcc				     (b) Riccardo
 #SunOS 4.1.x			     +X11 -GUI		5.1b (J) Bram Moolenaar
-#SunOS 4.1.3_U1 (sun4c) gcc	     +X11 +GUI Athena	5.0w (J) Darren Hiebert
-#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif,Athena4.6b (P) Lennart Schultz
+#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif	4.6b (P) Lennart Schultz
 #Tandem/NSK						     (c) Matthew Woehlke
 #Unisys 6035	      cc	     +X11 Motif		5.3  (8) Glauber Ribeiro
 #ESIX V4.2	      cc	     +X11		6.0  (a) Reinhard Wobst
-#Mac OS X 10.[23]     gcc	     Carbon		6.2  (x) Bram Moolenaar
 # }}}
 
 # (*)  Remarks: {{{
@@ -246,8 +235,6 @@
 # (P)  For SuperUX 6.2 on NEC SX-4 see a few lines below to uncomment.
 # (Q)  For UNIXSVR 4.2MP on NEC UP4800 see below for lines to uncomment.
 # (R)  For Solaris 2.5 (or 2.5.1) with gcc > 2.5.6, uncomment line below.
-# (S)  For Irix 6.x with MipsPro compiler, use -OPT:Olimit.  See line below.
-# (T)  See ../doc/os_beos.txt.
 # (U)  Must uncomment CONF_OPT_PYTHON option below to disable Python
 #      detection, since the configure script runs into an error when it
 #      detects Python (probably because of the bash shell).
@@ -329,7 +316,7 @@ CClink = $(CC)
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
-# have GTK, Motif and/or Athena.  Also use --without-x if you don't want X11
+# have GTK and/or Motif.  Also use --without-x if you don't want X11
 # at all.
 #CONF_OPT_GUI = --disable-gui
 
@@ -343,12 +330,10 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
-#CONF_OPT_GUI = --disable-athena-check
-#CONF_OPT_GUI = --disable-nextaw-check
 
 # Uncomment one of these lines to select a specific GUI to use.
 # When using "yes" or nothing, configure will use the first one found: GTK+,
-# Motif or Athena.
+# or Motif.
 #
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
@@ -360,7 +345,7 @@ CClink = $(CC)
 # --enable-gui=gtk or leave out --enable-gnome-check.
 #
 # GNOME makes sense only for GTK+ 2.  Avoid use of --enable-gnome-check with
-# GTK+ 3 build, as the functionality of GNOME is already incooperated into
+# GTK+ 3 build, as the functionality of GNOME is already incorporated into
 # GTK+ 3.
 #
 # If the selected GUI isn't found, the GUI is disabled automatically
@@ -372,14 +357,9 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
-#CONF_OPT_GUI = --enable-gui=athena
-#CONF_OPT_GUI = --enable-gui=nextaw
-
-# Carbon GUI for Mac OS X
-#CONF_OPT_GUI = --enable-gui=carbon
 
 # Uncomment this line to run an individual test with gvim.
-#GUI_TESTARG = GUI_FLAG=-g 
+#GUI_TESTARG = GUI_FLAG=-g
 
 # DARWIN - detecting Mac OS X
 # Uncomment this line when you want to compile a Unix version of Vim on
@@ -389,7 +369,8 @@ CClink = $(CC)
 # Select the architecture supported.  Default is to build for the current
 # platform.  Use "both" for a universal binary.  That probably doesn't work
 # when including Perl, Python, etc.
-#CONF_OPT_DARWIN = --with-mac-arch=i386
+# NOTE: ppc probably doesn't work anymore,
+#CONF_OPT_DARWIN = --with-mac-arch=intel
 #CONF_OPT_DARWIN = --with-mac-arch=ppc
 #CONF_OPT_DARWIN = --with-mac-arch=both
 
@@ -401,9 +382,11 @@ CClink = $(CC)
 # LUA
 # Uncomment one of these when you want to include the Lua interface.
 # First one is for static linking, second one for dynamic loading.
+# Debian package is "lua5.3" and "liblua5.3-dev" or "lua5.4" and
+# "liblua5.4-dev".
 # Use --with-luajit if you want to use LuaJIT instead of Lua.
 # Set PATH environment variable to find lua or luajit executable.
-# This requires at least "normal" features, "tiny" and "small" don't work.
+# This requires at least "normal" features, "tiny" doesn't work.
 #CONF_OPT_LUA = --enable-luainterp
 #CONF_OPT_LUA = --enable-luainterp=dynamic
 #CONF_OPT_LUA = --enable-luainterp --with-luajit
@@ -413,9 +396,13 @@ CClink = $(CC)
 
 # MZSCHEME
 # Uncomment this when you want to include the MzScheme interface.
+# You may have to build racket from source to make this work.  Version 7.9 has
+# been reported to work, version 8.0 probably doesn't work, version 8.5 has
+# been reported to work.
 # NOTE: does not work well together with valgrind.
 #CONF_OPT_MZSCHEME = --enable-mzschemeinterp
 # PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+#CONF_OPT_PLTHOME  = --with-plthome=/usr/local
 #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
 #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
 #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
@@ -423,20 +410,23 @@ CClink = $(CC)
 # PERL
 # Uncomment one of these when you want to include the Perl interface.
 # First one is for static linking, second one for dynamic loading.
+# Debian package is "libperl-dev"
 # The Perl option sometimes causes problems, because it adds extra flags
-#
 # to the command line.	If you see strange flags during compilation, check in
 # auto/config.mk where they come from.  If it's PERL_CFLAGS, try commenting
 # the next line.
 # When you get an error for a missing "perl.exp" file, try creating an empty
 # one: "touch perl.exp".
-# This requires at least "normal" features, "tiny" and "small" don't work.
+# This requires at least "normal" features, "tiny" doesn't work.
 #CONF_OPT_PERL = --enable-perlinterp
 #CONF_OPT_PERL = --enable-perlinterp=dynamic
 
 # PYTHON
 # Uncomment lines here when you want to include the Python interface.
-# This requires at least "normal" features, "tiny" and "small" don't work.
+# Debian package is "libpython3-dev".
+# This requires at least "normal" features, "tiny" doesn't work.
+# Python 3 is preferred, Python 2 (often referred to as "Python") has been
+# deprecated for a long time.
 # NOTE: This may cause threading to be enabled, which has side effects (such
 # as using different libraries and debugging becomes more difficult).
 # For Python3 support make a symbolic link in /usr/local/bin:
@@ -455,8 +445,8 @@ CClink = $(CC)
 # RUBY
 # Uncomment this when you want to include the Ruby interface.
 # First one for static linking, second one for loading when used.
-# Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
-# This requires at least "normal" features, "tiny" and "small" don't work.
+# Debian package is "ruby-dev".
+# This requires at least "normal" features, "tiny" doesn't work.
 #CONF_OPT_RUBY = --enable-rubyinterp
 #CONF_OPT_RUBY = --enable-rubyinterp=dynamic
 #CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
@@ -464,6 +454,8 @@ CClink = $(CC)
 # TCL
 # Uncomment this when you want to include the Tcl interface.
 # First one is for static linking, second one for dynamic loading.
+# Debian package is "tcl-dev".
+# This requires at least "normal" features, "tiny" doesn't work.
 #CONF_OPT_TCL = --enable-tclinterp
 #CONF_OPT_TCL = --enable-tclinterp=dynamic
 #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
@@ -492,7 +484,7 @@ CClink = $(CC)
 # MULTIBYTE - To edit multi-byte characters.
 # This is now always enabled.
 
-# When building with at least "big" features, right-left and Arabic
+# When building with "huge" features, right-left and Arabic
 # features are enabled.  Use this to disable them.
 #CONF_OPT_MULTIBYTE = --disable-rightleft --disable-arabic
 
@@ -504,11 +496,8 @@ CClink = $(CC)
 # XIM - X Input Method.  Special character input support for X11 (Chinese,
 # Japanese, special symbols, etc).  Also needed for dead-key support.
 # When omitted it's automatically enabled for the X-windows GUI.
-# HANGUL - Input Hangul (Korean) language using internal routines.
-# Uncomment one of these when you want to input a multibyte language.
 #CONF_OPT_INPUT = --enable-xim
 #CONF_OPT_INPUT = --disable-xim
-#CONF_OPT_INPUT = --enable-hangulinput
 
 # FONTSET - X fontset support for output of languages with many characters.
 # Uncomment this when you want to output a multibyte language.
@@ -523,24 +512,28 @@ CClink = $(CC)
 # though you have gpm libraries and includes.
 # For Debian/Ubuntu gpm support requires the libgpm-dev package.
 #CONF_OPT_GPM = --disable-gpm
+# Use this to enable dynamic loading of the GPM library.
+#CONF_OPT_GPM = --enable-gpm=dynamic
 
 # sysmouse - For mouse support on FreeBSD and DragonFly console via sysmouse
 # Uncomment this when you do not want do include sysmouse support, even
 # though you have /dev/sysmouse and includes.
 #CONF_OPT_SYSMOUSE = --disable-sysmouse
 
-# libcanberra - For sound support.  Default is on for big features.
+# libcanberra - For sound support.  Default is on for huge features.
 # Uncomment one of the two to chose otherwise.
 # CONF_OPT_CANBERRA = --enable-canberra
 # CONF_OPT_CANBERRA = --disable-canberra
+
+# libsodium - For enhanced encryption.  Default is on.
+# Uncomment the next line to not use libsodium
+# CONF_OPT_SODIUM = --disable-libsodium
 
 # FEATURES - For creating Vim with more or less features
 # Uncomment one of these lines when you want to include few to many features.
 # The default is "huge" for most systems.
 #CONF_OPT_FEAT = --with-features=tiny
-#CONF_OPT_FEAT = --with-features=small
 #CONF_OPT_FEAT = --with-features=normal
-#CONF_OPT_FEAT = --with-features=big
 #CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
@@ -593,7 +586,7 @@ CClink = $(CC)
 # configure or afterwards. For examples see below.
 # When using -g with some older versions of Linux you might get a
 # statically linked executable.
-# When not defined, configure will try to use -O2 -g for gcc and -O for cc.
+# When not defined, configure will try to use -O2 for gcc and -O for others.
 #CFLAGS = -g
 #CFLAGS = -O
 
@@ -604,22 +597,29 @@ CClink = $(CC)
 #CFLAGS = -O -Olimit 2000
 #CFLAGS = -O -FOlimit,2000
 
+# Add $(FORTIFY_CFLAGS) to optimizing example lines below: at higher levels
+# (the compiler default with -O) the buffer overflow check aborts Vim on the
+# "x[1] but actually longer" struct-hack arrays (e.g. dictitem di_key).
+# configure adds this automatically; these examples bypass it.
+FORTIFY_CFLAGS = -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+
 # Often used for GCC: mixed optimizing, lot of optimizing, debugging
-#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
-#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes $(FORTIFY_CFLAGS)
+#CFLAGS = -g -O2 -fno-strength-reduce -Wall -Wmissing-prototypes $(FORTIFY_CFLAGS)
 #CFLAGS = -g -Wall -Wmissing-prototypes
-#CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes
+#CFLAGS = -O6 -fno-strength-reduce -Wall -Wshadow -Wmissing-prototypes $(FORTIFY_CFLAGS)
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
-#CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
+#CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes $(FORTIFY_CFLAGS)
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
-#       parameters, you can add -Wno-cast-function-type
-#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#       parameters, you can add -Wno-cast-function-type (but not with clang)
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
-#CFLAGS = -g -O2 -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -O2 -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wno-cast-function-type -Wunused-result -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
 
@@ -633,7 +633,7 @@ CClink = $(CC)
 #EXTRA_LIBS = /usr/local/lib/libefence.a
 
 # Autoconf binary.
-AUTOCONF = autoconf
+AUTOCONF ?= autoconf
 
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
@@ -687,16 +687,31 @@ LINT_OPTIONS = -beprxzF
 # 7. Open the objects/index.html file in a web browser to view the coverage
 #    information.
 #
-# PROFILE_CFLAGS=-g -O0 -fprofile-arcs -ftest-coverage
 # LDFLAGS=--coverage
+# PROFILE_CFLAGS=-g -O0 -fprofile-arcs -ftest-coverage -DWE_ARE_PROFILING -DUSE_GCOV_FLUSH
+# Alternate flags
+# PROFILE_CFLAGS=-g -O0 --coverage -DWE_ARE_PROFILING -DUSE_GCOV_FLUSH
 
 
-# Uncomment one of the next two lines to compile Vim with the
-# address sanitizer or with the undefined sanitizer.  Works with gcc and
-# clang.  May make Vim twice as slow.  Errors reported on stderr.
+# Uncomment the next lines to compile Vim with the address sanitizer (asan) and
+# with the undefined sanitizer.  Works with gcc.
+# You should also use -DEXITFREE to avoid false reports.
+# May make Vim twice as slow.  Errors are reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
-#SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
-#SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
+# Useful environment variables:
+# $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/asan.*
+#SANITIZER_CFLAGS = -g -O0 -fsanitize-recover=all \
+#		   -fsanitize=address -fsanitize=undefined \
+#		   -fno-omit-frame-pointer
+
+# Similarly when compiling with clang and using ubsan.
+# $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/ubsan.*
+#SANITIZER_CFLAGS = -g -O0  -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
+
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
 # MEMORY LEAK DETECTION
@@ -711,9 +726,9 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 # detected.  Useful when using a tool to find errors.
 #ABORT_CFLAGS = -DABORT_ON_INTERNAL_ERROR
 
-#####################################################
-###  Specific systems, check if yours is listed!  ### {{{
-#####################################################
+####################################################
+###  Specific systems, check if yours is listed  ### {{{
+####################################################
 
 ### Uncomment things here only if the values chosen by configure are wrong.
 ### It's better to adjust configure.ac and "make autoconf", if you can!
@@ -732,11 +747,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC = c89 -D_HPUX_SOURCE
 #CC = c89 -O +Onolimit +ESlit -D_HPUX_SOURCE
 #CC = c89 -O +Onolimit +ESlit +e -D_HPUX_SOURCE
-
-### (2) For HP-UX: Enable the use of a different set of digraphs.  Use this
-###	when the default (ISO) digraphs look completely wrong.
-###	After changing this do "touch digraph.c; make".
-#EXTRA_DEFS = -DHPUX_DIGRAPHS
 
 ### (2) For HP-UX: 9.04 cpp default macro definition table of 128000 bytes
 ###	is too small to compile many routines.	It produces too much defining
@@ -763,21 +773,10 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #       needed to avoid a problem where strings.h gets included
 #CFLAGS = -qsrcmsg -O2 -qmaxmem=8192 -D__STR31__
 
-### (W) Solaris with multi-threaded libraries (-lthread):
-###	If suspending doesn't work properly, try using this line:
-#EXTRA_DEFS = -D_REENTRANT
-
 ### (7) Solaris 2.4/2.5 with Centerline compiler
 #CC = clcc
 #X_LIBS_DIR = -L/usr/openwin/lib -R/usr/openwin/lib
 #CFLAGS = -O
-
-### (9) Solaris 2.x with cc (SunPro), using Athena.
-###	Only required for compiling gui_at_sb.c.
-###	Symptom: "identifier redeclared: vim_XawScrollbarSetThumb"
-###	Use one of the lines (either Full ANSI or no ANSI at all)
-#CFLAGS = $(CFLAGS) -Xc
-#CFLAGS = $(CFLAGS) -Xs
 
 ### Solaris 2.3 with X11 and specific cc
 #CC=/opt/SUNWspro/bin/cc -O -Xa -v -R/usr/openwin/lib
@@ -883,51 +882,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CONF_OPT_X = --x-include=$(XROOT)/include --x-libraries=$(XROOT)/lib/X11R6
 #EXTRA_LIBS = -lsocket -lgen
 
-### Irix 4.0 & 5.2 (Silicon Graphics Machines, __sgi will be defined)
-# Not needed for Irix 5.3, Ives Aerts reported
-#EXTRA_LIBS = -lmalloc -lc_s
-# Irix 4.0, when regexp and regcmp cannot be found when linking:
-#EXTRA_LIBS = -lmalloc -lc_s -lPW
-
-### (S) Irix 6.x (MipsPro compiler): Uses different Olimit flag:
-# Note:	This newer option style is used with the MipsPro compilers ONLY if
-#	you are compiling an "n32" or "64" ABI binary (use either a -n32
-#	flag or a -64 flag for CFLAGS).  If you explicitly use a -o32 flag,
-#	then the CFLAGS option format will be the typical style (i.e.
-#	-Olimit 3000).
-#CFLAGS = -OPT:Olimit=3000 -O
-
-### (S) Irix 6.5 with MipsPro C compiler.  Try this as a test to see new
-#	compiler features!  Beware, the optimization is EXTREMELY thorough
-#	and takes quite a long time.
-# Note: See the note above.  Here, the -mips3 option automatically
-#	enables either the "n32" or "64" ABI, depending on what machine you
-#	are compiling on (n32 is explicitly enabled here, just to make sure).
-#CFLAGS = -OPT:Olimit=3500 -O -n32 -mips3 -IPA:aggr_cprop=ON -INLINE:dfe=ON:list=ON:must=screen_char,out_char,ui_write,out_flush
-#LDFLAGS= -OPT:Olimit=3500 -O -n32 -mips3 -IPA:aggr_cprop=ON -INLINE:dfe=ON:list=ON:must=screen_char,out_char,ui_write,out_flush
-
-### (K) for SGI Irix machines with 64 bit pointers ("uname -s" says IRIX64)
-###	Suggested by Jon Wright <jon@gate.sinica.edu.tw>.
-###	Tested on R8000 IRIX6.1 Power Indigo2.
-###	Check /etc/compiler.defaults for your compiler settings.
-# either (for 64 bit pointers) uncomment the following line
-#GUI_LIB_LOC = -L/usr/lib64
-# then
-# 1) make config
-# 2) edit auto/config.mk and delete the -lelf entry in the LIBS line
-# 3) make
-#
-# or (for 32bit pointers) uncomment the following line
-#EXTRA_DEFS = -n32
-#GUI_LIB_LOC = -L/usr/lib32
-# then
-# 1) make config
-# 2) edit auto/config.mk, add -n32 to LDFLAGS
-# 3) make
-#
-#Alternatively: use -o32 instead of -n32.
-###
-
 ### (C)  On SCO Unix v3.2.5 (and probably other versions) the termcap library,
 ###	 which is found by configure, doesn't work correctly.  Symptom is the
 ###	 error message "Termcap entry too long".  Uncomment the next line.
@@ -969,7 +923,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
 # The value of QUOTESED comes from auto/config.mk.
 # Uncomment the next line to use the default value.
-# QUOTESED = sed -e 's/[\\"]/\\&/g' -e 's/\\"/"/' -e 's/\\";$$/";/'
+# QUOTESED = sed -e 's/[\\"]/\\&/g' -e 's/\\"/"/' -e 's/\\";$$/";/' -e 's/  */ /g'
 
 ##################### end of system specific lines ################### }}}
 
@@ -1035,8 +989,8 @@ TOOLS = xxd/xxd$(EXEEXT)
 MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
-VIMMAJOR = 8
-VIMMINOR = 1
+VIMMAJOR = 9
+VIMMINOR = 2
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -1047,6 +1001,7 @@ COLSUBDIR = /colors
 SYNSUBDIR = /syntax
 INDSUBDIR = /indent
 AUTOSUBDIR = /autoload
+IMPORTSUBDIR = /import
 PLUGSUBDIR = /plugin
 FTPLUGSUBDIR = /ftplugin
 LANGSUBDIR = /lang
@@ -1069,6 +1024,7 @@ PODIR = po
 ### SYNSUBLOC	location for syntax files
 ### INDSUBLOC	location for indent files
 ### AUTOSUBLOC	location for standard autoload files
+### IMPORTSUBLOC location for standard import files
 ### PLUGSUBLOC	location for standard plugin files
 ### FTPLUGSUBLOC  location for ftplugin files
 ### LANGSUBLOC	location for language files
@@ -1091,6 +1047,7 @@ COLSUBLOC	= $(VIMRTLOC)$(COLSUBDIR)
 SYNSUBLOC	= $(VIMRTLOC)$(SYNSUBDIR)
 INDSUBLOC	= $(VIMRTLOC)$(INDSUBDIR)
 AUTOSUBLOC	= $(VIMRTLOC)$(AUTOSUBDIR)
+IMPORTSUBLOC	= $(VIMRTLOC)$(IMPORTSUBDIR)
 PLUGSUBLOC	= $(VIMRTLOC)$(PLUGSUBDIR)
 FTPLUGSUBLOC	= $(VIMRTLOC)$(FTPLUGSUBDIR)
 LANGSUBLOC	= $(VIMRTLOC)$(LANGSUBDIR)
@@ -1120,9 +1077,6 @@ SYS_DELMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/delmenu.vim
 
 ### Name of the bugreport file target.
 SYS_BUGR_FILE	= $(DESTDIR)$(SCRIPTLOC)/bugreport.vim
-
-### Name of the rgb.txt file target.
-SYS_RGB_FILE   = $(DESTDIR)$(SCRIPTLOC)/rgb.txt
 
 ### Name of the file type detection file target.
 SYS_FILETYPE_FILE = $(DESTDIR)$(SCRIPTLOC)/filetype.vim
@@ -1198,6 +1152,9 @@ INDSOURCE = ../runtime/indent
 # Where to copy the standard plugin files from
 AUTOSOURCE = ../runtime/autoload
 
+# Where to copy the standard import files from
+IMPORTSOURCE = ../runtime/import
+
 # Where to copy the standard plugin files from
 PLUGSOURCE = ../runtime/plugin
 
@@ -1231,6 +1188,9 @@ KMAPSOURCE = ../runtime/keymap
 # Where to look for print resource files
 PRINTSOURCE = ../runtime/print
 
+# Where to look translated README and LICENSE files
+TRANSSOURCE = ../lang
+
 # If you are using Linux, you might want to use this to make vim the
 # default vi editor, it will create a link from vi to Vim when doing
 # "make install".  An existing file will be overwritten!
@@ -1243,8 +1203,8 @@ LINKIT = @echo >/dev/null
 ### 'configure --enable-gui' can enable one of these for you if you did set
 ### a corresponding CONF_OPT_GUI above and have X11.
 ### Override configures choice by uncommenting all the following lines.
-### As they are, the GUI is disabled.  Replace "NONE" with "ATHENA" or "MOTIF"
-### for enabling the Athena or Motif GUI.
+### As they are, the GUI is disabled.  Replace "NONE" with "MOTIF"
+### for enabling the Motif GUI.
 #GUI_SRC	= $(NONE_SRC)
 #GUI_OBJ	= $(NONE_OBJ)
 #GUI_DEFS	= $(NONE_DEFS)
@@ -1278,6 +1238,33 @@ GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
 GTK_BUNDLE	=
 
+### GTK4 GUI
+GTK4_SRC	= gui.c gui_gtk4.c gui_gtk4_f.c \
+			gui_gtk4_cb.c \
+			gui_gtk4_da.c \
+			gui_beval.o \
+			gui_gtk4_tb.c \
+			gui_gtk4_menu.c \
+			$(GRESOURCE_SRC)
+GTK4_OBJ	= objects/gui.o objects/gui_gtk4.o \
+			objects/gui_gtk4_f.o \
+			objects/gui_gtk4_cb.o \
+			objects/gui_gtk4_da.o \
+			objects/gui_beval.o \
+			objects/gui_gtk4_tb.o \
+			objects/gui_gtk4_menu.o \
+			$(GRESOURCE_OBJ)
+GTK4_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
+GTK4_IPATH	= $(GUI_INC_LOC)
+GTK4_LIBS_DIR	= $(GUI_LIB_LOC)
+GTK4_LIBS1	=
+GTK4_LIBS2	= $(GTK_LIBNAME)
+GTK4_INSTALL	= install_normal install_gui_extra
+GTK4_TARGETS	= installglinks
+GTK4_MAN_TARGETS = yes
+GTK4_TESTTARGET	= gui
+GTK4_BUNDLE	=
+
 ### Motif GUI
 MOTIF_SRC	= gui.c gui_motif.c gui_x11.c gui_beval.c \
 			gui_xmdlg.c gui_xmebw.c
@@ -1289,59 +1276,11 @@ MOTIF_IPATH	= $(GUI_INC_LOC)
 MOTIF_LIBS_DIR	= $(GUI_LIB_LOC)
 MOTIF_LIBS1	=
 MOTIF_LIBS2	= $(MOTIF_LIBNAME) -lXt
-MOTIF_INSTALL   = install_normal install_gui_extra
+MOTIF_INSTALL	= install_normal install_gui_extra
 MOTIF_TARGETS	= installglinks
 MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
 MOTIF_BUNDLE	=
-
-### Athena GUI
-### Use Xaw3d to make the menus look a little bit nicer
-#XAW_LIB = -lXaw3d
-XAW_LIB = -lXaw
-
-### When using Xaw3d, uncomment/comment the following lines to also get the
-### scrollbars from Xaw3d.
-#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-#ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-#			objects/gui_beval.o objects/gui_at_fs.o
-#ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO) \
-#		    -Dvim_scrollbarWidgetClass=scrollbarWidgetClass \
-#		    -Dvim_XawScrollbarSetThumb=XawScrollbarSetThumb
-ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c \
-			gui_at_sb.c gui_at_fs.c
-ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o \
-			objects/gui_at_sb.o objects/gui_at_fs.o
-ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO)
-
-ATHENA_IPATH	= $(GUI_INC_LOC)
-ATHENA_LIBS_DIR = $(GUI_LIB_LOC)
-ATHENA_LIBS1	= $(XAW_LIB)
-ATHENA_LIBS2	= -lXt
-ATHENA_INSTALL  = install_normal install_gui_extra
-ATHENA_TARGETS	= installglinks
-ATHENA_MAN_TARGETS = yes
-ATHENA_TESTTARGET = gui
-ATHENA_BUNDLE	=
-
-### neXtaw GUI
-NEXTAW_LIB = -lneXtaw
-
-NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-NEXTAW_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o objects/gui_at_fs.o
-NEXTAW_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $(NARROW_PROTO)
-
-NEXTAW_IPATH	= $(GUI_INC_LOC)
-NEXTAW_LIBS_DIR = $(GUI_LIB_LOC)
-NEXTAW_LIBS1	= $(NEXTAW_LIB)
-NEXTAW_LIBS2	= -lXt
-NEXTAW_INSTALL  =  install_normal install_gui_extra
-NEXTAW_TARGETS	=  installglinks
-NEXTAW_MAN_TARGETS = yes
-NEXTAW_TESTTARGET = gui
-NEXTAW_BUNDLE	=
 
 ### (J)  Sun OpenWindows 3.2 (SunOS 4.1.x) or earlier that produce these ld
 #	 errors:  ld: Undefined symbol
@@ -1368,27 +1307,23 @@ PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
 PHOTONGUI_BUNDLE =
 
-# CARBON GUI
-CARBONGUI_SRC	= gui.c gui_mac.c
-CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o
-CARBONGUI_DEFS	= -DFEAT_GUI_MAC -fno-common -fpascal-strings \
-		  -Wall -Wno-unknown-pragmas \
-		  -mdynamic-no-pic -pipe
-CARBONGUI_IPATH	= -I. -Iproto
-CARBONGUI_LIBS_DIR =
-CARBONGUI_LIBS1	= -framework Carbon
-CARBONGUI_LIBS2	=
-CARBONGUI_INSTALL = install_macosx
-CARBONGUI_TARGETS =
-CARBONGUI_MAN_TARGETS =
-CARBONGUI_TESTTARGET = gui
-CARBONGUI_BUNDLE = gui_bundle
-APPDIR = $(VIMNAME).app
-CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
+### Haiku GUI
+HAIKUGUI_SRC	= gui.c gui_haiku.cc
+HAIKUGUI_OBJ	= objects/gui.o objects/gui_haiku.o
+HAIKUGUI_DEFS	= -DFEAT_GUI_HAIKU
+HAIKUGUI_IPATH	=
+HAIKUGUI_LIBS_DIR =
+HAIKUGUI_LIBS1	= -lbe -lroot -ltracker -ltranslation -lsupc++ -lstdc++
+HAIKUGUI_LIBS2	=
+HAIKUGUI_INSTALL = install_normal install_haiku_extra
+HAIKUGUI_TARGETS	= installglinks_haiku
+HAIKUGUI_MAN_TARGETS =
+HAIKUGUI_TESTTARGET = gui
+HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
 
 # }}}
 
@@ -1436,27 +1371,6 @@ XDIFF_INCL = \
 CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 		`echo "$(DEPEND_CFLAGS)" $(DEPEND_CFLAGS_FILTER)`
 
-# flags for cproto
-#     This is for cproto 3 patchlevel 8 or below
-#     __inline, __attribute__ and __extension__ are not recognized by cproto
-#     G_IMPLEMENT_INLINES is to avoid functions defined in glib/gutils.h.
-#NO_ATTR = -D__inline= -D__inline__= -DG_IMPLEMENT_INLINES \
-#	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
-#	  -D__extension__= -D__restrict="" \
-#	  -D__gnuc_va_list=char -D__builtin_va_list=char
-
-#
-#     This is for cproto 3 patchlevel 9 or above (currently 4.6, 4.7g)
-#     __inline and __attribute__ are now recognized by cproto
-#     -D"foo()=" is not supported by all compilers so do not use it
-NO_ATTR=
-#
-# Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
-# PROTO_FLAGS = -f4 -d -E"$(CPP)" $(NO_ATTR)
-#
-# Use this for cproto 3 patchlevel 7 or above (use "cproto -V" to check):
-PROTO_FLAGS = -d -E"$(CPP)" $(NO_ATTR)
-
 
 ################################################
 ##   no changes required below this line      ##
@@ -1479,16 +1393,17 @@ POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
 
+ALL_IF_CFLAGS = $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS)
+ALL_IF_CFLAGS_EXTRA = $(LUA_CFLAGS_EXTRA) $(PERL_CFLAGS_EXTRA) $(PYTHON_CFLAGS_EXTRA) $(PYTHON3_CFLAGS_EXTRA) $(RUBY_CFLAGS_EXTRA) $(TCL_CFLAGS_EXTRA)
+
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
 OSDEF_CFLAGS = $(PRE_DEFS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) \
-	      $(RUBY_CFLAGS) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) \
-	      $(PYTHON3_CFLAGS) $(TCL_CFLAGS) $(VTERM_CFLAGS) \
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(ALL_IF_CFLAGS) $(VTERM_CFLAGS) \
 	      -Dinline= -D__extension__= -Dalloca=alloca
 
-LINT_EXTRA = -DHANGUL_INPUT -D"__attribute__(x)="
+LINT_EXTRA = -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
@@ -1501,6 +1416,9 @@ ALL_LIBS = \
 	   $(GUI_LIBS2) \
 	   $(X_PRE_LIBS) \
 	   $(X_LIBS) \
+	   $(WAYLAND_LIBS) \
+	   $(CAIRO_LIBS) \
+	   $(PANGO_LIBS) \
 	   $(X_EXTRA_LIBS) \
 	   $(MZSCHEME_LIBS) \
 	   $(LIBS) \
@@ -1524,6 +1442,7 @@ DEST_COL = $(DESTDIR)$(COLSUBLOC)
 DEST_SYN = $(DESTDIR)$(SYNSUBLOC)
 DEST_IND = $(DESTDIR)$(INDSUBLOC)
 DEST_AUTO = $(DESTDIR)$(AUTOSUBLOC)
+DEST_IMPORT = $(DESTDIR)$(IMPORTSUBLOC)
 DEST_PLUG = $(DESTDIR)$(PLUGSUBLOC)
 DEST_FTP = $(DESTDIR)$(FTPLUGSUBLOC)
 DEST_LANG = $(DESTDIR)$(LANGSUBLOC)
@@ -1561,6 +1480,12 @@ DEST_MAN_PL_I = $(DEST_MAN_TOP)/pl.ISO8859-2$(MAN1DIR)
 DEST_MAN_PL_U = $(DEST_MAN_TOP)/pl.UTF-8$(MAN1DIR)
 DEST_MAN_RU = $(DEST_MAN_TOP)/ru.KOI8-R$(MAN1DIR)
 DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
+DEST_MAN_SV = $(DEST_MAN_TOP)/sv$(MAN1DIR)
+DEST_MAN_SV_I = $(DEST_MAN_TOP)/sv.ISO8859-1$(MAN1DIR)
+DEST_MAN_SV_U = $(DEST_MAN_TOP)/sv.UTF-8$(MAN1DIR)
+DEST_MAN_TR = $(DEST_MAN_TOP)/tr$(MAN1DIR)
+DEST_MAN_TR_I = $(DEST_MAN_TOP)/tr.ISO8859-9$(MAN1DIR)
+DEST_MAN_TR_U = $(DEST_MAN_TOP)/tr.UTF-8$(MAN1DIR)
 
 # stuff common to all systems
 include Make_all.mak
@@ -1576,6 +1501,7 @@ include testdir/Make_all.mak
 #	       ALL_SRC: source files used for make depend and make lint
 
 BASIC_SRC = \
+	alloc.c \
 	arabic.c \
 	arglist.c \
 	autocmd.c \
@@ -1585,6 +1511,9 @@ BASIC_SRC = \
 	buffer.c \
 	change.c \
 	charset.c \
+	cindent.c \
+	clientserver.c \
+	clipboard.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -1609,20 +1538,32 @@ BASIC_SRC = \
 	fileio.c \
 	filepath.c \
 	findfile.c \
+	float.c \
 	fold.c \
+	fuzzy.c \
 	getchar.c \
+	gc.c \
+	gui_xim.c \
 	hardcopy.c \
+	hardcopy_pango.c \
+	hardcopy_postscript.c \
 	hashtab.c \
+	help.c \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
 	indent.c \
 	insexpand.c \
 	json.c \
+	linematch.c \
 	list.c \
+	locale.c \
+	logfile.c \
 	main.c \
 	map.c \
 	mark.c \
+	match.c \
+	mbyte.c \
 	memfile.c \
 	memline.c \
 	menu.c \
@@ -1631,7 +1572,6 @@ BASIC_SRC = \
 	misc2.c \
 	mouse.c \
 	move.c \
-	mbyte.c \
 	normal.c \
 	ops.c \
 	option.c \
@@ -1645,27 +1585,47 @@ BASIC_SRC = \
 	quickfix.c \
 	regexp.c \
 	register.c \
-	scriptfile.c \
 	screen.c \
+	scriptfile.c \
 	search.c \
 	session.c \
 	sha256.c \
 	sign.c \
+	sixel.c \
+	kitty.c \
+	cairo.c \
+	socketserver.c \
 	sound.c \
 	spell.c \
 	spellfile.c \
 	spellsuggest.c \
+	strings.c \
 	syntax.c \
+	tabpanel.c \
 	tag.c \
 	term.c \
 	terminal.c \
 	testing.c \
+	textformat.c \
+	textobject.c \
 	textprop.c \
+	time.c \
+	tuple.c \
+	typval.c \
 	ui.c \
 	undo.c \
 	usercmd.c \
 	userfunc.c \
 	version.c \
+	vim9class.c \
+	vim9cmds.c \
+	vim9compile.c \
+	vim9execute.c \
+	vim9expr.c \
+	vim9generics.c \
+	vim9instr.c \
+	vim9script.c \
+	vim9type.c \
 	viminfo.c \
 	window.c \
 	bufwrite.c \
@@ -1675,18 +1635,28 @@ SRC =	$(BASIC_SRC) \
 	$(GUI_SRC) \
 	$(TERM_SRC) \
 	$(XDIFF_SRC) \
-	$(HANGULIN_SRC) \
 	$(LUA_SRC) \
 	$(MZSCHEME_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC)
+	$(RUBY_SRC) \
+	$(WAYLAND_SRC)
 
-EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
+EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
-	    gui_beval.c netbeans.c channel.c \
+	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
+
+$(WAYLAND_SRC): genwaylandproto
+
+.PHONY: genwaylandproto
+genwaylandproto:
+	cd auto/wayland; $(MAKE)
+
+# Needed for parallel jobs to work
+auto/wayland/ext-data-control-v1.h: auto/wayland/ext-data-control-v1.c
+auto/wayland/wlr-data-control-unstable-v1.h: auto/wayland/wlr-data-control-unstable-v1.c
 
 # Unittest files
 JSON_TEST_SRC = json_test.c
@@ -1700,16 +1670,19 @@ MESSAGE_TEST_TARGET = message_test$(EXEEXT)
 
 UNITTEST_SRC = $(JSON_TEST_SRC) $(KWORD_TEST_SRC) $(MEMFILE_TEST_SRC) $(MESSAGE_TEST_SRC)
 UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(KWORD_TEST_TARGET) $(MEMFILE_TEST_TARGET) $(MESSAGE_TEST_TARGET)
-RUN_UNITTESTS = run_json_test run_kword_test run_memfile_test run_message_test
+# We need to put WAYLAND_SRC because the protocol files need to be generated
+# else wayland.h will error
+RUN_UNITTESTS = $(WAYLAND_SRC) run_json_test run_kword_test run_memfile_test run_message_test
 
 # All sources, also the ones that are not configured
-ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) \
-	  $(EXTRA_SRC) $(TERM_SRC) $(XDIFF_SRC)
+ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC) \
+		$(WAYLAND_SRC)
+ALL_SRC = $(ALL_LOCAL_SRC) $(TERM_SRC) $(XDIFF_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
 # The perl sources also don't work well with lint.
-LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
+LINT_SRC = $(BASIC_SRC) $(GUI_SRC) \
 	   $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
 	   $(NETBEANS_SRC) $(CHANNEL_SRC) $(TERM_SRC)
 #LINT_SRC = $(SRC)
@@ -1717,6 +1690,7 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
 #LINT_SRC = $(BASIC_SRC)
 
 OBJ_COMMON = \
+	objects/alloc.o \
 	objects/arabic.o \
 	objects/arglist.o \
 	objects/autocmd.o \
@@ -1725,6 +1699,9 @@ OBJ_COMMON = \
 	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
+	objects/cindent.o \
+	objects/clientserver.o \
+	objects/clipboard.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1749,26 +1726,36 @@ OBJ_COMMON = \
 	objects/fileio.o \
 	objects/filepath.o \
 	objects/findfile.o \
+	objects/float.o \
 	objects/fold.o \
+	objects/fuzzy.o \
 	objects/getchar.o \
+	objects/gc.o \
+	objects/gui_xim.o \
 	objects/hardcopy.o \
+	objects/hardcopy_pango.o \
+	objects/hardcopy_postscript.o \
 	objects/hashtab.o \
+	objects/help.o \
 	objects/highlight.o \
-	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
+	objects/linematch.o \
 	objects/list.o \
+	objects/locale.o \
+	objects/logfile.o \
 	objects/map.o \
 	objects/mark.o \
+	objects/match.o \
+	objects/mbyte.o \
 	objects/memline.o \
 	objects/menu.o \
 	objects/misc1.o \
 	objects/misc2.o \
 	objects/mouse.o \
 	objects/move.o \
-	objects/mbyte.o \
 	objects/normal.o \
 	objects/ops.o \
 	objects/option.o \
@@ -1782,27 +1769,47 @@ OBJ_COMMON = \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/register.o \
-	objects/scriptfile.o \
 	objects/screen.o \
+	objects/scriptfile.o \
 	objects/search.o \
 	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
+	objects/sixel.o \
+	objects/kitty.o \
+	objects/cairo.o \
+	objects/socketserver.o \
 	objects/sound.o \
 	objects/spell.o \
 	objects/spellfile.o \
 	objects/spellsuggest.o \
+	objects/strings.o \
 	objects/syntax.o \
+	objects/tabpanel.o \
 	objects/tag.o \
 	objects/term.o \
 	objects/terminal.o \
 	objects/testing.o \
+	objects/textformat.o \
+	objects/textobject.o \
 	objects/textprop.o \
+	objects/time.o \
+	objects/tuple.o \
+	objects/typval.o \
 	objects/ui.o \
 	objects/undo.o \
 	objects/usercmd.o \
 	objects/userfunc.o \
 	objects/version.o \
+	objects/vim9class.o \
+	objects/vim9cmds.o \
+	objects/vim9compile.o \
+	objects/vim9execute.o \
+	objects/vim9expr.o \
+	objects/vim9generics.o \
+	objects/vim9instr.o \
+	objects/vim9script.o \
+	objects/vim9type.o \
 	objects/viminfo.o \
 	objects/window.o \
 	objects/bufwrite.o \
@@ -1818,7 +1825,8 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS)
+	$(XDIFF_OBJS_USED) \
+	$(WAYLAND_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -1870,117 +1878,155 @@ ALL_OBJ = $(OBJ_COMMON) \
 	  $(OBJ_MESSAGE_TEST)
 
 
-PRO_AUTO = \
-	arabic.pro \
-	arglist.pro \
-	autocmd.pro \
-	blowfish.pro \
-	buffer.pro \
-	change.pro \
-	charset.pro \
-	cmdexpand.pro \
-	cmdhist.pro \
-	crypt.pro \
-	crypt_zip.pro \
-	debugger.pro \
-	dict.pro \
-	diff.pro \
-	digraph.pro \
-	drawline.pro \
-	drawscreen.pro \
-	edit.pro \
-	eval.pro \
-	evalbuffer.pro \
-	evalfunc.pro \
-	evalvars.pro \
-	evalwindow.pro \
-	ex_cmds.pro \
-	ex_cmds2.pro \
-	ex_docmd.pro \
-	ex_eval.pro \
-	ex_getln.pro \
-	fileio.pro \
-	filepath.pro \
-	findfile.pro \
-	fold.pro \
-	getchar.pro \
-	hardcopy.pro \
-	hashtab.pro \
-	hangulin.pro \
-	highlight.pro \
-	if_cscope.pro \
-	if_lua.pro \
-	if_mzsch.pro \
-	if_python.pro \
-	if_python3.pro \
-	if_ruby.pro \
-	if_xcmdsrv.pro \
-	indent.pro \
-	insexpand.pro \
-	json.pro \
-	list.pro \
-	main.pro \
-	map.pro \
-	mark.pro \
-	mbyte.pro \
-	memfile.pro \
-	memline.pro \
-	menu.pro \
-	message.pro \
-	misc1.pro \
-	misc2.pro \
-	mouse.pro \
-	move.pro \
-	normal.pro \
-	ops.pro \
-	option.pro \
-	optionstr.pro \
-	os_mac_conv.pro \
-	os_unix.pro \
-	popupmenu.pro \
-	popupwin.pro \
-	profiler.pro \
-	pty.pro \
-	quickfix.pro \
-	regexp.pro \
-	register.pro \
-	scriptfile.pro \
-	screen.pro \
-	search.pro \
-	session.pro \
-	sha256.pro \
-	sign.pro \
-	sound.pro \
-	spell.pro \
-	spellfile.pro \
-	spellsuggest.pro \
-	syntax.pro \
-	tag.pro \
-	term.pro \
-	terminal.pro \
-	termlib.pro \
-	testing.pro \
-	textprop.pro \
-	ui.pro \
-	undo.pro \
-	usercmd.pro \
-	userfunc.pro \
-	version.pro \
-	viminfo.pro \
-	window.pro \
-	bufwrite.pro \
-	beval.pro \
-	gui_beval.pro \
-	netbeans.pro \
-	channel.pro \
-	$(ALL_GUI_PRO) \
-	$(TCL_PRO)
-
-# Resources used for the Mac are in one directory.
-RSRC_DIR = os_mac_rsrc
-
-PRO_MANUAL = os_amiga.pro os_win32.pro \
-	os_mswin.pro winclip.pro os_beos.pro os_vms.pro $(PERL_PRO)
+PROTO_FILES = \
+	proto/alloc.pro \
+	proto/arabic.pro \
+	proto/arglist.pro \
+	proto/autocmd.pro \
+	proto/beval.pro \
+	proto/blob.pro \
+	proto/blowfish.pro \
+	proto/buffer.pro \
+	proto/bufwrite.pro \
+	proto/change.pro \
+	proto/channel.pro \
+	proto/charset.pro \
+	proto/cindent.pro \
+	proto/clientserver.pro \
+	proto/clipboard.pro \
+	proto/cmdexpand.pro \
+	proto/cmdhist.pro \
+	proto/crypt.pro \
+	proto/crypt_zip.pro \
+	proto/debugger.pro \
+	proto/dict.pro \
+	proto/diff.pro \
+	proto/digraph.pro \
+	proto/drawline.pro \
+	proto/drawscreen.pro \
+	proto/edit.pro \
+	proto/eval.pro \
+	proto/evalbuffer.pro \
+	proto/evalfunc.pro \
+	proto/evalvars.pro \
+	proto/evalwindow.pro \
+	proto/ex_cmds.pro \
+	proto/ex_cmds2.pro \
+	proto/ex_docmd.pro \
+	proto/ex_eval.pro \
+	proto/ex_getln.pro \
+	proto/fileio.pro \
+	proto/filepath.pro \
+	proto/findfile.pro \
+	proto/float.pro \
+	proto/fold.pro \
+	proto/fuzzy.pro \
+	proto/gc.pro \
+	proto/getchar.pro \
+	proto/gui_beval.pro \
+	proto/gui_xim.pro \
+	proto/hardcopy.pro \
+	proto/hardcopy_pango.pro \
+	proto/hardcopy_postscript.pro \
+	proto/hashtab.pro \
+	proto/help.pro \
+	proto/highlight.pro \
+	proto/if_cscope.pro \
+	proto/if_lua.pro \
+	proto/if_mzsch.pro \
+	proto/if_python.pro \
+	proto/if_python3.pro \
+	proto/if_ruby.pro \
+	proto/if_tcl.pro \
+	proto/if_xcmdsrv.pro \
+	proto/indent.pro \
+	proto/insexpand.pro \
+	proto/job.pro \
+	proto/json.pro \
+	proto/linematch.pro \
+	proto/list.pro \
+	proto/locale.pro \
+	proto/logfile.pro \
+	proto/main.pro \
+	proto/map.pro \
+	proto/mark.pro \
+	proto/match.pro \
+	proto/mbyte.pro \
+	proto/memfile.pro \
+	proto/memline.pro \
+	proto/menu.pro \
+	proto/message.pro \
+	proto/misc1.pro \
+	proto/misc2.pro \
+	proto/mouse.pro \
+	proto/move.pro \
+	proto/netbeans.pro \
+	proto/normal.pro \
+	proto/ops.pro \
+	proto/option.pro \
+	proto/optionstr.pro \
+	proto/os_amiga.pro \
+	proto/os_mac_conv.pro \
+	proto/os_mswin.pro \
+	proto/os_qnx.pro \
+	proto/os_unix.pro \
+	proto/os_vms.pro \
+	proto/os_win32.pro \
+	proto/popupmenu.pro \
+	proto/popupwin.pro \
+	proto/profiler.pro \
+	proto/pty.pro \
+	proto/quickfix.pro \
+	proto/regexp.pro \
+	proto/register.pro \
+	proto/screen.pro \
+	proto/scriptfile.pro \
+	proto/search.pro \
+	proto/session.pro \
+	proto/sha256.pro \
+	proto/sign.pro \
+	proto/sixel.pro \
+	proto/kitty.pro \
+	proto/cairo.pro \
+	proto/socketserver.pro \
+	proto/sound.pro \
+	proto/spell.pro \
+	proto/spellfile.pro \
+	proto/spellsuggest.pro \
+	proto/strings.pro \
+	proto/syntax.pro \
+	proto/tabpanel.pro \
+	proto/tag.pro \
+	proto/term.pro \
+	proto/terminal.pro \
+	proto/termlib.pro \
+	proto/testing.pro \
+	proto/textformat.pro \
+	proto/textobject.pro \
+	proto/textprop.pro \
+	proto/time.pro \
+	proto/tuple.pro \
+	proto/typval.pro \
+	proto/ui.pro \
+	proto/undo.pro \
+	proto/usercmd.pro \
+	proto/userfunc.pro \
+	proto/version.pro \
+	proto/vim9class.pro \
+	proto/vim9cmds.pro \
+	proto/vim9compile.pro \
+	proto/vim9execute.pro \
+	proto/vim9expr.pro \
+	proto/vim9generics.pro \
+	proto/vim9instr.pro \
+	proto/vim9script.pro \
+	proto/vim9type.pro \
+	proto/viminfo.pro \
+	proto/wayland.pro \
+	proto/winclip.pro \
+	proto/window.pro \
+	$(GRESOURCE_PRO) \
+	$(ALL_GUI_PRO)
 
 # Default target is making the executable and tools
 all: $(VIMTARGET) $(TOOLS) languages $(GUI_BUNDLE)
@@ -2021,7 +2067,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
 		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
-		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA); \
+		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA) $(CONF_OPT_SODIUM); \
 	fi
 
 # Use "make reconfig" to rerun configure without cached values.
@@ -2046,9 +2092,6 @@ reconfig: scratch clean
 # - Use sed to change ./config.log to auto/config.log in the configure script.
 # Autoconf 2.5x (2.59 at least) produces a few more files that we need to take
 # care of:
-# - configure.lineno: has the line numbers replaced with $LINENO.  That
-#   improves patches a LOT, thus use it instead (until someone says it doesn't
-#   work on some system).
 # - autom4te.cache directory is created and not cleaned up.  Delete it.
 # - Uses ">config.log" instead of "./config.log".
 autoconf:
@@ -2060,13 +2103,25 @@ autoconf:
 	-rm -rf autom4te.cache
 	-rm -f auto/config.status auto/config.cache
 
-# Run vim script to generate the Ex command lookup table.
+# Run Vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
+# This requires a "vim" executable with the +eval feature.
 cmdidxs: ex_cmds.h
-	vim --clean -X -u create_cmdidxs.vim
+	vim --clean -X --not-a-term -S create_cmdidxs.vim -c quit
 
+# Run Vim script to generate the normal/visual mode command lookup table.
+# This only needs to be run when a new normal/visual mode command has been
+# added.
+# This requires a "vim" executable with the +eval feature.
+# If this fails because you don't have Vim yet:
+#   - change nv_cmds[] in nv_cmds.h to add the new normal/visual mode command.
+#   - run "make nvcmdidxs" to generate nv_cmdidxs.h
+nvcmdidxs: auto/config.mk nv_cmds.h
+	$(CC) -I$(srcdir) $(ALL_CFLAGS) create_nvcmdidxs.c -o create_nvcmdidxs
+	vim --clean -X --not-a-term -S create_nvcmdidxs.vim -c quit
+	-rm -f create_nvcmdidxs
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -2076,11 +2131,12 @@ CCC = $(CCC_NF) $(ALL_CFLAGS)
 
 # Link the target for normal use or debugging.
 # A shell script is used to try linking without unnecessary libraries.
-$(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
-	$(CCC) version.c -o objects/version.o
+$(VIMTARGET): auto/config.mk $(OBJ) objects/version.o
+	@$(BUILD_DATE_MSG)
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		PROG="vim" \
 		sh $(srcdir)/link.sh
 
 xxd/xxd$(EXEEXT): xxd/xxd.c
@@ -2092,7 +2148,7 @@ xxd/xxd$(EXEEXT): xxd/xxd.c
 languages:
 	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); \
-		  CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
+		  CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) originals; \
 	fi
 	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); \
@@ -2103,80 +2159,72 @@ languages:
 update-po:
 	cd $(PODIR); CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) update-po
 
-# Generate function prototypes.  This is not needed to compile vim, but if
-# you want to use it, cproto is out there on the net somewhere -- Webb
+# Generate function prototypes.  Previously, cproto was used, but since there
+# was a lot of fiddling to do to generate them correctly, so we switched to a
+# Python script using libclang.  It has the following features:
+# - Only the bare minimum of macro definitions is required.
+# - Generates the same .pro file even across different operating systems.
+#   (maybe)
+# Note: the following proto files need to be manually updated:
+# proto/gui_haiku.pro
+# proto/if_ole.pro
+# proto/if_perl.pro
+# proto/os_macosx.pro
 #
-# When generating os_amiga.pro and os_win32.pro there will be a
-# few include files that can not be found, that's OK.
+# How to set up environment to run `make proto`
+# On Ubuntu 24.04:
+# - Install libclang
+#   Use the package provided by Ubuntu.
+#     $ sudo apt install python3-clang
+#   Or, Create venv (if you want to use it freely with pip)
+#     $ python3 -m venv ~/venv
+#     $ source ~/venv/bin/activate
+#     $ pip install --upgrade pip
+#     $ pip install libclang
+# On Windows 11 (using Git Bash):
+# - Install GNU Make 3.81 or later.
+# - Download and install Python from the Python official website.
+# - Install libclang
+#   $ python -m pip install libclang
+# - Change the following lines in this file:
+#   s/^PYTHON=python3/PYTHON=python/
+#   s/^tags TAGS: notags/tags: notags/
+PYTHON=python3
 
-proto: $(PRO_AUTO) $(PRO_MANUAL)
+.PHONY: proto protoclean
+proto: $(PROTO_FILES)
 
-# Filter out arguments that cproto doesn't support.
-# Don't pass "-pthread", "-fwrapv" and similar arguments to cproto, it sees
-# them as a list of individual flags.
-# The -E"gcc -E" argument must be separate to avoid problems with shell
-# quoting.
-# Strip -O2, it may cause cproto to write stderr to the file "2".
-CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
+protoclean:
+	-rm -f $(PROTO_FILES)
 
-### Would be nice if this would work for "normal" make.
-### Currently it only works for (Free)BSD make.
-#$(PRO_AUTO): $$(*F).c
-#	$(CPROTO) -DFEAT_GUI $(*F).c > $@
+GEN_PROTO_CMD = proto/gen_prototypes.py
+GEN_PROTO_ARG = -DPROTO -DFEAT_GUI -DFEAT_WAYLAND -DFEAT_WAYLAND_CLIPBOARD -I.
 
-# Always define FEAT_GUI.  This may generate a few warnings if it's also
-# defined in auto/config.h, you can ignore that.
-.c.pro:
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+# Add `GENPROTO_DEBUG=1` before $(PYTHON) to get debug output.
+proto/%.pro: %.c
+	@$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG)
 
-os_amiga.pro: os_amiga.c
-	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_win32.pro: os_win32.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_mswin.pro: os_mswin.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-winclip.pro: winclip.c
-	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_beos.pro: os_beos.c
-	$(CPROTO) -D__BEOS__ -UHAVE_CONFIG_H $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-
-os_vms.pro: os_vms.c
-# must use os_vms_conf.h for auto/config.h
-	mv auto/config.h auto/config.h.save
-	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_ATHENA -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
-	rm auto/config.h
-	mv auto/config.h.save auto/config.h
-
-# if_perl.pro is special: Use the generated if_perl.c for input and remove
-# prototypes for local functions.
-if_perl.pro: auto/if_perl.c
-	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
-
-gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
-	$(CPROTO) -DFEAT_GUI $< > proto/$@
-	echo "/* vim: set ft=c : */" >> proto/$@
+proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
+	@if test -n "$(GLIB_COMPILE_RESOURCES)"; then \
+		$(PYTHON) $(GEN_PROTO_CMD) $< $(GEN_PROTO_ARG) ; \
+	fi
 
 notags:
-	-rm -f tags
+	$(MAKE) -f Make_tags.mak notags
 
-# Note: tags is made for the currently configured version, can't include both
-#	Motif and Athena GUI
+# Configure sets portable TAGPRG, else modern ctags is used.
 # You can ignore error messages for missing files.
 tags TAGS: notags
-	$(TAGPRG) $(TAGS_FILES)
+	$(MAKE) -f Make_tags.mak tags
+
+# Build the cscope database.
+# This may search more files than necessary.
+.PHONY: cscope csclean
+csclean:
+	-rm -vf cscope.out
+cscope.out:
+	cscope -bv ./*.[ch] ./*.cpp ./if_perl.xs auto/*.h auto/pathdef.c proto/*.pro xxd/xxd.c
+cscope: csclean cscope.out  ;
 
 # Make a highlight file for types.  Requires Exuberant ctags and awk
 types: types.vim
@@ -2190,7 +2238,7 @@ types.vim: $(TAGS_FILES)
 #
 # Execute the test scripts and the unittests.
 # Do the scripttests first, so that the summary shows last.
-test check: unittests test_libvterm scripttests
+test check: unittests $(TERM_TEST) scripttests
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
@@ -2198,15 +2246,13 @@ test check: unittests test_libvterm scripttests
 #
 # This will produce a lot of garbage on your screen, including a few error
 # messages.  Don't worry about that.
-# If there is a real error, there will be a difference between "testXX.out" and
-# a "testXX.ok" file.
 # If everything is alright, the final message will be "ALL DONE".  If not you
 # get "TEST FAILURE".
 #
 scripttests:
 	$(MAKE) -f Makefile $(VIMTARGET)
 	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
-		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
+		cd $(PODIR); $(MAKE) -f Makefile check VIMPROG=../$(VIMTARGET); \
 	fi
 	-if test $(VIMTARGET) != vim -a ! -r vim; then \
 		ln -s $(VIMTARGET) vim; \
@@ -2217,8 +2263,14 @@ scripttests:
 testgui:
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) GUI_FLAG=-g $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
+testtiny:
+	cd testdir; $(MAKE) -f Makefile tiny VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
+# Run benchmarks.
 benchmark:
-	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; \
+		$(MAKE) -f Makefile benchmarkclean; \
+		$(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
@@ -2243,24 +2295,18 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 	$(VALGRIND) ./$(MESSAGE_TEST_TARGET) || exit 1; echo $* passed;
 
 # Run the libvterm tests.
-# This currently doesn't work on Mac, only run on Linux for now.
+# This works only on GNU make, not on BSD make.
+# Libtool requires "gcc".
 test_libvterm:
-	@if test `uname` = "Linux"; then \
-		cd libvterm; $(MAKE) -f Makefile test \
-			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
+	@if $(MAKE) --version 2>/dev/null | grep -qs "GNU Make"; then \
+	  if test -x "/usr/bin/gcc"; then \
+	    cd libvterm; $(MAKE) -f Makefile test CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
+	  fi \
 	fi
 
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
-test1 \
-	test_eval \
-	test39 \
-	test42 test44 test48 test49 \
-	test52 test59 \
-	test64 test69 \
-	test70 test72 \
-	test86 test87 test88 \
-	test94 test95 test99:
+$(SCRIPTS_TINY):
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
@@ -2269,7 +2315,7 @@ test1 \
 #	export TEST_FILTER=Test_terminal_wipe_buffer
 # A partial match also works:
 #	export TEST_FILTER=wipe_buffer
-$(NEW_TESTS):
+$(NEW_TESTS) test_vim9:
 	cd testdir; $(MAKE) $@ VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 newtests:
@@ -2287,32 +2333,32 @@ testclean:
 
 # Unittests
 # It's build just like Vim to satisfy all dependencies.
-$(JSON_TEST_TARGET): auto/config.mk objects $(JSON_TEST_OBJ)
-	$(CCC) version.c -o objects/version.o
+$(JSON_TEST_TARGET): auto/config.mk $(JSON_TEST_OBJ) objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(JSON_TEST_TARGET) $(JSON_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		PROG="json_test" \
 		sh $(srcdir)/link.sh
 
-$(KWORD_TEST_TARGET): auto/config.mk objects $(KWORD_TEST_OBJ)
-	$(CCC) version.c -o objects/version.o
+$(KWORD_TEST_TARGET): auto/config.mk $(KWORD_TEST_OBJ) objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(KWORD_TEST_TARGET) $(KWORD_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		PROG="kword_test" \
 		sh $(srcdir)/link.sh
 
-$(MEMFILE_TEST_TARGET): auto/config.mk objects $(MEMFILE_TEST_OBJ)
-	$(CCC) version.c -o objects/version.o
+$(MEMFILE_TEST_TARGET): auto/config.mk $(MEMFILE_TEST_OBJ) objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(MEMFILE_TEST_TARGET) $(MEMFILE_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		PROG="memfile_test" \
 		sh $(srcdir)/link.sh
 
-$(MESSAGE_TEST_TARGET): auto/config.mk objects $(MESSAGE_TEST_OBJ)
-	$(CCC) version.c -o objects/version.o
+$(MESSAGE_TEST_TARGET): auto/config.mk $(MESSAGE_TEST_OBJ) objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(MESSAGE_TEST_TARGET) $(MESSAGE_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		PROG="message_test" \
 		sh $(srcdir)/link.sh
 
 # install targets
@@ -2354,11 +2400,19 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 # Install most of the runtime files
 installruntime: installrtbase installmacros installpack installtutor installspell
 
-# install the help files; first adjust the contents for the final location
-installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
-		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
-		$(DEST_FTP) $(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
-		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
+# Install the help files; first adjust the contents for the final location.
+# Also install most of the other runtime files.
+installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
+		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) \
+		$(DEST_SYN) $(DEST_SYN)/modula2 $(DEST_SYN)/modula2/opt $(DEST_SYN)/shared \
+		$(DEST_IND) $(DEST_FTP) \
+		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_AUTO)/rust $(DEST_AUTO)/cargo \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
+		$(DEST_PLUG) \
+	       	$(DEST_TUTOR) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr \
+		$(DEST_TUTOR)/ru $(DEST_TUTOR)/sv \
+		$(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 # Generate the help tags with ":helptags" to handle all languages.
 # Move the distributed tags file aside and restore it, to avoid it being
@@ -2366,8 +2420,8 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(HELPSOURCE); if test -z "$(CROSS_COMPILING)" -a -f tags; then \
 		mv -f tags tags.dist; fi
 	@echo generating help tags
-	-@cd $(HELPSOURCE); if test -z "$(CROSS_COMPILING)"; then \
-		$(MAKE) VIMEXE=$(DEST_BIN)/$(VIMTARGET) vimtags; fi
+	-@BUILD_DIR=`pwd`; cd $(HELPSOURCE); if test -z "$(CROSS_COMPILING)"; then \
+		$(MAKE) VIMPROG="$$BUILD_DIR/$(VIMTARGET)" vimtags; fi
 	cd $(HELPSOURCE); \
 		files=`ls *.txt tags`; \
 		files="$$files `ls *.??x tags-?? 2>/dev/null || true`"; \
@@ -2391,9 +2445,6 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(EVIM_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/mswin.vim $(MSWIN_FILE)
 	chmod $(VIMSCRIPTMOD) $(MSWIN_FILE)
-# install the rgb.txt file
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(SYS_RGB_FILE)
-	chmod $(VIMSCRIPTMOD) $(SYS_RGB_FILE)
 # install the bugreport file
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/bugreport.vim $(SYS_BUGR_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_BUGR_FILE)
@@ -2402,6 +2453,9 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(DEST_SCRIPT)/vimrc_example.vim
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/gvimrc_example.vim $(DEST_SCRIPT)
 	chmod $(VIMSCRIPTMOD) $(DEST_SCRIPT)/gvimrc_example.vim
+# install the xdg file
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/xdg.vim $(DEST_SCRIPT)
+	chmod $(VIMSCRIPTMOD) $(DEST_SCRIPT)/xdg.vim
 # install the file type detection files
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/filetype.vim $(SYS_FILETYPE_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_FILETYPE_FILE)
@@ -2419,16 +2473,25 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(SYS_INDOFF_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/optwin.vim $(SYS_OPTWIN_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_OPTWIN_FILE)
+# install README and LICENCE files
+	$(INSTALL_DATA) ../README.txt $(DEST_RT)
+	chmod $(HELPMOD) $(DEST_RT)/README.txt
+	$(INSTALL_DATA) ../LICENSE $(DEST_RT)
+	chmod $(HELPMOD) $(DEST_RT)/LICENSE
 # install the print resource files
 	cd $(PRINTSOURCE); $(INSTALL_DATA) *.ps $(DEST_PRINT)
 	cd $(DEST_PRINT); chmod $(FILEMOD) *.ps
 # install the colorscheme files
-	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim tools README.txt $(DEST_COL)
-	cd $(DEST_COL); chmod $(DIRMOD) tools
-	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt tools/*.vim
+	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim lists tools README.txt $(DEST_COL)
+	cd $(DEST_COL); chmod $(DIRMOD) lists tools
+	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt lists/*.vim tools/*.vim
 # install the syntax files
 	cd $(SYNSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)
 	cd $(DEST_SYN); chmod $(HELPMOD) *.vim README.txt
+	cd $(SYNSOURCE)/shared; $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)/shared
+	cd $(DEST_SYN)/shared; chmod $(HELPMOD) *.vim README.txt
+	cd $(SYNSOURCE)/modula2/opt; $(INSTALL_DATA) *.vim $(DEST_SYN)/modula2/opt
+	cd $(DEST_SYN)/modula2/opt; chmod $(HELPMOD) *.vim
 # install the indent files
 	cd $(INDSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_IND)
 	cd $(DEST_IND); chmod $(HELPMOD) *.vim README.txt
@@ -2439,12 +2502,20 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_AUTO)/dist; chmod $(HELPMOD) *.vim
 	cd $(AUTOSOURCE)/xml; $(INSTALL_DATA) *.vim $(DEST_AUTO)/xml
 	cd $(DEST_AUTO)/xml; chmod $(HELPMOD) *.vim
-# install the standard plugin files
+	cd $(AUTOSOURCE)/cargo; $(INSTALL_DATA) *.vim $(DEST_AUTO)/cargo
+	cd $(DEST_AUTO)/cargo; chmod $(HELPMOD) *.vim
+	cd $(AUTOSOURCE)/rust; $(INSTALL_DATA) *.vim $(DEST_AUTO)/rust
+	cd $(DEST_AUTO)/rust; chmod $(HELPMOD) *.vim
+# install the standard import files
+	cd $(IMPORTSOURCE)/dist; $(INSTALL_DATA) *.vim $(DEST_IMPORT)/dist
+	cd $(DEST_IMPORT)/dist; chmod $(HELPMOD) *.vim
+# install the standard plugin files, but first remove existing ones
+	-rm -f $(DEST_PLUG)/*.vim
 	cd $(PLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_PLUG)
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
 # install the ftplugin files
 	cd $(FTPLUGSOURCE); $(INSTALL_DATA) *.vim README.txt logtalk.dict $(DEST_FTP)
-	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt
+	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt logtalk.dict
 # install the compiler files
 	cd $(COMPSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_COMP)
 	cd $(DEST_COMP); chmod $(HELPMOD) *.vim README.txt
@@ -2467,18 +2538,28 @@ installpack: $(DEST_VIM) $(DEST_RT) $(DEST_PACK)
 	chmod $(FILEMOD) `find $(DEST_PACK) -type f -print`
 
 # install the tutor files
-installtutorbin: $(DEST_VIM)
+installtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
 
-installgtutorbin: $(DEST_VIM)
+installgtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
-installtutor: $(DEST_RT) $(DEST_TUTOR)
+installtutor: $(DEST_RT) $(DEST_TUTOR)/en $(DEST_TUTOR)/it $(DEST_TUTOR)/sr $(DEST_TUTOR)/sv $(DEST_TUTOR)/ru
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
+	-$(INSTALL_DATA) $(TUTORSOURCE)/en/* $(DEST_TUTOR)/en/
+	-$(INSTALL_DATA) $(TUTORSOURCE)/it/* $(DEST_TUTOR)/it/
+	-$(INSTALL_DATA) $(TUTORSOURCE)/ru/* $(DEST_TUTOR)/ru/
+	-$(INSTALL_DATA) $(TUTORSOURCE)/sr/* $(DEST_TUTOR)/sr/
+	-$(INSTALL_DATA) $(TUTORSOURCE)/sv/* $(DEST_TUTOR)/sv/
 	-rm -f $(DEST_TUTOR)/*.info
 	chmod $(HELPMOD) $(DEST_TUTOR)/*
+	chmod $(DIRMOD) $(DEST_TUTOR)/en
+	chmod $(DIRMOD) $(DEST_TUTOR)/it
+	chmod $(DIRMOD) $(DEST_TUTOR)/ru
+	chmod $(DIRMOD) $(DEST_TUTOR)/sr
+	chmod $(DIRMOD) $(DEST_TUTOR)/sv
 
 # Install the spell files, if they exist.  This assumes at least the English
 # spell file is there.
@@ -2536,9 +2617,16 @@ install-tool-languages:
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_SV) "-sv" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_SV_I) "-sv" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_SV_U) "-sv.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_TR) "-tr" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_TR_I) "-tr" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_TR_U) "-tr.UTF-8" $(INSTALLMANARGS)
+
 
 # install the language specific files, if they were unpacked
-install-languages: languages $(DEST_LANG) $(DEST_KMAP)
+install-languages: languages $(DEST_LANG) $(DEST_KMAP) $(DEST_RT)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA) "-da" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_I) "-da" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_U) "-da.UTF-8" $(INSTALLMANARGS)
@@ -2557,6 +2645,12 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_SV) "-sv" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_SV_I) "-sv" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_SV_U) "-sv.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_TR) "-tr" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_TR_I) "-tr" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_TR_U) "-tr.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_DA) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -2593,6 +2687,18 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 		$(DEST_MAN_RU) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR_U) $(INSTALLMLARGS)
 	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 	   cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) LOCALEDIR=$(DEST_LANG) \
 	   INSTALL_DATA=$(INSTALL_DATA) FILEMOD=$(FILEMOD) install; \
@@ -2605,6 +2711,29 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	   $(INSTALL_DATA) $(KMAPSOURCE)/README.txt $(KMAPSOURCE)/*.vim $(DEST_KMAP); \
 	   chmod $(FILEMOD) $(DEST_KMAP)/README.txt $(DEST_KMAP)/*.vim; \
 	fi
+# Installing translated README and LICENSE files
+	if test -d $(TRANSSOURCE) ; then \
+	  if test -n "$(LANG)" ; then \
+	    lngusr=$${LANG%%.*} ; \
+	  elif test -n "$(LANGUAGE)" ; then \
+	    lngusr=$${LANGUAGE%%:*} ; \
+	  elif test -n "$(LC_MESSAGES)" ; then \
+	    lngusr=$${LC_MESSAGES%%.*} ; \
+	  fi; \
+	  if test "$$lngusr" = "zh_TW" -o "$$lngusr" = "zh_CN" -o "$$lngusr" = "pt_BR" ; then \
+	    lngusr=`echo $$lngusr | tr '[:upper:]' '[:lower:]'` ; \
+	  elif test -n "$$lngusr" -a "$$lngusr" != "C" -a "$$lngusr" != "POSIX" ; then \
+	    lngusr=$${lngusr%%_*} ; \
+	  fi ; \
+	  if test -f $(TRANSSOURCE)/README.$$lngusr.txt ; then \
+	    $(INSTALL_DATA) $(TRANSSOURCE)/README.$$lngusr.txt $(DEST_RT) ; \
+	    chmod $(HELPMOD) $(DEST_RT)/README.$$lngusr.txt ; \
+	  fi ; \
+	  if test -f $(TRANSSOURCE)/LICENSE.$$lngusr.txt ; then \
+	    $(INSTALL_DATA) $(TRANSSOURCE)/LICENSE.$$lngusr.txt $(DEST_RT) ; \
+	    chmod $(HELPMOD) $(DEST_RT)/LICENSE.$$lngusr.txt ; \
+	  fi ; \
+	fi
 
 # Install the icons for KDE, if the directory exists and the icon doesn't.
 # Always when $(DESTDIR) is not empty.
@@ -2615,7 +2744,7 @@ ICONTHEMEPATH = $(DATADIR)/icons/hicolor
 DESKTOPPATH = $(DESTDIR)$(DATADIR)/applications
 KDEPATH = $(HOME)/.kde/share/icons
 install-icons:
-	if test -n "$(DESTDIR)"; then \
+	if test -n "$(DESTDIR)$(DATADIR)"; then \
 		$(MKDIR_P) $(ICON48PATH) $(ICON32PATH) \
 		$(ICON16PATH) $(DESKTOPPATH); \
 	fi
@@ -2658,14 +2787,21 @@ $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 
 $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
-		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
+		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_SYN)/shared \
+		$(DEST_SYN)/modula2 $(DEST_SYN)/modula2/opt \
+		$(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
-		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
-		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_PLUG):
+		$(DEST_PACK) $(DEST_TOOLS) \
+		$(DEST_TUTOR) $(DEST_TUTOR)/en $(DEST_TUTOR)/it \
+		$(DEST_TUTOR)/sr $(DEST_TUTOR)/ru $(DEST_TUTOR)/sv \
+		$(DEST_SPELL) \
+		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_AUTO)/cargo $(DEST_AUTO)/rust \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist $(DEST_PLUG):
 	$(MKDIR_P) $@
 	-chmod $(DIRMOD) $@
 
-# create links from various names to vim.  This is only done when the links
+# Create links from various names to vim.  This is only done when the links
 # (or executables with the same name) don't exist yet.
 installlinks: $(GUI_TARGETS) \
 			$(DEST_BIN)/$(EXTARGET) \
@@ -2685,41 +2821,41 @@ installglinks: $(DEST_BIN)/$(GVIMTARGET) \
 installvimdiff: $(DEST_BIN)/$(VIMDIFFTARGET)
 installgvimdiff: $(DEST_BIN)/$(GVIMDIFFTARGET)
 
-$(DEST_BIN)/$(EXTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EXTARGET)
+$(DEST_BIN)/$(EXTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EXTARGET)
 
-$(DEST_BIN)/$(VIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIEWTARGET)
+$(DEST_BIN)/$(VIEWTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(VIEWTARGET)
 
-$(DEST_BIN)/$(GVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMTARGET)
+$(DEST_BIN)/$(GVIMTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIMTARGET)
 
-$(DEST_BIN)/$(GVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIEWTARGET)
+$(DEST_BIN)/$(GVIEWTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIEWTARGET)
 
-$(DEST_BIN)/$(RVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIMTARGET)
+$(DEST_BIN)/$(RVIMTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RVIMTARGET)
 
-$(DEST_BIN)/$(RVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RVIEWTARGET)
+$(DEST_BIN)/$(RVIEWTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RVIEWTARGET)
 
-$(DEST_BIN)/$(RGVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIMTARGET)
+$(DEST_BIN)/$(RGVIMTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RGVIMTARGET)
 
-$(DEST_BIN)/$(RGVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(RGVIEWTARGET)
+$(DEST_BIN)/$(RGVIEWTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(RGVIEWTARGET)
 
-$(DEST_BIN)/$(VIMDIFFTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(VIMDIFFTARGET)
+$(DEST_BIN)/$(VIMDIFFTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(VIMDIFFTARGET)
 
-$(DEST_BIN)/$(GVIMDIFFTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(GVIMDIFFTARGET)
+$(DEST_BIN)/$(GVIMDIFFTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(GVIMDIFFTARGET)
 
-$(DEST_BIN)/$(EVIMTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIMTARGET)
+$(DEST_BIN)/$(EVIMTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EVIMTARGET)
 
-$(DEST_BIN)/$(EVIEWTARGET):
-	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIEWTARGET)
+$(DEST_BIN)/$(EVIEWTARGET): $(DEST_BIN)
+	cd $(DEST_BIN); ln -sf $(VIMTARGET) $(EVIEWTARGET)
 
 # Create links for the manual pages with various names to vim.	This is only
 # done when the links (or manpages with the same name) don't exist yet.
@@ -2766,6 +2902,12 @@ uninstall_runtime:
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_PL_U) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_SV) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_SV_I) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_SV_U) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_TR) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_TR_I) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_TR_U) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
@@ -2804,6 +2946,18 @@ uninstall_runtime:
 		$(DEST_MAN_RU) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_SV_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_TR_U) $(INSTALLMLARGS)
 	-rm -f $(DEST_MAN)/xxd.1
 	-rm -f $(DEST_MAN_DA)/xxd.1 $(DEST_MAN_DA_I)/xxd.1 $(DEST_MAN_DA_U)/xxd.1
 	-rm -f $(DEST_MAN_DE)/xxd.1 $(DEST_MAN_DE_I)/xxd.1 $(DEST_MAN_DE_U)/xxd.1
@@ -2812,9 +2966,9 @@ uninstall_runtime:
 	-rm -f $(DEST_MAN_JA_U)/xxd.1
 	-rm -f $(DEST_MAN_PL)/xxd.1 $(DEST_MAN_PL_I)/xxd.1 $(DEST_MAN_PL_U)/xxd.1
 	-rm -f $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
+	-rm -f $(DEST_MAN_SV)/xxd.1 $(DEST_MAN_SV_I)/xxd.1 $(DEST_MAN_SV_U)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
-	-rm -f $(SYS_RGB_FILE)
 	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
 	-rm -f $(SYS_BUGR_FILE) $(VIM_DEFAULTS_FILE) $(EVIM_FILE) $(MSWIN_FILE)
 	-rm -f $(DEST_SCRIPT)/gvimrc_example.vim $(DEST_SCRIPT)/vimrc_example.vim
@@ -2824,10 +2978,20 @@ uninstall_runtime:
 	-rm -f $(SYS_OPTWIN_FILE)
 	-rm -f $(DEST_COL)/*.vim $(DEST_COL)/README.txt
 	-rm -rf $(DEST_COL)/tools
+	-rm -f $(DESKTOPPATH)/vim.desktop $(DESKTOPPATH)/gvim.desktop
+	-rm -f $(ICON16PATH)/gvim.png $(ICON32PATH)/gvim.png $(ICON48PATH)/gvim.png
+	-rm -rf $(DEST_COL)/lists
+	-rm -f $(DEST_SYN)/shared/*.vim $(DEST_SYN)/shared/README.txt
+	-rm -f $(DEST_SYN)/modula2/opt/*.vim
 	-rm -f $(DEST_SYN)/*.vim $(DEST_SYN)/README.txt
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
 	-rm -rf $(DEST_PACK)
+	-rm -rf $(DEST_TUTOR)/en
+	-rm -rf $(DEST_TUTOR)/it
+	-rm -rf $(DEST_TUTOR)/ru
+	-rm -rf $(DEST_TUTOR)/sr
+	-rm -rf $(DEST_TUTOR)/sv
 	-rm -rf $(DEST_TUTOR)
 	-rm -rf $(DEST_SPELL)
 	-rm -rf $(DEST_TOOLS)
@@ -2835,12 +2999,21 @@ uninstall_runtime:
 	-rm -rf $(DEST_KMAP)
 	-rm -rf $(DEST_COMP)
 	-rm -f $(DEST_PRINT)/*.ps
-	-rmdir $(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND)
+	-rmdir $(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN)/shared
+	-rmdir $(DEST_SYN)/modula2/opt $(DEST_SYN)/modula2
+	-rmdir $(DEST_SYN) $(DEST_IND)
 	-rm -rf $(DEST_FTP)/*.vim $(DEST_FTP)/README.txt $(DEST_FTP)/logtalk.dict
 	-rm -f $(DEST_AUTO)/*.vim $(DEST_AUTO)/README.txt
-	-rm -f $(DEST_AUTO)/dist/*.vim $(DEST_AUTO)/xml/*.vim
+	-rm -f $(DEST_AUTO)/dist/*.vim $(DEST_AUTO)/xml/*.vim $(DEST_AUTO)/cargo/*.vim $(DEST_AUTO)/rust/*.vim
+	-rm -f $(DEST_IMPORT)/dist/*.vim
 	-rm -f $(DEST_PLUG)/*.vim $(DEST_PLUG)/README.txt
-	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)
+	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)/cargo $(DEST_AUTO)/rust $(DEST_AUTO)
+	-rmdir $(DEST_IMPORT)/dist $(DEST_IMPORT)
+	-rm -f $(DEST_RT)/README.??.txt
+	-rm -f $(DEST_RT)/README.??_??.txt
+	-rm -f $(DEST_RT)/LICENSE.??.txt
+	-rm -f $(DEST_RT)/LICENSE.??_??.txt
+	-rm -f $(DEST_RT)/README.txt $(DEST_RT)/LICENSE
 	-rmdir $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
 	-rmdir $(DEST_VIM)
@@ -2848,18 +3021,20 @@ uninstall_runtime:
 # Clean up all the files that have been produced, except configure's.
 # We support common typing mistakes for Juergen! :-)
 clean celan: testclean
-	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim
 	-rm -rf objects
-	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
+	-rm -f auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f testdir/opt_test.vim
 	-rm -f $(UNITTEST_TARGETS)
 	-rm -f runtime pixmaps
-	-rm -rf $(APPDIR)
-	-rm -rf mzscheme_base.c
+	-rm -f mzscheme_base.c
+	-rm -rf libvterm/.libs libvterm/src/.libs libvterm/t/.libs libvterm/src/*.o libvterm/src/*.lo libvterm/t/*.o libvterm/t/*.lo libvterm/t/harness libvterm/libvterm.la
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
+	cd xxd; $(MAKE) clean
+	cd auto/wayland; $(MAKE) clean
 
 # Make a shadow directory for compilation on another system or with different
 # features:
@@ -2882,12 +3057,14 @@ clean celan: testclean
 #  % make
 SHADOWDIR = shadow
 
-LINKEDFILES = ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
+LINKEDFILES = ../*.[chm] ../*.cc ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
 	cd $(SHADOWDIR); ln -s $(LINKEDFILES) .
 	mkdir $(SHADOWDIR)/auto
+	mkdir $(SHADOWDIR)/auto/wayland
+	cd $(SHADOWDIR)/auto/wayland; ln -s ../../../auto/wayland/* .
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
 	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/*.in ../../po/Makefile ../../po/*.c .
@@ -2900,11 +3077,6 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	$(MKDIR_P) $(SHADOWDIR)/xdiff
 	cd $(SHADOWDIR)/xdiff; ln -s ../../xdiff/*.[ch] .
-	if test -d $(RSRC_DIR); then \
-		cd $(SHADOWDIR); \
-		ln -s ../infplist.xml .; \
-		ln -s ../$(RSRC_DIR) ../os_mac.rsr.hqx ../dehqx.py .; \
-	fi
 	$(MKDIR_P) $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/Make_all.mak \
@@ -2914,11 +3086,14 @@ shadow:	runtime pixmaps
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
 				 ../../testdir/pyxfile \
+				 ../../testdir/ru_RU \
 				 ../../testdir/sautest \
 				 ../../testdir/samples \
+				 ../../testdir/util \
 				 ../../testdir/dumps \
-				 ../../testdir/test83-tags? \
-				 ../../testdir/*.ok .
+				 ../../testdir/*.ok \
+				 ../../testdir/testluaplugin \
+				 .
 
 # After updating Vim new files may have been created, use this to refresh the
 # symbolic links in the shadow directory. This isn't guaranteed to catch all
@@ -2929,6 +3104,8 @@ shadowupdate:
 # Link needed for doing "make install" in a shadow directory.
 runtime:
 	-ln -s ../runtime .
+	-ln -s ../README.txt .
+	-ln -s ../LICENSE .
 
 # Link needed for doing "make" using GTK in a shadow directory.
 pixmaps:
@@ -2937,7 +3114,7 @@ pixmaps:
 # Update the synmenu.vim file with the latest Syntax menu.
 # This is only needed when runtime/makemenu.vim was changed.
 menu: ./vim ../runtime/makemenu.vim
-	./vim -u ../runtime/makemenu.vim
+	./vim --clean -X --not-a-term -S ../runtime/makemenu.vim
 
 # Start configure from scratch
 scrub scratch:
@@ -2968,13 +3145,23 @@ mdepend:
 	done
 	mv tmp_make Makefile
 
+# this needs a Vim build with Perl & Wayland
 depend:
 	-@rm -f Makefile~
 	cp Makefile Makefile~
 	sed -e '/\#\#\# Dependencies/q' < Makefile > tmp_make
-	-for i in $(ALL_SRC); do echo $$i; \
+	-for i in $(ALL_LOCAL_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
+	-for i in $(TERM_SRC); do echo $$i; \
+		$(CPP_DEPEND) $$i | \
+		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' -e 's+proto/[^ ]*\.pro[ ]*++' >> tmp_make; done
+	-for i in $(XDIFF_SRC); do echo $$i; \
+		$(CPP_DEPEND) $$i | \
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+proto/[^ ]*\.pro[ ]*++' -e 's+xdiff/\.\./++g' >> tmp_make; done
+	-for i in $(PROTO_FILES); do \
+		base=`basename $$i .pro`; \
+		echo "$$i: $$base.c" >> tmp_make; done
 	mv tmp_make Makefile
 
 # Run lint.  Clean up the *.ln files that are sometimes left behind.
@@ -2993,12 +3180,19 @@ lintinstall:
 	$(CCC) $<
 
 auto/if_perl.c: if_perl.xs
-	$(PERL) -e 'unless ( $$] >= 5.005 ) { for (qw(na defgv errgv)) { print "#define PL_$$_ $$_\n" }}' > $@
 	$(PERL) $(PERL_XSUBPP) -prototypes -typemap \
-	    $(PERLLIB)/ExtUtils/typemap if_perl.xs >> $@
+	    $(PERLLIB)/ExtUtils/typemap if_perl.xs > $@
 
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
 	CC="$(CC) $(OSDEF_CFLAGS)" srcdir=$(srcdir) sh $(srcdir)/osdef.sh
+
+auto/os_haiku.rdef: os_haiku.rdef.in
+	@echo creating $@
+	@echo '/* This file is automatically created by Makefile */' >> $@
+	@echo '/* DO NOT EDIT!  Change Makefile only. */' >> $@
+	@cat $(srcdir)/os_haiku.rdef.in >> auto/os_haiku.rdef
+	sed -i "s|@MAJOR@|$(VIMMAJOR)|" auto/os_haiku.rdef
+	sed -i "s|@MINOR@|$(VIMMINOR)|" auto/os_haiku.rdef
 
 auto/pathdef.c: Makefile auto/config.mk
 	-@echo creating $@
@@ -3013,7 +3207,7 @@ auto/pathdef.c: Makefile auto/config.mk
 	-@echo 'char_u *compiled_user = (char_u *)"' | tr -d $(NL) >> $@
 	-@if test -n "$(COMPILEDBY)"; then \
 		echo "$(COMPILEDBY)" | tr -d $(NL) >> $@; \
-		else ((logname) 2>/dev/null || whoami) | tr -d $(NL) >> $@; fi
+		else (logname 2>/dev/null || whoami) | tr -d $(NL) >> $@; fi
 	-@echo '";' >> $@
 	-@echo 'char_u *compiled_sys = (char_u *)"' | tr -d $(NL) >> $@
 	-@if test -z "$(COMPILEDBY)"; then hostname | tr -d $(NL) >> $@; fi
@@ -3036,11 +3230,21 @@ GUI_GTK_RES_INPUTS = \
 	../pixmaps/stock_vim_window_split_vertical.png
 
 auto/gui_gtk_gresources.c: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
-	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml
+	if test -z "$(GLIB_COMPILE_RESOURCES)"; then touch $@; else \
+		$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml; \
+	fi
 auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 	if test -z "$(GLIB_COMPILE_RESOURCES)"; then touch $@; else \
 		$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=../pixmaps --generate --c-name=gui_gtk --manual-register gui_gtk_res.xml; \
 	fi
+
+# Dependencies through vim.h that most targets depend on.  Used by targets
+# that are not taken care of by "make depend".
+VIM_H_DEPENDENCIES = \
+	vim.h protodef.h auto/config.h feature.h os_unix.h \
+	auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+	structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+	proto.h globals.h errors.h
 
 # All the object files are put in the "objects" directory.  Since not all make
 # commands understand putting object files in another directory, it must be
@@ -3056,6 +3260,9 @@ objects/.dirstamp:
 # works.  Can't depend on the directory itself, its timestamp changes all the
 # time.
 $(ALL_OBJ): objects/.dirstamp
+
+objects/alloc.o: alloc.c
+	$(CCC) -o $@ alloc.c
 
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
@@ -3075,11 +3282,23 @@ objects/blowfish.o: blowfish.c
 objects/buffer.o: buffer.c
 	$(CCC) -o $@ buffer.c
 
+objects/bufwrite.o: bufwrite.c
+	$(CCC) -o $@ bufwrite.c
+
 objects/change.o: change.c
 	$(CCC) -o $@ change.c
 
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
+
+objects/cindent.o: cindent.c
+	$(CCC) -o $@ cindent.c
+
+objects/clientserver.o: clientserver.c
+	$(CCC) -o $@ clientserver.c
+
+objects/clipboard.o: clipboard.c $(WAYLAND_SRC)
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ clipboard.c
 
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
@@ -3153,29 +3372,38 @@ objects/filepath.o: filepath.c
 objects/findfile.o: findfile.c
 	$(CCC) -o $@ findfile.c
 
+objects/float.o: float.c
+	$(CCC) -o $@ float.c
+
 objects/fold.o: fold.c
 	$(CCC) -o $@ fold.c
+
+objects/fuzzy.o: fuzzy.c
+	$(CCC) -o $@ fuzzy.c
 
 objects/getchar.o: getchar.c
 	$(CCC) -o $@ getchar.c
 
+objects/gc.o: gc.c
+	$(CCC) -o $@ gc.c
+
 objects/hardcopy.o: hardcopy.c
 	$(CCC) -o $@ hardcopy.c
+
+objects/hardcopy_pango.o: hardcopy_pango.c
+	$(CCC) $(CAIRO_CFLAGS) $(CAIRO_CPPFLAGS) $(PANGO_CFLAGS) $(PANGO_CPPFLAGS) -o $@ hardcopy_pango.c
+
+objects/hardcopy_postscript.o: hardcopy_postscript.c
+	$(CCC) -o $@ hardcopy_postscript.c
 
 objects/hashtab.o: hashtab.c
 	$(CCC) -o $@ hashtab.c
 
+objects/help.o: help.c
+	$(CCC) -o $@ help.c
+
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
-
-objects/gui_at_fs.o: gui_at_fs.c
-	$(CCC) -o $@ gui_at_fs.c
-
-objects/gui_at_sb.o: gui_at_sb.c
-	$(CCC) -o $@ gui_at_sb.c
-
-objects/gui_athena.o: gui_athena.c
-	$(CCC) -o $@ gui_athena.c
 
 objects/beval.o: beval.c
 	$(CCC) -o $@ beval.c
@@ -3195,6 +3423,28 @@ objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
 objects/gui_gtk_x11.o: gui_gtk_x11.c
 	$(CCC) -o $@ gui_gtk_x11.c
 
+objects/gui_gtk4.o: gui_gtk4.c
+	$(CCC) -o $@ gui_gtk4.c
+
+objects/gui_gtk4_f.o: gui_gtk4_f.c
+	$(CCC) -o $@ gui_gtk4_f.c
+
+objects/gui_gtk4_cb.o: gui_gtk4_cb.c
+	$(CCC) -o $@ gui_gtk4_cb.c
+
+objects/gui_gtk4_da.o: gui_gtk4_da.c
+	$(CCC) -o $@ gui_gtk4_da.c
+
+objects/gui_gtk4_tb.o: gui_gtk4_tb.c
+	$(CCC) -o $@ gui_gtk4_tb.c
+
+objects/gui_gtk4_menu.o: gui_gtk4_menu.c
+	$(CCC) -o $@ gui_gtk4_menu.c
+
+
+objects/gui_haiku.o: gui_haiku.cc
+	$(CCC) -o $@ gui_haiku.cc
+
 objects/gui_motif.o: gui_motif.c
 	$(CCC) -o $@ gui_motif.c
 
@@ -3207,14 +3457,11 @@ objects/gui_xmebw.o: gui_xmebw.c
 objects/gui_x11.o: gui_x11.c
 	$(CCC) -o $@ gui_x11.c
 
+objects/gui_xim.o: gui_xim.c
+	$(CCC) -o $@ gui_xim.c
+
 objects/gui_photon.o: gui_photon.c
 	$(CCC) -o $@ gui_photon.c
-
-objects/gui_mac.o: gui_mac.c
-	$(CCC) -o $@ gui_mac.c
-
-objects/hangulin.o: hangulin.c
-	$(CCC) -o $@ hangulin.c
 
 objects/highlight.o: highlight.c
 	$(CCC) -o $@ highlight.c
@@ -3226,7 +3473,7 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
 objects/if_lua.o: if_lua.c
-	$(CCC_NF) $(LUA_CFLAGS) $(ALL_CFLAGS) -o $@ if_lua.c
+	$(CCC_NF) $(LUA_CFLAGS) $(ALL_CFLAGS) $(LUA_CFLAGS_EXTRA) -o $@ if_lua.c
 
 objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
@@ -3235,28 +3482,28 @@ mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
 objects/if_perl.o: auto/if_perl.c
-	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ auto/if_perl.c
-
-objects/if_perlsfio.o: if_perlsfio.c
-	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ if_perlsfio.c
+	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) $(PERL_CFLAGS_EXTRA) -o $@ auto/if_perl.c
 
 objects/if_python.o: if_python.c if_py_both.h
-	$(CCC_NF) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python.c
+	$(CCC_NF) $(PYTHON_CFLAGS) $(ALL_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
 objects/if_python3.o: if_python3.c if_py_both.h
-	$(CCC_NF) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python3.c
+	$(CCC_NF) $(PYTHON3_CFLAGS) $(ALL_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
 objects/if_ruby.o: if_ruby.c
-	$(CCC_NF) $(RUBY_CFLAGS) $(ALL_CFLAGS) -o $@ if_ruby.c
+	$(CCC_NF) $(RUBY_CFLAGS) $(ALL_CFLAGS) $(RUBY_CFLAGS_EXTRA) -o $@ if_ruby.c
 
 objects/if_tcl.o: if_tcl.c
-	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ if_tcl.c
+	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) $(TCL_CFLAGS_EXTRA) -o $@ if_tcl.c
 
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
 
 objects/insexpand.o: insexpand.c
 	$(CCC) -o $@ insexpand.c
+
+objects/job.o: job.c
+	$(CCC) -o $@ job.c
 
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
@@ -3267,8 +3514,17 @@ objects/json_test.o: json_test.c
 objects/kword_test.o: kword_test.c
 	$(CCC) -o $@ kword_test.c
 
+objects/linematch.o: linematch.c
+	$(CCC) -o $@ linematch.c
+
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
+
+objects/locale.o: locale.c
+	$(CCC) -o $@ locale.c
+
+objects/logfile.o: logfile.c
+	$(CCC) -o $@ logfile.c
 
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
@@ -3278,6 +3534,9 @@ objects/map.o: map.c
 
 objects/mark.o: mark.c
 	$(CCC) -o $@ mark.c
+
+objects/match.o: match.c
+	$(CCC) -o $@ match.c
 
 objects/memfile.o: memfile.c
 	$(CCC) -o $@ memfile.c
@@ -3319,30 +3578,30 @@ objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
 objects/option.o: option.c optiondefs.h
-	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ option.c
+	$(CCC_NF) $(ALL_IF_CFLAGS) $(ALL_CFLAGS) $(ALL_IF_CFLAGS_EXTRA) -o $@ option.c
 
 objects/optionstr.o: optionstr.c
-	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ optionstr.c
+	$(CCC_NF) $(ALL_IF_CFLAGS) $(ALL_CFLAGS) $(ALL_IF_CFLAGS_EXTRA) -o $@ optionstr.c
 
-objects/os_beos.o: os_beos.c
-	$(CCC) -o $@ os_beos.c
-
-objects/os_qnx.o: os_qnx.c
+objects/os_qnx.o: os_qnx.c $(VIM_H_DEPENDENCIES)
 	$(CCC) -o $@ os_qnx.c
+
+objects/os_haiku.rsrc: auto/os_haiku.rdef
+	cat $< | $(CCC) -E - | grep -v '^#' | rc -o "$@" -
 
 objects/os_macosx.o: os_macosx.m
 	$(CCC) -o $@ os_macosx.m
 
-objects/os_mac_conv.o: os_mac_conv.c
+objects/os_mac_conv.o: os_mac_conv.c $(VIM_H_DEPENDENCIES)
 	$(CCC) -o $@ os_mac_conv.c
 
 objects/os_unix.o: os_unix.c
 	$(CCC) -o $@ os_unix.c
 
-objects/os_mswin.o: os_mswin.c
+objects/os_mswin.o: os_mswin.c $(VIM_H_DEPENDENCIES)
 	$(CCC) -o $@ os_mswin.c
 
-objects/winclip.o: winclip.c
+objects/winclip.o: winclip.c $(VIM_H_DEPENDENCIES)
 	$(CCC) -o $@ winclip.c
 
 objects/pathdef.o: auto/pathdef.c
@@ -3387,6 +3646,18 @@ objects/sha256.o: sha256.c
 objects/sign.o: sign.c
 	$(CCC) -o $@ sign.c
 
+objects/sixel.o: sixel.c
+	$(CCC) -o $@ sixel.c
+
+objects/kitty.o: kitty.c
+	$(CCC) -o $@ kitty.c
+
+objects/cairo.o: cairo.c
+	$(CCC) -o $@ cairo.c
+
+objects/socketserver.o: socketserver.c
+	$(CCC) -o $@ socketserver.c
+
 objects/sound.o: sound.c
 	$(CCC) -o $@ sound.c
 
@@ -3399,8 +3670,14 @@ objects/spellfile.o: spellfile.c
 objects/spellsuggest.o: spellsuggest.c
 	$(CCC) -o $@ spellsuggest.c
 
+objects/strings.o: strings.c
+	$(CCC) -o $@ strings.c
+
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c
+
+objects/tabpanel.o: tabpanel.c
+	$(CCC) -o $@ tabpanel.c
 
 objects/tag.o: tag.c
 	$(CCC) -o $@ tag.c
@@ -3414,8 +3691,23 @@ objects/terminal.o: terminal.c $(TERM_DEPS)
 objects/testing.o: testing.c
 	$(CCC) -o $@ testing.c
 
+objects/textformat.o: textformat.c
+	$(CCC) -o $@ textformat.c
+
+objects/textobject.o: textobject.c
+	$(CCC) -o $@ textobject.c
+
 objects/textprop.o: textprop.c
 	$(CCC) -o $@ textprop.c
+
+objects/time.o: time.c
+	$(CCC) -o $@ time.c
+
+objects/tuple.o: tuple.c
+	$(CCC) -o $@ tuple.c
+
+objects/typval.o: typval.c
+	$(CCC) -o $@ typval.c
 
 objects/ui.o: ui.c
 	$(CCC) -o $@ ui.c
@@ -3429,14 +3721,50 @@ objects/usercmd.o: usercmd.c
 objects/userfunc.o: userfunc.c
 	$(CCC) -o $@ userfunc.c
 
+objects/version.o: version.c
+	$(CCC) -o $@ version.c
+
+objects/vim9class.o: vim9class.c
+	$(CCC) -o $@ vim9class.c
+
+objects/vim9cmds.o: vim9cmds.c
+	$(CCC) -o $@ vim9cmds.c
+
+objects/vim9compile.o: vim9compile.c
+	$(CCC) -o $@ vim9compile.c
+
+objects/vim9execute.o: vim9execute.c
+	$(CCC) -o $@ vim9execute.c
+
+objects/vim9expr.o: vim9expr.c
+	$(CCC) -o $@ vim9expr.c
+
+objects/vim9generics.o: vim9generics.c
+	$(CCC) -o $@ vim9generics.c
+
+objects/vim9instr.o: vim9instr.c
+	$(CCC) -o $@ vim9instr.c
+
+objects/vim9script.o: vim9script.c
+	$(CCC) -o $@ vim9script.c
+
+objects/vim9type.o: vim9type.c
+	$(CCC) -o $@ vim9type.c
+
 objects/viminfo.o: viminfo.c
 	$(CCC) -o $@ viminfo.c
 
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
-objects/bufwrite.o: bufwrite.c
-	$(CCC) -o $@ bufwrite.c
+objects/wayland.o: wayland.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ wayland.c
+
+objects/wlr-data-control-unstable-v1.o: auto/wayland/wlr-data-control-unstable-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/wlr-data-control-unstable-v1.c
+
+objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
+	$(CCC) $(WAYLAND_CFLAGS) $(WAYLAND_CPPFLAGS) -o $@ auto/wayland/ext-data-control-v1.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -3444,39 +3772,44 @@ objects/netbeans.o: netbeans.c
 objects/channel.o: channel.c
 	$(CCC) -o $@ channel.c
 
-Makefile:
-	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
+# Dependencies that "make depend" doesn't find
+objects/gui_gtk_x11.o: version.h
 
+
+# Build rules for libvterm.  Putting them here allows for adding compilation
+# options specific for Vim.  Since the .o files go into objects/ we do need to
+# prefix vterm_ to avoid name clashes.
 CCCTERM = $(CCC_NF) $(VTERM_CFLAGS) $(ALL_CFLAGS) -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
+	  -DSNPRINTF=vim_snprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-objects/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+objects/vterm_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/encoding.c
 
-objects/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+objects/vterm_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/keyboard.c
 
-objects/termmouse.o: libvterm/src/termmouse.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termmouse.c
+objects/vterm_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/mouse.c
 
-objects/parser.o: libvterm/src/parser.c $(TERM_DEPS)
+objects/vterm_parser.o: libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/parser.c
 
-objects/pen.o: libvterm/src/pen.c $(TERM_DEPS)
+objects/vterm_pen.o: libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/pen.c
 
-objects/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termscreen.c
+objects/vterm_screen.o: libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/screen.c
 
-objects/state.o: libvterm/src/state.c $(TERM_DEPS)
+objects/vterm_state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/state.c
 
-objects/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+objects/vterm_unicode.o: libvterm/src/unicode.c $(TERM_DEPS) libvterm/src/fullwidth.inc
 	$(CCCTERM) -o $@ libvterm/src/unicode.c
 
-objects/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+objects/vterm_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/vterm.c
 
 CCCDIFF = $(CCC_NF) $(ALL_CFLAGS)
@@ -3500,512 +3833,762 @@ objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
 
 
+Makefile:
+	@echo 'The name of the makefile MUST be "Makefile" (with capital M)!'
+
+
 ###############################################################################
-### MacOS X installation
-###
-### This installs a runnable Vim.app in $(prefix)
-
-REZ    = /Developer/Tools/Rez
-RESDIR = $(APPDIR)/Contents/Resources
-VERSION = $(VIMMAJOR).$(VIMMINOR)
-
-### Common flags
-M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
-		-DAPP_VER=$(VERSION)
-
-install_macosx: gui_bundle
-# Remove the link to the runtime dir, don't want to copy all of that.
-	-rm $(RESDIR)/vim/runtime
-	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
-# Generate the help tags file now, it won't work with "make installruntime".
-	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
-# Install the runtime files.  Recursive!
-	$(MKDIR_P) $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
-		VIMEXE=$$srcdir/$(VIMTARGET) \
-		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		exec_prefix=$(DESTDIR)$(prefix)/$(APPDIR)/Contents \
-		BINDIR=$(DESTDIR)$(prefix)/$(APPDIR)/Contents/MacOS \
-		VIMLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR)/runtime
-# Put the link back.
-	ln -s `pwd`/../runtime $(RESDIR)/vim
-# Copy rgb.txt, Mac doesn't always have X11
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-# TODO: Create the vimtutor and/or gvimtutor application.
-
-gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
-	bundle-language
-
-$(RESDIR):
-	$(MKDIR_P) $@
-
-bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
-# Make a link to the runtime directory, so that we can try out the executable
-# without installing it.
-	$(MKDIR_P) $(RESDIR)/vim
-	-ln -s `pwd`/../runtime $(RESDIR)/vim
-
-bundle-executable: $(VIMTARGET)
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
-
-bundle-info:  bundle-dir
-	@echo "Creating PkgInfo"
-	@echo -n "APPLVIM!" > $(APPDIR)/Contents/PkgInfo
-	@echo "Creating Info.plist"
-	m4 $(M4FLAGSX) infplist.xml > $(APPDIR)/Contents/Info.plist
-
-bundle-resource: bundle-dir bundle-rsrc
-	cp -f $(RSRC_DIR)/*.icns $(RESDIR)
-
-### Classic resources
-# Resource fork (in the form of a .rsrc file) for Classic Vim (Mac OS 9)
-# This file is also required for OS X Vim.
-bundle-rsrc: os_mac.rsr.hqx
-	@echo "Creating resource fork"
-	python dehqx.py $<
-	rm -f gui_mac.rsrc
-	mv gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
-
-# po/Make_osx.pl says something about generating a Mac message file
-# for Ukrainian.  Would somebody using Mac OS X in Ukrainian
-# *really* be upset that Carbon Vim was not localised in
-# Ukrainian?
 #
-#bundle-language: bundle-dir po/Make_osx.pl
-#	cd po && perl Make_osx.pl --outdir ../$(RESDIR) $(MULTILANG)
-bundle-language: bundle-dir
+# Haiku installation
+#
+# This rule:
+#		- add resources to already installed vim binary to avoid
+#		  stripping them during install;
+#		- update system MIME database with info about vim application.
+#
+install_haiku_extra: $(DEST_BIN)/$(VIMTARGET) objects/os_haiku.rsrc
+	xres -o $(DEST_BIN)/$(VIMTARGET) objects/os_haiku.rsrc
+	mimeset	$(DEST_BIN)/$(VIMTARGET)
 
-$(APPDIR)/Contents:
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	$(MKDIR_P) $(RESDIR)/English.lproj
+# List of g*-links that should be replaced with shell script equivalents.
+# This solves the problem of them from Tracker.
+#
+HAIKU_GLINKS = 	$(DEST_BIN)/$(GVIMTARGET) \
+				$(DEST_BIN)/$(GVIEWTARGET) \
+				$(DEST_BIN)/$(GVIMDIFFTARGET) \
+				$(DEST_BIN)/$(RGVIMTARGET) \
+				$(DEST_BIN)/$(RGVIEWTARGET)
 
+# This rule:
+#		- Replace gvim link with copy of vim binary.
+#		- Replace g*-links with shell script equivalents to solve the
+#		  problem of calling them from Tracker,
+#		- Add icon resources to mentioned g*-link shell scripts
+#		- in case gui-less vim.con executable available use it.
+#
+installglinks_haiku: $(HAIKU_GLINKS) install_haiku_extra
+	@catattr -r "BEOS:ICON" $(DEST_BIN)/$(GVIMTARGET) > ~icon.attr
+	for i in $(HAIKU_GLINKS); do \
+		rm $$i ; \
+		echo "#!/bin/sh" > $$i ; \
+		case $$i in \
+			$(DEST_BIN)/$(GVIMTARGET)) \
+				cp $(DEST_BIN)/$(VIMTARGET) $$i ; \
+				if [ -f $(VIMTARGET).con ] ; then \
+					$(STRIP) $(VIMTARGET).con ; \
+					mv $(VIMTARGET).con $(DEST_BIN)/$(VIMTARGET) ; \
+				fi ;; \
+			$(DEST_BIN)/$(GVIEWTARGET))    printf "%s -R %c%c" $(GVIMTARGET) '$$' '*' >> $$i;; \
+			$(DEST_BIN)/$(GVIMDIFFTARGET)) printf "%s -d %c%c" $(GVIMTARGET) '$$' '*' >> $$i;; \
+			$(DEST_BIN)/$(RGVIMTARGET))    printf "%s -Z %c%c" $(GVIMTARGET) '$$' '*' >> $$i;; \
+			$(DEST_BIN)/$(RGVIEWTARGET))   printf "%s -Z -R %c%c" $(GVIMTARGET) '$$' '*' >> $$i;; \
+			*) printf "%s %c%c" $(GVIMTARGET) '$$' '*' >> $$i;; \
+		esac ; \
+		chmod $(BINMOD) $$i ; \
+		addattr -f ~icon.attr  -t \'VICN\' BEOS:ICON $$i ; \
+	done
+	addattr -f ~icon.attr  -t \'VICN\' BEOS:ICON $(DEST_BIN)/$(VIMNAME)tutor
+	@rm ~icon.attr
 
 ###############################################################################
 ### (automatically generated by 'make depend')
 ### Dependencies:
-objects/arabic.o: arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/arglist.o: arglist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/autocmd.o: autocmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/beval.o: beval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/blob.o: blob.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/blowfish.o: blowfish.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/buffer.o: buffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/cmdexpand.o: cmdexpand.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/cmdhist.o: cmdhist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/crypt.o: crypt.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/crypt_zip.o: crypt_zip.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/debugger.o: debugger.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/dict.o: dict.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/diff.o: diff.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h xdiff/xdiff.h vim.h
-objects/digraph.o: digraph.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/drawline.o: drawline.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/drawscreen.o: drawscreen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/edit.o: edit.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/eval.o: eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/evalbuffer.o: evalbuffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/evalfunc.o: evalfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/evalvars.o: evalvars.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/evalwindow.o: evalwindow.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/ex_cmds.o: ex_cmds.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/ex_cmds2.o: ex_cmds2.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/ex_docmd.o: ex_docmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h ex_cmdidxs.h
-objects/ex_eval.o: ex_eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/ex_getln.o: ex_getln.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/fileio.o: fileio.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/filepath.o: filepath.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/findfile.o: findfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/fold.o: fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/getchar.o: getchar.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/hardcopy.o: hardcopy.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/hashtab.o: hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/highlight.o: highlight.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_cscope.o: if_cscope.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h if_cscope.h
-objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/indent.o: indent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/insexpand.o: insexpand.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/list.o: list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/main.o: main.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/map.o: map.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/mark.o: mark.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/memfile.o: memfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/memline.o: memline.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/menu.o: menu.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/message.o: message.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/misc1.o: misc1.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/misc2.o: misc2.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/mouse.o: mouse.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/move.o: move.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/mbyte.o: mbyte.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/normal.o: normal.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/ops.o: ops.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/option.o: option.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h optiondefs.h
-objects/optionstr.o: optionstr.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/os_unix.o: os_unix.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h os_unixx.h
-objects/pathdef.o: auto/pathdef.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/popupmenu.o: popupmenu.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/popupwin.o: popupwin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/profiler.o: profiler.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/pty.o: pty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/quickfix.o: quickfix.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/regexp.o: regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h regexp_bt.c regexp_nfa.c
-objects/register.o: register.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/scriptfile.o: scriptfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/session.o: session.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/sha256.o: sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/sign.o: sign.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/sound.o: spell.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/spell.o: spell.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/spellfile.o: spellfile.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/spellsuggest.o: spellsuggest.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/syntax.o: syntax.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/tag.o: tag.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/term.o: term.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h
-objects/terminal.o: terminal.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h libvterm/include/vterm.h \
- libvterm/include/vterm_keycodes.h
-objects/testing.o: testing.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/textprop.o: textprop.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/ui.o: ui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/undo.o: undo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/usercmd.o: usercmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/userfunc.o: userfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/version.o: version.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/viminfo.o: viminfo.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/window.o: window.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/bufwrite.o: bufwrite.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/gui.o: gui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/gui_gtk.o: gui_gtk.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_gtk_f.h
-objects/gui_gtk_f.o: gui_gtk_f.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_gtk_f.h
-objects/gui_motif.o: gui_motif.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_xmebw.h ../pixmaps/alert.xpm ../pixmaps/error.xpm \
- ../pixmaps/generic.xpm ../pixmaps/info.xpm ../pixmaps/quest.xpm \
- gui_x11_pm.h ../pixmaps/tb_new.xpm ../pixmaps/tb_open.xpm \
- ../pixmaps/tb_close.xpm ../pixmaps/tb_save.xpm ../pixmaps/tb_print.xpm \
- ../pixmaps/tb_cut.xpm ../pixmaps/tb_copy.xpm ../pixmaps/tb_paste.xpm \
- ../pixmaps/tb_find.xpm ../pixmaps/tb_find_next.xpm \
- ../pixmaps/tb_find_prev.xpm ../pixmaps/tb_find_help.xpm \
- ../pixmaps/tb_exit.xpm ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm \
- ../pixmaps/tb_help.xpm ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
- ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
- ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
- ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
- ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
- ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
- ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
- ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
- ../pixmaps/tb_minwidth.xpm
-objects/gui_xmdlg.o: gui_xmdlg.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/gui_xmebw.o: gui_xmebw.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_xmebwp.h gui_xmebw.h
-objects/gui_athena.o: gui_athena.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_at_sb.h gui_x11_pm.h ../pixmaps/tb_new.xpm \
- ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm ../pixmaps/tb_save.xpm \
- ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm ../pixmaps/tb_copy.xpm \
- ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
+objects/alloc.o: auto/osdef.h alloc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/arabic.o: auto/osdef.h arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/arglist.o: auto/osdef.h arglist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/autocmd.o: auto/osdef.h autocmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/beval.o: auto/osdef.h beval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/blob.o: auto/osdef.h blob.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/blowfish.o: auto/osdef.h blowfish.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/buffer.o: auto/osdef.h buffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/change.o: auto/osdef.h change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/charset.o: auto/osdef.h charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/cindent.o: auto/osdef.h cindent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/clientserver.o: auto/osdef.h clientserver.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/clipboard.o: auto/osdef.h clipboard.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h wayland.h
+objects/cmdexpand.o: auto/osdef.h cmdexpand.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/cmdhist.o: auto/osdef.h cmdhist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/crypt.o: auto/osdef.h crypt.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/crypt_zip.o: auto/osdef.h crypt_zip.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/debugger.o: auto/osdef.h debugger.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/dict.o: auto/osdef.h dict.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/diff.o: auto/osdef.h diff.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h xdiff/xdiff.h
+objects/digraph.o: auto/osdef.h digraph.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/drawline.o: auto/osdef.h drawline.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/drawscreen.o: auto/osdef.h drawscreen.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/edit.o: auto/osdef.h edit.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/eval.o: auto/osdef.h eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/evalbuffer.o: auto/osdef.h evalbuffer.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/evalfunc.o: auto/osdef.h evalfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/evalvars.o: auto/osdef.h evalvars.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/evalwindow.o: auto/osdef.h evalwindow.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/ex_cmds.o: auto/osdef.h ex_cmds.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/ex_cmds2.o: auto/osdef.h ex_cmds2.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/ex_docmd.o: auto/osdef.h ex_docmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h ex_cmdidxs.h
+objects/ex_eval.o: auto/osdef.h ex_eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/ex_getln.o: auto/osdef.h ex_getln.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/fileio.o: auto/osdef.h fileio.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/filepath.o: auto/osdef.h filepath.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/findfile.o: auto/osdef.h findfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/float.o: auto/osdef.h float.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/fold.o: auto/osdef.h fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/fuzzy.o: auto/osdef.h fuzzy.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/getchar.o: auto/osdef.h getchar.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/gc.o: auto/osdef.h gc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/gui_xim.o: auto/osdef.h gui_xim.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/hardcopy.o: auto/osdef.h hardcopy.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h hardcopy.h hardcopy_postscript.h
+objects/hardcopy_pango.o: auto/osdef.h hardcopy_pango.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h hardcopy.h
+objects/hardcopy_postscript.o: auto/osdef.h hardcopy_postscript.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h hardcopy.h hardcopy_postscript.h
+objects/hashtab.o: auto/osdef.h hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/help.o: auto/osdef.h help.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/highlight.o: auto/osdef.h highlight.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/if_cscope.o: auto/osdef.h if_cscope.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/if_xcmdsrv.o: auto/osdef.h if_xcmdsrv.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h version.h
+objects/indent.o: auto/osdef.h indent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/insexpand.o: auto/osdef.h insexpand.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/json.o: auto/osdef.h json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/linematch.o: auto/osdef.h linematch.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h xdiff/xdiff.h \
+ alloc.h ex_cmds.h spell.h proto.h globals.h errors.h
+objects/list.o: auto/osdef.h list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/locale.o: auto/osdef.h locale.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/logfile.o: auto/osdef.h logfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/main.o: auto/osdef.h main.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/map.o: auto/osdef.h map.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/mark.o: auto/osdef.h mark.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/match.o: auto/osdef.h match.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/mbyte.o: auto/osdef.h mbyte.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/memfile.o: auto/osdef.h memfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/memline.o: auto/osdef.h memline.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/menu.o: auto/osdef.h menu.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/message.o: auto/osdef.h message.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/misc1.o: auto/osdef.h misc1.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/misc2.o: auto/osdef.h misc2.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/mouse.o: auto/osdef.h mouse.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/move.o: auto/osdef.h move.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/normal.o: auto/osdef.h normal.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h nv_cmds.h nv_cmdidxs.h
+objects/ops.o: auto/osdef.h ops.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/option.o: auto/osdef.h option.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h optiondefs.h
+objects/optionstr.o: auto/osdef.h optionstr.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/os_unix.o: auto/osdef.h os_unix.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h os_unixx.h
+objects/pathdef.o: auto/osdef.h auto/pathdef.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/popupmenu.o: auto/osdef.h popupmenu.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/popupwin.o: auto/osdef.h popupwin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/profiler.o: auto/osdef.h profiler.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/pty.o: auto/osdef.h pty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/quickfix.o: auto/osdef.h quickfix.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/regexp.o: auto/osdef.h regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h regexp_bt.c regexp_nfa.c
+objects/register.o: auto/osdef.h register.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/screen.o: auto/osdef.h screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/scriptfile.o: auto/osdef.h scriptfile.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/search.o: auto/osdef.h search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/session.o: auto/osdef.h session.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/sha256.o: auto/osdef.h sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/sign.o: auto/osdef.h sign.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/sixel.o: auto/osdef.h sixel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/kitty.o: auto/osdef.h kitty.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/cairo.o: auto/osdef.h cairo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/socketserver.o: socketserver.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h xdiff/xdiff.h xdiff/../vim.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/sound.o: auto/osdef.h sound.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/spell.o: auto/osdef.h spell.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/spellfile.o: auto/osdef.h spellfile.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/spellsuggest.o: auto/osdef.h spellsuggest.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/strings.o: auto/osdef.h strings.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/syntax.o: auto/osdef.h syntax.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tabpanel.o: auto/osdef.h tabpanel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tag.o: auto/osdef.h tag.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/term.o: auto/osdef.h term.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/terminal.o: auto/osdef.h terminal.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/testing.o: auto/osdef.h testing.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/textformat.o: auto/osdef.h textformat.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/textobject.o: auto/osdef.h textobject.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/textprop.o: auto/osdef.h textprop.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/time.o: auto/osdef.h time.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/tuple.o: auto/osdef.h tuple.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/typval.o: auto/osdef.h typval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/ui.o: auto/osdef.h ui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/undo.o: auto/osdef.h undo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/usercmd.o: auto/osdef.h usercmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/userfunc.o: auto/osdef.h userfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/version.o: auto/osdef.h version.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/vim9class.o: auto/osdef.h vim9class.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9cmds.o: auto/osdef.h vim9cmds.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h vim9.h
+objects/vim9compile.o: auto/osdef.h vim9compile.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9execute.o: auto/osdef.h vim9execute.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9expr.o: auto/osdef.h vim9expr.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h vim9.h
+objects/vim9generics.o: auto/osdef.h vim9generics.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9instr.o: auto/osdef.h vim9instr.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9script.o: auto/osdef.h vim9script.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h vim9.h
+objects/vim9type.o: auto/osdef.h vim9type.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h vim9.h
+objects/viminfo.o: auto/osdef.h viminfo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/window.o: auto/osdef.h window.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/bufwrite.o: auto/osdef.h bufwrite.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/gui.o: auto/osdef.h gui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/gui_gtk.o: auto/osdef.h gui_gtk.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h gui_gtk_f.h
+objects/gui_gtk4.o: auto/osdef.h gui_gtk4.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h gui_gtk4_f.h \
+ gui_gtk4_cb.h gui_gtk4_da.h gui_gtk4_tb.h gui_gtk4_menu.h
+objects/gui_gtk4_f.o: auto/osdef.h gui_gtk4_f.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_f.h
+objects/gui_gtk4_cb.o: auto/osdef.h gui_gtk4_cb.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_cb.h
+objects/gui_gtk4_da.o: auto/osdef.h gui_gtk4_da.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_da.h
+objects/gui_gtk4_tb.o: auto/osdef.h gui_gtk4_tb.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_tb.h
+objects/gui_gtk4_menu.o: auto/osdef.h gui_gtk4_menu.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk4_menu.h
+objects/gui_gtk_f.o: auto/osdef.h gui_gtk_f.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_gtk_f.h
+objects/gui_motif.o: auto/osdef.h gui_motif.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_xmebw.h \
+ ../pixmaps/alert.xpm ../pixmaps/error.xpm ../pixmaps/generic.xpm \
+ ../pixmaps/info.xpm ../pixmaps/quest.xpm gui_x11_pm.h \
+ ../pixmaps/tb_new.xpm ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm \
+ ../pixmaps/tb_save.xpm ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm \
+ ../pixmaps/tb_copy.xpm ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
  ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
  ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
  ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
@@ -4018,163 +4601,363 @@ objects/gui_athena.o: gui_athena.c vim.h protodef.h auto/config.h feature.h \
  ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
  ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
  ../pixmaps/tb_minwidth.xpm
-objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h auto/gui_gtk_gresources.h gui_gtk_f.h \
- ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
-objects/gui_x11.o: gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm \
- ../runtime/vim48x48.xpm
-objects/gui_at_sb.o: gui_at_sb.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_at_sb.h
-objects/gui_at_fs.o: gui_at_fs.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h gui_at_sb.h
-objects/json_test.o: json_test.c main.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h json.c
-objects/kword_test.o: kword_test.c main.c vim.h protodef.h auto/config.h \
- feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
- option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
- ex_cmds.h spell.h proto.h globals.h charset.c
-objects/memfile_test.o: memfile_test.c main.c vim.h protodef.h auto/config.h \
- feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
- option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
- ex_cmds.h spell.h proto.h globals.h memfile.c
-objects/message_test.o: message_test.c main.c vim.h protodef.h auto/config.h \
- feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
- option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
- ex_cmds.h spell.h proto.h globals.h message.c
-objects/hangulin.o: hangulin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_lua.o: if_lua.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_mzsch.o: if_mzsch.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h if_mzsch.h
-objects/if_perl.o: auto/if_perl.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_perlsfio.o: if_perlsfio.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_python.o: if_python.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h if_py_both.h
-objects/if_python3.o: if_python3.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h if_py_both.h
-objects/if_tcl.o: if_tcl.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/if_ruby.o: if_ruby.c protodef.h auto/config.h vim.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/gui_beval.o: gui_beval.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
-objects/netbeans.o: netbeans.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h version.h
-objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
+objects/gui_xmdlg.o: auto/osdef.h gui_xmdlg.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/gui_xmebw.o: auto/osdef.h gui_xmebw.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h gui_xmebwp.h gui_xmebw.h
+objects/gui_gtk_x11.o: auto/osdef.h gui_gtk_x11.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h auto/gui_gtk_gresources.h \
+ gui_gtk_f.h ../runtime/vim16x16_png.h ../runtime/vim32x32_png.h \
+ ../runtime/vim48x48_png.h
+objects/gui_x11.o: auto/osdef.h gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm \
+ ../runtime/vim48x48.xpm errors.h vim_icon.xbm vim_mask.xbm
+objects/gui_haiku.o: auto/osdef.h gui_haiku.cc vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/json_test.o: auto/osdef.h json_test.c main.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h json.c
+objects/kword_test.o: auto/osdef.h kword_test.c main.c vim.h protodef.h auto/config.h \
+ feature.h os_unix.h ascii.h keymap.h termdefs.h macros.h \
+ option.h beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h charset.c
+objects/memfile_test.o: auto/osdef.h memfile_test.c main.c vim.h protodef.h auto/config.h \
+ feature.h os_unix.h ascii.h keymap.h termdefs.h macros.h \
+ option.h beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h memfile.c
+objects/message_test.o: auto/osdef.h message_test.c main.c vim.h protodef.h auto/config.h \
+ feature.h os_unix.h ascii.h keymap.h termdefs.h macros.h \
+ option.h beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h message.c
+objects/if_lua.o: auto/osdef.h if_lua.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/if_mzsch.o: auto/osdef.h if_mzsch.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h if_mzsch.h
+objects/if_perl.o: auto/osdef.h auto/if_perl.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/if_python.o: auto/osdef.h if_python.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h if_py_both.h
+objects/if_python3.o: auto/osdef.h if_python3.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h if_py_both.h
+objects/if_tcl.o: auto/osdef.h if_tcl.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/if_ruby.o: auto/osdef.h if_ruby.c protodef.h auto/config.h vim.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/gui_beval.o: auto/osdef.h gui_beval.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
+ beval.h structs.h regexp.h gui.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h
+objects/netbeans.o: auto/osdef.h netbeans.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h version.h
+objects/job.o: auto/osdef.h job.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/channel.o: auto/osdef.h channel.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
-objects/encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
+objects/wlr-data-control-unstable-v1.o: \
+ auto/wayland/wlr-data-control-unstable-v1.c
+objects/ext-data-control-v1.o: auto/wayland/ext-data-control-v1.c
+objects/wayland.o: auto/osdef.h wayland.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h errors.h wayland.h \
+ auto/wayland/wlr-data-control-unstable-v1.h \
+ auto/wayland/ext-data-control-v1.h
+objects/vterm_encoding.o: auto/osdef.h libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/encoding/DECdrawing.inc libvterm/src/encoding/uk.inc
-objects/keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
+objects/vterm_keyboard.o: auto/osdef.h libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/termmouse.o: libvterm/src/termmouse.c libvterm/src/vterm_internal.h \
+objects/vterm_mouse.o: auto/osdef.h libvterm/src/mouse.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
+objects/vterm_parser.o: auto/osdef.h libvterm/src/parser.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
+objects/vterm_pen.o: auto/osdef.h libvterm/src/pen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
- libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/termscreen.o: libvterm/src/termscreen.c libvterm/src/vterm_internal.h \
+objects/vterm_screen.o: auto/osdef.h libvterm/src/screen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/rect.h libvterm/src/utf8.h
-objects/unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
+objects/vterm_state.o: auto/osdef.h libvterm/src/state.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
+objects/vterm_unicode.o: auto/osdef.h libvterm/src/unicode.c libvterm/src/vterm_internal.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
+ libvterm/src/fullwidth.inc
+objects/vterm_vterm.o: auto/osdef.h libvterm/src/vterm.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \
+objects/xdiffi.o: auto/osdef.h xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
-objects/xemit.o: xdiff/xemit.c xdiff/xinclude.h auto/config.h \
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+objects/xemit.o: auto/osdef.h xdiff/xemit.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
-objects/xprepare.o: xdiff/xprepare.c xdiff/xinclude.h auto/config.h \
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+objects/xprepare.o: auto/osdef.h xdiff/xprepare.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
-objects/xutils.o: xdiff/xutils.c xdiff/xinclude.h auto/config.h \
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+objects/xutils.o: auto/osdef.h xdiff/xutils.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
-objects/xhistogram.o: xdiff/xhistogram.c xdiff/xinclude.h auto/config.h \
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+objects/xhistogram.o: auto/osdef.h xdiff/xhistogram.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
-objects/xpatience.o: xdiff/xpatience.c xdiff/xinclude.h auto/config.h \
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+objects/xpatience.o: auto/osdef.h xdiff/xpatience.c xdiff/xinclude.h auto/config.h \
  xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
  auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h \
- macros.h option.h beval.h proto/gui_beval.pro \
- structs.h regexp.h gui.h alloc.h \
+ ascii.h keymap.h \
+ termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h \
+ libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h \
- xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h xdiff/xdiffi.h \
- xdiff/xemit.h
+ errors.h xdiff/xtypes.h xdiff/xutils.h xdiff/xprepare.h \
+ xdiff/xdiffi.h xdiff/xemit.h
+proto/alloc.pro: alloc.c
+proto/arabic.pro: arabic.c
+proto/arglist.pro: arglist.c
+proto/autocmd.pro: autocmd.c
+proto/beval.pro: beval.c
+proto/blob.pro: blob.c
+proto/blowfish.pro: blowfish.c
+proto/buffer.pro: buffer.c
+proto/bufwrite.pro: bufwrite.c
+proto/change.pro: change.c
+proto/channel.pro: channel.c
+proto/charset.pro: charset.c
+proto/cindent.pro: cindent.c
+proto/clientserver.pro: clientserver.c
+proto/clipboard.pro: clipboard.c
+proto/cmdexpand.pro: cmdexpand.c
+proto/cmdhist.pro: cmdhist.c
+proto/crypt.pro: crypt.c
+proto/crypt_zip.pro: crypt_zip.c
+proto/debugger.pro: debugger.c
+proto/dict.pro: dict.c
+proto/diff.pro: diff.c
+proto/digraph.pro: digraph.c
+proto/drawline.pro: drawline.c
+proto/drawscreen.pro: drawscreen.c
+proto/edit.pro: edit.c
+proto/eval.pro: eval.c
+proto/evalbuffer.pro: evalbuffer.c
+proto/evalfunc.pro: evalfunc.c
+proto/evalvars.pro: evalvars.c
+proto/evalwindow.pro: evalwindow.c
+proto/ex_cmds.pro: ex_cmds.c
+proto/ex_cmds2.pro: ex_cmds2.c
+proto/ex_docmd.pro: ex_docmd.c
+proto/ex_eval.pro: ex_eval.c
+proto/ex_getln.pro: ex_getln.c
+proto/fileio.pro: fileio.c
+proto/filepath.pro: filepath.c
+proto/findfile.pro: findfile.c
+proto/float.pro: float.c
+proto/fold.pro: fold.c
+proto/fuzzy.pro: fuzzy.c
+proto/gc.pro: gc.c
+proto/getchar.pro: getchar.c
+proto/gui_beval.pro: gui_beval.c
+proto/gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
+proto/gui_xim.pro: gui_xim.c
+proto/hardcopy.pro: hardcopy.c
+proto/hardcopy_pango.pro: hardcopy_pango.c
+proto/hardcopy_postscript.pro: hardcopy_postscript.c
+proto/hashtab.pro: hashtab.c
+proto/help.pro: help.c
+proto/highlight.pro: highlight.c
+proto/if_cscope.pro: if_cscope.c
+proto/if_lua.pro: if_lua.c
+proto/if_mzsch.pro: if_mzsch.c
+proto/if_python.pro: if_python.c
+proto/if_python3.pro: if_python3.c
+proto/if_ruby.pro: if_ruby.c
+proto/if_tcl.pro: if_tcl.c
+proto/if_xcmdsrv.pro: if_xcmdsrv.c
+proto/indent.pro: indent.c
+proto/insexpand.pro: insexpand.c
+proto/job.pro: job.c
+proto/json.pro: json.c
+proto/linematch.pro: linematch.c
+proto/list.pro: list.c
+proto/locale.pro: locale.c
+proto/logfile.pro: logfile.c
+proto/main.pro: main.c
+proto/map.pro: map.c
+proto/mark.pro: mark.c
+proto/match.pro: match.c
+proto/mbyte.pro: mbyte.c
+proto/memfile.pro: memfile.c
+proto/memline.pro: memline.c
+proto/menu.pro: menu.c
+proto/message.pro: message.c
+proto/misc1.pro: misc1.c
+proto/misc2.pro: misc2.c
+proto/mouse.pro: mouse.c
+proto/move.pro: move.c
+proto/netbeans.pro: netbeans.c
+proto/normal.pro: normal.c
+proto/ops.pro: ops.c
+proto/option.pro: option.c
+proto/optionstr.pro: optionstr.c
+proto/os_amiga.pro: os_amiga.c
+proto/os_mac_conv.pro: os_mac_conv.c
+proto/os_mswin.pro: os_mswin.c
+proto/os_qnx.pro: os_qnx.c
+proto/os_unix.pro: os_unix.c
+proto/os_vms.pro: os_vms.c
+proto/os_win32.pro: os_win32.c
+proto/popupmenu.pro: popupmenu.c
+proto/popupwin.pro: popupwin.c
+proto/profiler.pro: profiler.c
+proto/pty.pro: pty.c
+proto/quickfix.pro: quickfix.c
+proto/regexp.pro: regexp.c
+proto/register.pro: register.c
+proto/screen.pro: screen.c
+proto/scriptfile.pro: scriptfile.c
+proto/search.pro: search.c
+proto/session.pro: session.c
+proto/sha256.pro: sha256.c
+proto/sign.pro: sign.c
+proto/sixel.pro: sixel.c
+proto/kitty.pro: kitty.c
+proto/cairo.pro: cairo.c
+proto/socketserver.pro: socketserver.c
+proto/sound.pro: sound.c
+proto/spell.pro: spell.c
+proto/spellfile.pro: spellfile.c
+proto/spellsuggest.pro: spellsuggest.c
+proto/strings.pro: strings.c
+proto/syntax.pro: syntax.c
+proto/tabpanel.pro: tabpanel.c
+proto/tag.pro: tag.c
+proto/term.pro: term.c
+proto/terminal.pro: terminal.c
+proto/termlib.pro: termlib.c
+proto/testing.pro: testing.c
+proto/textformat.pro: textformat.c
+proto/textobject.pro: textobject.c
+proto/textprop.pro: textprop.c
+proto/time.pro: time.c
+proto/tuple.pro: tuple.c
+proto/typval.pro: typval.c
+proto/ui.pro: ui.c
+proto/undo.pro: undo.c
+proto/usercmd.pro: usercmd.c
+proto/userfunc.pro: userfunc.c
+proto/version.pro: version.c
+proto/vim9class.pro: vim9class.c
+proto/vim9cmds.pro: vim9cmds.c
+proto/vim9compile.pro: vim9compile.c
+proto/vim9execute.pro: vim9execute.c
+proto/vim9expr.pro: vim9expr.c
+proto/vim9generics.pro: vim9generics.c
+proto/vim9instr.pro: vim9instr.c
+proto/vim9script.pro: vim9script.c
+proto/vim9type.pro: vim9type.c
+proto/viminfo.pro: viminfo.c
+proto/wayland.pro: wayland.c
+proto/winclip.pro: winclip.c
+proto/window.pro: window.c
+proto/gui.pro: gui.c
+proto/gui_gtk.pro: gui_gtk.c
+proto/gui_gtk4.pro: gui_gtk4.c
+proto/gui_motif.pro: gui_motif.c
+proto/gui_xmdlg.pro: gui_xmdlg.c
+proto/gui_gtk_x11.pro: gui_gtk_x11.c
+proto/gui_x11.pro: gui_x11.c
+proto/gui_w32.pro: gui_w32.c
+proto/gui_photon.pro: gui_photon.c

@@ -1,9 +1,8 @@
-/* syntax.c */
-void syn_set_timeout(proftime_T *tm);
+// syntax.c
 void syntax_start(win_T *wp, linenr_T lnum);
 void syn_stack_free_all(synblock_T *block);
 void syn_stack_apply_changes(buf_T *buf);
-void syntax_end_parsing(linenr_T lnum);
+void syntax_end_parsing(win_T *wp, linenr_T lnum);
 int syntax_check_changed(linenr_T lnum);
 int get_syntax_attr(colnr_T col, int *can_spell, int keep_state);
 void syntax_clear(synblock_T *block);
@@ -22,4 +21,4 @@ int syn_get_stack_item(int i);
 int syn_get_foldlevel(win_T *wp, long lnum);
 void ex_syntime(exarg_T *eap);
 char_u *get_syntime_arg(expand_T *xp, int idx);
-/* vim: set ft=c : */
+// vim: ft=c

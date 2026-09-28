@@ -2,7 +2,7 @@
 " Language:     Speedup, plant simulator from AspenTech
 " Maintainer:   Stefan.Schwarzer <s.schwarzer@ndh.net>
 " URL:		http://www.ndh.net/home/sschwarzer/download/spup.vim
-" Last Change:  2012 Feb 03 by Thilo Six
+" Last Change:  2026 Sep 05
 " Filename:     spup.vim
 
 " Bugs
@@ -25,17 +25,17 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-" don't hightlight several keywords like subsections
+" don't highlight several keywords like subsections
 "let strict_subsections = 1
 
 " highlight types usually found in DECLARE section
-if !exists("hightlight_types")
+if !exists("highlight_types")
     let highlight_types = 1
 endif
 
 " one line comment syntax (# comments)
 " 1. allow appended code after comment, do not complain
-" 2. show code beginnig with the second # as an error
+" 2. show code beginning with the second # as an error
 " 3. show whole lines with more than one # as an error
 if !exists("oneline_comments")
     let oneline_comments = 2
@@ -157,7 +157,7 @@ syn region spupHelp  start="^HELP"hs=e+1  end="^\$ENDHELP"he=s-1 contained
 syn region spupCode  start="^CODE"hs=e+1  end="^\$ENDCODE"he=s-1 contained
 " oneline comments
 if oneline_comments > 3
-    oneline_comments = 2   " default
+    let oneline_comments = 2   " default
 endif
 if oneline_comments == 1
     syn match spupComment  "#[^#]*#\="
@@ -177,7 +177,7 @@ syn cluster spupOrdinary  contains=spupNumber,spupIdentifier,spupSymbol
 syn cluster spupOrdinary  add=spupError,spupString,spupComment
 syn cluster spupTextproc  contains=spupTextprocGeneric,spupTextprocError
 
-" define syncronizing; especially OPERATION sections can become very large
+" define synchronizing; especially OPERATION sections can become very large
 syn sync clear
 syn sync minlines=100
 syn sync maxlines=500

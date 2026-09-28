@@ -1,7 +1,8 @@
 " Vim syntax file
-" Language:	Vim help file
-" Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2019 May 12
+" Language:		Vim help file
+" Maintainer:		Doug Kearns <dougkearns@gmail.com>
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last Change:		2026 Aug 24
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -11,14 +12,56 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-syn match helpHeadline		"^[-A-Z .][-A-Z0-9 .()_]*[ \t]\+\*"me=e-1
+syn iskeyword @,48-57,_,192-255
+
+if !exists('g:help_example_languages')
+  let g:help_example_languages = #{ vim: 'vim', vim9: 'vim' }
+endif
+
+syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_']*?\=\ze\(\s\+\*\|$\)"
 syn match helpSectionDelim	"^===.*===$"
 syn match helpSectionDelim	"^---.*--$"
+
 if has("conceal")
-  syn region helpExample	matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<" concealends
-else
-  syn region helpExample	matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
+  syn region helpExample	matchgroup=helpIgnore
+        \ start="\%(^\| \)>[a-z0-9]*$" end="^[^ \t]"me=e-1 end="^<" concealends
+ else
+   syn region helpExample	matchgroup=helpIgnore
+         \ start="\%(^\| \)>[a-z0-9]*$" end="^[^ \t]"me=e-1 end="^<"
 endif
+
+for [s:lang, s:syntax] in g:help_example_languages->items()
+  unlet! b:current_syntax
+
+  if s:lang == "vim9"
+    let b:vimsyn_force_vim9script = v:true
+  endif
+
+  " silent! to prevent E403
+  execute 'silent! syn include' $'@helpExampleHighlight_{s:lang}'
+        \ $'syntax/{s:syntax}.vim'
+
+  if s:lang == "vim9"
+    unlet b:vimsyn_force_vim9script
+  endif
+
+  execute $'syn region helpExampleHighlight_{s:lang} matchgroup=helpIgnore'
+        \ $'start=/\%(^\| \)>{s:lang}$/'
+        \ 'end=/^[^ \t]/me=e-1 end=/^</'
+        \ (has("conceal") ? 'concealends' : '')
+        \ $'contains=@helpExampleHighlight_{s:lang} keepend'
+endfor
+unlet! s:lang s:syntax
+
+if has_key(g:help_example_languages, "vim9")
+  " for example at :help vim9-mix
+  syn region vim9LegacyHeader_HelpExample
+	\ start=+" _legacy Vim script_ comments are placed here+
+	\ end="^\ze\s*vim9s\%[cript]\>"
+	\ contains=@vimLegacyTop,vimComment,vimLineComment,vimLineStart
+  syn cluster helpExampleHighlight_vim9 add=vim9LegacyHeader_HelpExample
+endif
+
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
   syn match helpHyperTextEntry	"\*[^"*|]\+\*\s"he=e-1 contains=helpStar
@@ -41,11 +84,15 @@ syn match helpNormal		"|.*====*|"
 syn match helpNormal		"|||"
 syn match helpNormal		":|vim:|"	" for :help modeline
 syn match helpVim		"\<Vim version [0-9][0-9.a-z]*"
-syn match helpVim		"VIM REFERENCE.*"
+syn match helpVim		"^\s\+\zsVIM - main help file$"
+syn region helpVim		start="^\s\+VIM REFERENCE" end="^$"
+syn region helpVim		start="^\s\+VIM USER MANUAL" end="^$"
 syn match helpOption		"'[a-z]\{2,\}'"
 syn match helpOption		"'t_..'"
+syn match helpNormal		"'ab'"
 syn match helpCommand		"`[^` \t]\+`"hs=s+1,he=e-1 contains=helpBacktick
-syn match helpCommand		"\(^\|[^a-z"[]\)\zs`[^`]\+`\ze\([^a-z\t."']\|$\)"hs=s+1,he=e-1 contains=helpBacktick
+" doesn't allow a . directly after an ending backtick. See :helpgrep `[^`,]\+ [^`,]\+`\.
+syn match helpCommand		"\(^\|[^a-z"[]\)\zs`[^`]\+`\ze\([^a-z\t."']\|[.?!]\?$\)"hs=s+1,he=e-1 contains=helpBacktick
 syn match helpHeader		"\s*\zs.\{-}\ze\s\=\~$" nextgroup=helpIgnore
 syn match helpGraphic		".* \ze`$" nextgroup=helpIgnore
 if has("conceal")
@@ -53,22 +100,40 @@ if has("conceal")
 else
   syn match helpIgnore		"." contained
 endif
-syn keyword helpNote		note Note NOTE note: Note: NOTE: Notes Notes:
-syn keyword helpWarning		WARNING WARNING: Warning:
-syn keyword helpDeprecated	DEPRECATED DEPRECATED: Deprecated:
-syn match helpSpecial		"\<N\>"
-syn match helpSpecial		"\<N\.$"me=e-1
-syn match helpSpecial		"\<N\.\s"me=e-2
-syn match helpSpecial		"(N\>"ms=s+1
 
+" match 'iskeyword' word boundaries, '!-~,^*,^|,^",192-255'
+let s:iskeyword =  '!#-)+-{}~\d192-\d255'
+let s:start_word = $'\%(^\|[^{s:iskeyword}]\)\@1<='
+let s:end_word =      $'\%([^{s:iskeyword}]\|$\)\@='
+
+exec $'syn match helpNote	"{s:start_word}\%(note\|Note\|NOTE\|Notes\):\={s:end_word}"'
+exec $'syn match helpNote       "\c[[(]note\%(:\|{s:end_word}\)"ms=s+1'
+exec $'syn match helpWarning	"{s:start_word}\%(WARNING:\=\|Warning:\){s:end_word}"'
+exec $'syn match helpDeprecated	"{s:start_word}\%(DEPRECATED:\=\|Deprecated:\){s:end_word}"'
+exec $'syn match helpSpecial	"{s:start_word}N{s:end_word}"'
+exec $'syn match helpSpecial	"{s:start_word}N\.$"me=e-1'
+exec $'syn match helpSpecial	"{s:start_word}N\.\s"me=e-2'
+exec $'syn match helpSpecial	"(N{s:end_word}"ms=s+1'
 syn match helpSpecial		"\[N]"
-" avoid highlighting N  N in help.txt
+" avoid highlighting N  N in quickref.txt
 syn match helpSpecial		"N  N"he=s+1
 syn match helpSpecial		"Nth"me=e-2
 syn match helpSpecial		"N-1"me=e-2
+" highlighting N for :resize in windows.txt
+exec $'syn match helpSpecial	"] -N{s:end_word}"ms=s+3'
+exec $'syn match helpSpecial	"+N{s:end_word}"ms=s+1'
+exec $'syn match helpSpecial	"\[+-]N{s:end_word}"ms=s+4'
+
+unlet s:iskeyword s:start_word s:end_word
+
+" highlighting N of cinoptions-values in indent.txt
+syn match helpSpecial		"^\t-\?\zsNs\?\s"me=s+1
+" highlighting N of cinoptions-values in indent.txt
+syn match helpSpecial		"^\t[>enf{}^L:=lbghNEpti+cC/(uUwWkmMjJ)*#P]N\s"ms=s+2,me=e-1
 syn match helpSpecial		"{[-a-zA-Z0-9'"*+/:%#=[\]<>.,]\+}"
 syn match helpSpecial		"\s\[[-a-z^A-Z0-9_]\{2,}]"ms=s+1
 syn match helpSpecial		"<[-a-zA-Z0-9_]\+>"
+syn match helpSpecial		"<buffer=\w\+>"
 syn match helpSpecial		"<[SCM]-.>"
 syn match helpNormal		"<---*>"
 syn match helpSpecial		"\[range]"
@@ -76,11 +141,15 @@ syn match helpSpecial		"\[line]"
 syn match helpSpecial		"\[count]"
 syn match helpSpecial		"\[offset]"
 syn match helpSpecial		"\[cmd]"
+syn match helpNormal		"vim9\[cmd]"
 syn match helpSpecial		"\[num]"
 syn match helpSpecial		"\[+num]"
 syn match helpSpecial		"\[-num]"
 syn match helpSpecial		"\[+cmd]"
 syn match helpSpecial		"\[++opt]"
+syn match helpSpecial		"\[++once]"
+syn match helpSpecial		"\[++nested]"
+syn match helpSpecial		"\[++t]"
 syn match helpSpecial		"\[arg]"
 syn match helpSpecial		"\[arguments]"
 syn match helpSpecial		"\[ident]"
@@ -90,6 +159,8 @@ syn match helpSpecial		"\[group]"
 syn match helpNormal		"\[\(readonly\|fifo\|socket\|converted\|crypted\)]"
 
 syn match helpSpecial		"CTRL-."
+syn match helpSpecial		"CTRL-<\a\+>"
+syn match helpSpecial		"CTRL-SHIFT-."
 syn match helpSpecial		"CTRL-Break"
 syn match helpSpecial		"CTRL-PageUp"
 syn match helpSpecial		"CTRL-PageDown"
@@ -106,6 +177,7 @@ syn match helpString		"\t[* ]String\t\+[a-z].*"
 syn match helpCharacter		"\t[* ]Character\t\+[a-z].*"
 syn match helpNumber		"\t[* ]Number\t\+[a-z].*"
 syn match helpBoolean		"\t[* ]Boolean\t\+[a-z].*"
+syn match helpRegexp		"\t[* ]Regexp\t\+[a-z].*"
 syn match helpFloat		"\t[* ]Float\t\+[a-z].*"
 syn match helpIdentifier	"\t[* ]Identifier\t\+[a-z].*"
 syn match helpFunction		"\t[* ]Function\t\+[a-z].*"
@@ -132,30 +204,46 @@ syn match helpDelimiter		"\t[* ]Delimiter\t\+[a-z].*"
 syn match helpSpecialComment	"\t[* ]SpecialComment\t\+[a-z].*"
 syn match helpDebug		"\t[* ]Debug\t\+[a-z].*"
 syn match helpUnderlined	"\t[* ]Underlined\t\+[a-z].*"
+syn match helpBold		"\t[* ]Bold\t\+[a-z].*"
+syn match helpItalic		"\t[* ]Italic\t\+[a-z].*"
+syn match helpBoldItalic	"\t[* ]BoldItalic\t\+[a-z].*"
 syn match helpError		"\t[* ]Error\t\+[a-z].*"
 syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
-syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-zA-Z0-9/]`
+syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^'" \t<>{}]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'" \t<>{}]+)[a-zA-Z0-9/]`
+
+syn match helpDiffAdded		"\t[* ]Added\t\+[a-z].*"
+syn match helpDiffChanged	"\t[* ]Changed\t\+[a-z].*"
+syn match helpDiffRemoved	"\t[* ]Removed\t\+[a-z].*"
+
+" builtin.txt
+syn region helpReturnType
+      \ start="^\t\tReturn type: "
+      \ end="^$"
+      \ contains=@vimType,helpHyperTextJump,helpSpecial
+      \ transparent
+syn match helpSpecial		contained "{type}" containedin=vimCompoundType
+
+" digraph.txt
+syn region helpDigraphTable
+      \ start="*digraph-table\%(-mbyte\)\=\*"
+      \ end="^$"
+      \ contains=helpHyperTextEntry,helpHeader
+
+" various.txt
+syn region helpExCommand_Version
+      \ start="^:ve\[rsion]\t\t"
+      \ end="\n\ze\n:ve\[rsion] {nr}"
+      \ contains=helpHyperTextEntry,helpHyperTextJump,helpOption
 
 " Additionally load a language-specific syntax file "help_ab.vim".
 let s:i = match(expand("%"), '\.\a\ax$')
 if s:i > 0
   exe "runtime syntax/help_" . strpart(expand("%"), s:i + 1, 2) . ".vim"
 endif
-
-" Italian
-if v:lang =~ '\<IT\>' || v:lang =~ '_IT\>' || v:lang =~? "italian"
-  syn keyword helpNote		nota Nota NOTA nota: Nota: NOTA: notare Notare NOTARE notare: Notare: NOTARE:
-  syn match helpSpecial		"Nma"me=e-2
-  syn match helpSpecial		"Nme"me=e-2
-  syn match helpSpecial		"Nmi"me=e-2
-  syn match helpSpecial		"Nmo"me=e-2
-  syn match helpSpecial		"\[interv.]"
-  syn region helpNotVi		start="{non" start="{solo" start="{disponibile" end="}" contains=helpLeadBlank,helpHyperTextJump
-endif
+unlet s:i
 
 syn sync minlines=40
-
 
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
@@ -184,6 +272,7 @@ hi def link helpString		String
 hi def link helpCharacter	Character
 hi def link helpNumber		Number
 hi def link helpBoolean		Boolean
+hi def link helpRegexp		Regexp
 hi def link helpFloat		Float
 hi def link helpIdentifier	Identifier
 hi def link helpFunction	Function
@@ -209,9 +298,21 @@ hi def link helpDelimiter	Delimiter
 hi def link helpSpecialComment	SpecialComment
 hi def link helpDebug		Debug
 hi def link helpUnderlined	Underlined
+hi def link helpBold		Bold
+hi def link helpItalic		Italic
+hi def link helpBoldItalic	BoldItalic
 hi def link helpError		Error
 hi def link helpTodo		Todo
 hi def link helpURL		String
+hi def link helpDiffAdded	Added
+hi def link helpDiffChanged	Changed
+hi def link helpDiffRemoved	Removed
+
+if has('textprop') && expand('%:p') =~? '[/\\]doc[/\\]syntax.\(txt\|\a\ax\)$'
+  " highlight groups with their respective color
+  import 'dist/vimhelp.vim'
+  call vimhelp.HighlightGroups()
+endif
 
 let b:current_syntax = "help"
 

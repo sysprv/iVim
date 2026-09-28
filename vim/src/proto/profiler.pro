@@ -1,4 +1,4 @@
-/* profiler.c */
+// profiler.c
 void profile_start(proftime_T *tm);
 void profile_end(proftime_T *tm);
 void profile_sub(proftime_T *tm, proftime_T *tm2);
@@ -19,16 +19,17 @@ void prof_inchar_enter(void);
 void prof_inchar_exit(void);
 int prof_def_func(void);
 void func_do_profile(ufunc_T *fp);
+void profile_may_start_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller);
+void profile_may_end_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller);
 void prof_child_enter(proftime_T *tm);
 void prof_child_exit(proftime_T *tm);
-void func_line_start(void *cookie);
+void func_line_start(void *cookie, long lnum);
 void func_line_exec(void *cookie);
 void func_line_end(void *cookie);
 void script_do_profile(scriptitem_T *si);
-void script_prof_save(proftime_T *tm);
 void script_prof_restore(proftime_T *tm);
 void profile_dump(void);
 void script_line_start(void);
 void script_line_exec(void);
 void script_line_end(void);
-/* vim: set ft=c : */
+// vim: ft=c

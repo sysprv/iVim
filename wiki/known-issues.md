@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # Known issues
 
@@ -19,6 +19,13 @@ updated: 2026-09-27
 - **"Share with iVim"** shows in share sheets but can't work (no App
   Group, by choice).
 - **Python** isn't included (planned); lua and iplug not wanted.
+- **Downgrading from a vim 9.2 build to an 8.1 build** leaves junk files
+  in `Library/ivim/scenes` (named like `_splitbelow = &splitbelow`): 9.2
+  writes the auto-restore session as vim9script, and 8.1 reads
+  `save_splitbelow = …` as `:save[as]`. Only when going back to an old
+  build; harmless, delete the files.
+- **`system('false')`** gives 127: `false` isn't an ios_system command
+  (same on 8.1).
 - **dSYM warning** for ivish.framework on upload (harmless,
   [release-testflight](release-testflight.md)).
 - **`WARNING_CFLAGS`** also softens implicit-declaration errors in iVim's

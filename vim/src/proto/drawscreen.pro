@@ -1,5 +1,6 @@
-/* drawscreen.c */
+// drawscreen.c
 int update_screen(int type_arg);
+int statusline_row(win_T *wp);
 void win_redr_status(win_T *wp, int ignore_pum);
 void showruler(int always);
 void win_redr_ruler(win_T *wp, int always, int ignore_pum);
@@ -8,11 +9,12 @@ void update_curbuf(int type);
 void update_debug_sign(buf_T *buf, linenr_T lnum);
 void updateWindow(win_T *wp);
 int redraw_asap(int type);
-void redraw_after_callback(int call_update_screen);
+void redraw_after_callback(int call_update_screen, int do_message);
 void redraw_later(int type);
 void redraw_win_later(win_T *wp, int type);
 void redraw_later_clear(void);
 void redraw_all_later(int type);
+void set_must_redraw(int type);
 void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
 void redraw_buf_line_later(buf_T *buf, linenr_T lnum);
@@ -22,4 +24,8 @@ void status_redraw_curbuf(void);
 void redraw_statuslines(void);
 void win_redraw_last_status(frame_T *frp);
 void redrawWinline(win_T *wp, linenr_T lnum);
-/* vim: set ft=c : */
+void redraw_win_range_later(win_T *wp, linenr_T first, linenr_T last);
+void redraw_win_range_now(win_T *wp, linenr_T first, linenr_T last);
+void f_redraw_listener_add(typval_T *argvars, typval_T *rettv);
+void f_redraw_listener_remove(typval_T *argvars, typval_T *rettv);
+// vim: ft=c

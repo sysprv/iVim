@@ -3,7 +3,7 @@
 func Test_source_autocmd()
   call writefile([
 	\ 'let did_source = 1',
-	\ ], 'Xsourced')
+	\ ], 'Xsourced', 'D')
   au SourcePre *source* let did_source_pre = 1
   au SourcePost *source* let did_source_post = 1
 
@@ -13,7 +13,6 @@ func Test_source_autocmd()
   call assert_equal(g:did_source_pre, 1)
   call assert_equal(g:did_source_post, 1)
 
-  call delete('Xsourced')
   au! SourcePre
   au! SourcePost
   unlet g:did_source
@@ -39,10 +38,935 @@ endfunc
 
 func Test_source_sandbox()
   new
-  call writefile(["Ohello\<Esc>"], 'Xsourcehello')
+  call writefile(["Ohello\<Esc>"], 'Xsourcehello', 'D')
   source! Xsourcehello | echo
   call assert_equal('hello', getline(1))
   call assert_fails('sandbox source! Xsourcehello', 'E48:')
   bwipe!
-  call delete('Xsourcehello')
 endfunc
+
+" When deleting a file and immediately creating a new one the inode may be
+" recycled.  Vim should not recognize it as the same script.
+func Test_different_script()
+  call writefile(['let s:var = "asdf"'], 'XoneScript', 'D')
+  source XoneScript
+  call writefile(['let g:var = s:var'], 'XtwoScript', 'D')
+  call assert_fails('source XtwoScript', 'E121:')
+endfunc
+
+" When sourcing a Vim script, shebang should be ignored.
+func Test_source_ignore_shebang()
+  call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim', 'D')
+  source Xsisfile.vim
+  call assert_equal(g:val, 369)
+endfunc
+
+" Test for expanding <sfile> in an autocmd and for <slnum> and <sflnum>
+func Test_source_autocmd_sfile()
+  let code =<< trim [CODE]
+    let g:SfileName = ''
+    augroup sfiletest
+      au!
+      autocmd User UserAutoCmd let g:Sfile = '<sfile>:t'
+    augroup END
+    doautocmd User UserAutoCmd
+    let g:Slnum = expand('<slnum>')
+    let g:Sflnum = expand('<sflnum>')
+    augroup! sfiletest
+  [CODE]
+  call writefile(code, 'Xscript.vim', 'D')
+  source Xscript.vim
+  call assert_equal('Xscript.vim', g:Sfile)
+  call assert_equal('7', g:Slnum)
+  call assert_equal('8', g:Sflnum)
+endfunc
+
+func Test_source_error()
+  call assert_fails('scriptencoding utf-8', 'E167:')
+  call assert_fails('finish', 'E168:')
+  call assert_fails('scriptversion 2', 'E984:')
+  call assert_fails('source!', 'E471:')
+  new
+  call setline(1, ['', '', '', ''])
+  call assert_fails('1,3source Xscript.vim', 'E481:')
+  call assert_fails('1,3source! Xscript.vim', 'E481:')
+  bw!
+endfunc
+
+" Test for sourcing a script recursively
+func Test_nested_script()
+  CheckRunVimInTerminal
+  call writefile([':source! Xscript.vim', ''], 'Xscript.vim', 'D')
+  let buf = RunVimInTerminal('', {'rows': 6})
+  call term_wait(buf)
+  call term_sendkeys(buf, ":set noruler\n")
+  call term_sendkeys(buf, ":source! Xscript.vim\n")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_match('E22: Scripts nested too deep\s*', term_getline(buf, 6))})
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for sourcing a script from the current buffer
+func Test_source_buffer()
+  new
+  " Source a simple script
+  let lines =<< trim END
+    let a = "Test"
+    let b = 20
+
+    let c = [1.1]
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['Test', 20, [1.1]], [g:a, g:b, g:c])
+
+  " Source a range of lines in the current buffer
+  %d _
+  let lines =<< trim END
+    let a = 10
+    let a += 20
+    let a += 30
+    let a += 40
+  END
+  call setline(1, lines)
+  .source
+  call assert_equal(10, g:a)
+  3source
+  call assert_equal(40, g:a)
+  2,3source
+  call assert_equal(90, g:a)
+
+  " Make sure the script line number is correct when sourcing a range of
+  " lines.
+  %d _
+  let lines =<< trim END
+     Line 1
+     Line 2
+     func Xtestfunc()
+       return expand("<sflnum>")
+     endfunc
+     Line 3
+     Line 4
+  END
+  call setline(1, lines)
+  3,5source
+  call assert_equal('4', Xtestfunc())
+  delfunc Xtestfunc
+
+  " Source a script with line continuation lines
+  %d _
+  let lines =<< trim END
+    let m = [
+      \   1,
+      \   2,
+      \ ]
+    call add(m, 3)
+  END
+  call setline(1, lines)
+  source
+  call assert_equal([1, 2, 3], g:m)
+  " Source a script with line continuation lines and a comment
+  %d _
+  let lines =<< trim END
+    let m = [
+      "\ first entry
+      \   'a',
+      "\ second entry
+      \   'b',
+      \ ]
+    " third entry
+    call add(m, 'c')
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['a', 'b', 'c'], g:m)
+  " Source an incomplete line continuation line
+  %d _
+  let lines =<< trim END
+    let k = [
+      \
+  END
+  call setline(1, lines)
+  call assert_fails('source', 'E697:')
+  " Source a function with a for loop
+  %d _
+  let lines =<< trim END
+    let m = []
+    " test function
+    func! Xtest()
+      for i in range(5, 7)
+        call add(g:m, i)
+      endfor
+    endfunc
+    call Xtest()
+  END
+  call setline(1, lines)
+  source
+  call assert_equal([5, 6, 7], g:m)
+  " Source an empty buffer
+  %d _
+  source
+
+  " test for script local functions and variables
+  let lines =<< trim END
+    let s:var1 = 10
+    func s:F1()
+      let s:var1 += 1
+      return s:var1
+    endfunc
+    func s:F2()
+    endfunc
+    let g:ScriptID = expand("<SID>")
+  END
+  call setline(1, lines)
+  source
+  call assert_true(g:ScriptID != '')
+  call assert_true(exists('*' .. g:ScriptID .. 'F1'))
+  call assert_true(exists('*' .. g:ScriptID .. 'F2'))
+  call assert_equal(11, call(g:ScriptID .. 'F1', []))
+
+  " the same script ID should be used even if the buffer is sourced more than
+  " once
+  %d _
+  let lines =<< trim END
+    let g:ScriptID = expand("<SID>")
+    let g:Count += 1
+  END
+  call setline(1, lines)
+  let g:Count = 0
+  source
+  call assert_true(g:ScriptID != '')
+  let scid = g:ScriptID
+  source
+  call assert_equal(scid, g:ScriptID)
+  call assert_equal(2, g:Count)
+  source
+  call assert_equal(scid, g:ScriptID)
+  call assert_equal(3, g:Count)
+
+  " test for the script line number
+  %d _
+  let lines =<< trim END
+    " comment
+    let g:Slnum1 = expand("<slnum>")
+    let i = 1 +
+           \ 2 +
+          "\ comment
+           \ 3
+    let g:Slnum2 = expand("<slnum>")
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('2', g:Slnum1)
+  call assert_equal('7', g:Slnum2)
+
+  " test for retaining the same script number across source calls
+  let lines =<< trim END
+     let g:ScriptID1 = expand("<SID>")
+     let g:Slnum1 = expand("<slnum>")
+     let l =<< trim END
+       let g:Slnum2 = expand("<slnum>")
+       let g:ScriptID2 = expand("<SID>")
+     END
+     new
+     call setline(1, l)
+     source
+     bw!
+     let g:ScriptID3 = expand("<SID>")
+     let g:Slnum3 = expand("<slnum>")
+  END
+  call writefile(lines, 'Xscript', 'D')
+  source Xscript
+  call assert_true(g:ScriptID1 != g:ScriptID2)
+  call assert_equal(g:ScriptID1, g:ScriptID3)
+  call assert_equal('2', g:Slnum1)
+  call assert_equal('1', g:Slnum2)
+  call assert_equal('12', g:Slnum3)
+
+  " test for sourcing a heredoc
+  %d _
+  let lines =<< trim END
+     let a = 1
+     let heredoc =<< trim DATA
+        red
+          green
+        blue
+     DATA
+     let b = 2
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['red', '  green', 'blue'], g:heredoc)
+
+  " test for a while and for statement
+  %d _
+  let lines =<< trim END
+     let a = 0
+     let b = 1
+     while b <= 10
+       let a += 10
+       let b += 1
+     endwhile
+     for i in range(5)
+       let a += 10
+     endfor
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(150, g:a)
+
+  " test for sourcing the same buffer multiple times after changing a function
+  %d _
+  let lines =<< trim END
+     func Xtestfunc()
+       return "one"
+     endfunc
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("one", Xtestfunc())
+  call setline(2, '  return "two"')
+  source
+  call assert_equal("two", Xtestfunc())
+  call setline(2, '  return "three"')
+  source
+  call assert_equal("three", Xtestfunc())
+  delfunc Xtestfunc
+
+  " test for using try/catch
+  %d _
+  let lines =<< trim END
+     let Trace = '1'
+     try
+       let a1 = b1
+     catch
+       let Trace ..= '2'
+     finally
+       let Trace ..= '3'
+     endtry
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("123", g:Trace)
+
+  " test with the finish command
+  %d _
+  let lines =<< trim END
+     let g:Color = 'blue'
+     finish
+     let g:Color = 'green'
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('blue', g:Color)
+
+  " Test for the SourcePre and SourcePost autocmds
+  augroup Xtest
+    au!
+    au SourcePre * let g:XsourcePre=4
+          \ | let g:XsourcePreFile = expand("<afile>")
+    au SourcePost * let g:XsourcePost=6
+          \ | let g:XsourcePostFile = expand("<afile>")
+  augroup END
+  %d _
+  let lines =<< trim END
+     let a = 1
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(4, g:XsourcePre)
+  call assert_equal(6, g:XsourcePost)
+  call assert_equal(':source buffer=' .. bufnr(), g:XsourcePreFile)
+  call assert_equal(':source buffer=' .. bufnr(), g:XsourcePostFile)
+  augroup Xtest
+    au!
+  augroup END
+  augroup! Xtest
+
+  %bw!
+endfunc
+
+" Test for sourcing a Vim9 script from the current buffer
+func Test_source_buffer_vim9()
+  new
+
+  " test for sourcing a Vim9 script
+  %d _
+  let lines =<< trim END
+     vim9script
+
+     # check dict
+     var x: number = 10
+     def g:Xtestfunc(): number
+       return x
+     enddef
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(10, Xtestfunc())
+
+  " test for sourcing a Vim9 script with line continuation
+  %d _
+  let lines =<< trim END
+     vim9script
+
+     g:Str1 = "hello "
+              .. "world"
+              .. ", how are you?"
+     g:Colors = [
+       'red',
+       # comment
+       'blue'
+       ]
+     g:Dict = {
+       a: 22,
+       # comment
+       b: 33
+       }
+
+     # calling a function with line continuation
+     def Sum(...values: list<number>): number
+       var sum: number = 0
+       for v in values
+         sum += v
+       endfor
+       return sum
+     enddef
+     g:Total1 = Sum(10,
+                   20,
+                   30)
+
+     var i: number = 0
+     while i < 10
+       # while loop
+       i +=
+           1
+     endwhile
+     g:Count1 = i
+
+     # for loop
+     g:Count2 = 0
+     for j in range(10, 20)
+       g:Count2 +=
+           i
+     endfor
+
+     g:Total2 = 10 +
+                20 -
+                5
+
+     g:Result1 = g:Total2 > 1
+                ? 'red'
+                : 'blue'
+
+     g:Str2 = 'x'
+              ->repeat(10)
+              ->trim()
+              ->strpart(4)
+
+     g:Result2 = g:Dict
+                    .a
+
+     augroup Test
+       au!
+       au BufNewFile Xsubfile g:readFile = 1
+             | g:readExtra = 2
+     augroup END
+     g:readFile = 0
+     g:readExtra = 0
+     new Xsubfile
+     bwipe!
+     augroup Test
+       au!
+     augroup END
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("hello world, how are you?", g:Str1)
+  call assert_equal(['red', 'blue'], g:Colors)
+  call assert_equal(#{a: 22, b: 33}, g:Dict)
+  call assert_equal(60, g:Total1)
+  call assert_equal(10, g:Count1)
+  call assert_equal(110, g:Count2)
+  call assert_equal(25, g:Total2)
+  call assert_equal('red', g:Result1)
+  call assert_equal('xxxxxx', g:Str2)
+  call assert_equal(22, g:Result2)
+  call assert_equal(1, g:readFile)
+  call assert_equal(2, g:readExtra)
+
+  " test for sourcing the same buffer multiple times after changing a function
+  %d _
+  let lines =<< trim END
+     vim9script
+     def g:Xtestfunc(): string
+       return "one"
+     enddef
+  END
+  call setline(1, lines)
+  source
+  call assert_equal("one", Xtestfunc())
+  call setline(3, '  return "two"')
+  source
+  call assert_equal("two", Xtestfunc())
+  call setline(3, '  return "three"')
+  source
+  call assert_equal("three", Xtestfunc())
+  delfunc Xtestfunc
+
+  " Test for sourcing a range of lines. Make sure the script line number is
+  " correct.
+  %d _
+  let lines =<< trim END
+     Line 1
+     Line 2
+     vim9script
+     def g:Xtestfunc(): string
+       return expand("<sflnum>")
+     enddef
+     Line 3
+     Line 4
+  END
+  call setline(1, lines)
+  3,6source
+  call assert_equal('5', Xtestfunc())
+  delfunc Xtestfunc
+
+  " test for sourcing a heredoc
+  %d _
+  let lines =<< trim END
+    vim9script
+    var a = 1
+    g:heredoc =<< trim DATA
+       red
+         green
+       blue
+    DATA
+    var b = 2
+  END
+  call setline(1, lines)
+  source
+  call assert_equal(['red', '  green', 'blue'], g:heredoc)
+
+  " test for using the :vim9cmd modifier
+  %d _
+  let lines =<< trim END
+    first line
+    g:Math = {
+         pi: 3.12,
+         e: 2.71828
+      }
+    g:Editors = [
+      'vim',
+      # comment
+      'nano'
+      ]
+    last line
+  END
+  call setline(1, lines)
+  vim9cmd :2,10source
+  call assert_equal(#{pi: 3.12, e: 2.71828}, g:Math)
+  call assert_equal(['vim', 'nano'], g:Editors)
+
+  " '<,'> range before the cmd modifier works
+  unlet g:Math
+  unlet g:Editors
+  exe "normal 6GV4j:vim9cmd source\<CR>"
+  call assert_equal(['vim', 'nano'], g:Editors)
+  unlet g:Editors
+
+  " test for using try/catch
+  %d _
+  let lines =<< trim END
+     vim9script
+     g:Trace = '1'
+     try
+       a1 = b1
+     catch
+       g:Trace ..= '2'
+     finally
+       g:Trace ..= '3'
+     endtry
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('123', g:Trace)
+
+  " test with the finish command
+  %d _
+  let lines =<< trim END
+     vim9script
+     g:Color = 'red'
+     finish
+     g:Color = 'blue'
+  END
+  call setline(1, lines)
+  source
+  call assert_equal('red', g:Color)
+
+  " test for ++clear argument to clear all the functions/variables
+  %d _
+  let lines =<< trim END
+     g:ScriptVarFound = exists("color")
+     g:MyFuncFound = exists('*Myfunc')
+     if g:MyFuncFound
+       finish
+     endif
+     var color = 'blue'
+     def Myfunc()
+     enddef
+  END
+  call setline(1, lines)
+  vim9cmd source
+  call assert_false(g:MyFuncFound)
+  call assert_false(g:ScriptVarFound)
+  vim9cmd source
+  call assert_true(g:MyFuncFound)
+  call assert_true(g:ScriptVarFound)
+  vim9cmd source ++clear
+  call assert_false(g:MyFuncFound)
+  call assert_false(g:ScriptVarFound)
+  vim9cmd source ++clear
+  call assert_false(g:MyFuncFound)
+  call assert_false(g:ScriptVarFound)
+  call assert_fails('vim9cmd source ++clearx', 'E475:')
+  call assert_fails('vim9cmd source ++abcde', 'E484:')
+
+  %bw!
+endfunc
+
+" What the class and the enum of Xdryrun/autoload/xshape.vim give; a legacy
+" function cannot reach them by their autoload name.
+def s:DryrunShapeInfo(): list<any>
+  return [xshape#Shape.new().Area(), xshape#Color.Blue.name]
+enddef
+
+" Test for ":source ++dryrun": only definitions are executed, then the
+" functions are compiled.
+func Test_source_dryrun()
+  let lines =<< trim END
+    vim9script
+    writefile(['ran'], 'Xdryrun_import_ran')
+    export def Helper(n: number): string
+      return string(n)
+    enddef
+  END
+  call writefile(lines, 'Xdryrun_import.vim', 'D')
+
+  let lines =<< trim END
+    vim9script
+    # nothing at the script level runs
+    writefile(['ran'], 'Xdryrun_ran')
+    g:dryrun_touched = 1
+    command! DryrunCmd echo 1
+    augroup DryrunGroup
+      autocmd BufEnter * echo 1
+    augroup END
+    nnoremap <F13> :echo 1<CR>
+
+    import './Xdryrun_import.vim' as imp
+    # an import with a function in its name does not call it
+    def ImportName(): string
+      writefile(['ran'], 'Xdryrun_ran')
+      return './Xdryrun_import.vim'
+    enddef
+    import ImportName() as unnamed
+
+    # declared with the type or "any", the expression is not evaluated
+    var typed: string = DoesNotExist()
+    var untyped = DoesNotExist()
+    const LIMIT = 10
+    var [first, second] = [1, 2]
+    var text =<< trim EOT
+      heredoc line
+    EOT
+    var multi = {
+      a: 1,
+      b: 2,
+    }
+
+    # both branches define the function
+    if has('win32')
+      def Platform(): string
+        return 'win'
+      enddef
+    else
+      def Platform(): string
+        return 'unix'
+      enddef
+    endif
+
+    class Config
+      var name: string = 'x'
+      static var registry: dict<any> = DoesNotExist()
+      def Describe(): string
+        return this.name .. Platform()
+      enddef
+    endclass
+
+    enum Color
+      Red('ff'),
+      Blue('00')
+      var code: string
+      def new(code: string)
+        this.code = code
+      enddef
+    endenum
+
+    def Broken(): number
+      return 'x'
+    enddef
+    def UsesAll(): string
+      return imp.Helper(1) .. typed .. untyped .. LIMIT .. text[0] .. first
+    enddef
+    def WrongConst()
+      LIMIT = 11
+    enddef
+
+    finish
+    def AfterFinish(): number
+      return 'x'
+    enddef
+  END
+  call writefile(lines, 'Xdryrun.vim', 'D')
+
+  redir => msgs
+  silent! source ++dryrun Xdryrun.vim
+  redir END
+  call assert_match('function <SNR>\d\+_Broken:\_.*E1012:', msgs)
+  call assert_match('function <SNR>\d\+_WrongConst:\_.*E46:', msgs)
+  call assert_match('function <SNR>\d\+_AfterFinish:\_.*E1012:', msgs)
+  call assert_notmatch('E1073:', msgs)
+  call assert_false(filereadable('Xdryrun_ran'))
+  call assert_false(filereadable('Xdryrun_import_ran'))
+  call assert_false(exists('g:dryrun_touched'))
+  call assert_false(exists(':DryrunCmd'))
+  call assert_false(exists('#DryrunGroup'))
+  call assert_equal('', maparg('<F13>'))
+  let sid = getscriptinfo({'name': 'Xdryrun\.vim$'})[0].sid
+  let info = getscriptinfo({'sid': sid})[0]
+  call assert_equal(['AfterFinish', 'Broken', 'ImportName', 'Platform',
+        \ 'UsesAll', 'WrongConst'],
+        \ sort(map(copy(info.functions), 'substitute(v:val, ".*_", "", "")')))
+  call assert_equal(['Color', 'Config', 'LIMIT', 'first', 'multi', 'second',
+        \ 'text', 'typed', 'untyped'], sort(keys(info.variables)))
+  call assert_equal(v:t_string, type(info.variables.typed))
+
+  " a range of buffer lines
+  new
+  let lines =<< trim END
+    vim9script
+    g:dryrun_touched = 1
+    def Broken(): number
+      return 'x'
+    enddef
+  END
+  call setline(1, lines)
+  call assert_fails('%source ++dryrun', 'E1012:')
+  call assert_false(exists('g:dryrun_touched'))
+
+  " an error in a definition does not stop the script
+  %d _
+  let lines =<< trim END
+    vim9script
+    var bad: nosuchtype = 1
+    if 1
+      def Bad(): number
+        return 'x'
+      enddef
+    endif
+    def Later(): number
+      return 'x'
+    enddef
+  END
+  call setline(1, lines)
+  redir => msgs
+  silent! %source ++dryrun
+  redir END
+  call assert_match('E1010:', msgs)
+  call assert_match('function <SNR>\d\+_Bad:\_.*E1012:', msgs)
+  call assert_match('function <SNR>\d\+_Later:\_.*E1012:', msgs)
+
+  " every line with an error in a function is reported, the error does not
+  " lead to more errors and the function is not compiled
+  %d _
+  let lines =<< trim END
+    vim9script
+    def Many(): number
+      var a: number = 'one'
+      var b: nosuchtype = 1
+      echo b
+      var c = NoSuchFunc()
+      echo c
+      if UndefinedVar
+        var d: string = 2
+      else
+        echo undefined_e
+      endif
+      for i in NoSuchList()
+        echo i
+      endfor
+      while UndefinedCond
+      endwhile
+      nosuchcommand
+      def Nested(): string
+        return 7
+      enddef
+      return 'nine'
+    enddef
+  END
+  call setline(1, lines)
+  redir => msgs
+  silent! %source ++dryrun
+  redir END
+  " with ":silent!" E1028 is given as well, the errors did not count
+  let found = []
+  for line in split(msgs, "\n")
+    if line =~ '^line'
+      let lnum = str2nr(matchstr(line, '\d\+'))
+    elseif line =~ '^E\d\+:' && line !~ '^E1028:'
+      call add(found, [lnum, matchstr(line, '^E\d\+:')])
+    endif
+  endfor
+  call assert_equal([[1, 'E1012:'], [2, 'E1010:'], [4, 'E117:'], [6, 'E1001:'],
+        \ [7, 'E1012:'], [9, 'E1001:'], [11, 'E117:'], [14, 'E1001:'],
+        \ [16, 'E476:'], [1, 'E1012:'], [20, 'E1012:']], found)
+  bwipe!
+
+  " a legacy script defines its functions, they are not compiled; the
+  " condition of an :if, :elseif, :while or :for is not evaluated
+  let lines =<< trim END
+    let g:dryrun_touched = 1
+    if g:dryrun_undefined
+      let g:dryrun_touched = 2
+    elseif g:dryrun_undefined
+    endif
+    while g:dryrun_undefined
+    endwhile
+    for i in g:dryrun_undefined
+    endfor
+    try
+      let g:dryrun_touched = 3
+    catch
+    endtry
+    function DryrunLegacy()
+      return undefined_name
+    endfunction
+  END
+  call writefile(lines, 'Xdryrun_legacy.vim', 'D')
+  source ++dryrun Xdryrun_legacy.vim
+  call assert_false(exists('g:dryrun_touched'))
+  call assert_true(exists('*DryrunLegacy'))
+  delfunc DryrunLegacy
+
+  " no SourceCmd, SourcePre or SourcePost autocommand, also not for the
+  " imported script
+  let g:dryrun_events = ''
+  augroup DryrunAutocmds
+    autocmd SourceCmd * let g:dryrun_events ..= 'cmd '
+    autocmd SourcePre * let g:dryrun_events ..= 'pre '
+    autocmd SourcePost * let g:dryrun_events ..= 'post '
+  augroup END
+  call writefile(['vim9script'], 'Xdryrun_import2.vim', 'D')
+  let lines =<< trim END
+    vim9script
+    import './Xdryrun_import2.vim' as imp2
+  END
+  call writefile(lines, 'Xdryrun_events.vim', 'D')
+  source ++dryrun Xdryrun_events.vim
+  call assert_equal('', g:dryrun_events)
+  source Xdryrun_legacy.vim
+  call assert_equal('cmd post ', g:dryrun_events)
+  unlet g:dryrun_events
+  autocmd! DryrunAutocmds
+  augroup! DryrunAutocmds
+
+  " a class in an autoload script can be defined again by a dry run, and
+  " after one by a normal source: no object was made from it
+  call mkdir('Xdryrun/autoload', 'pR')
+  let lines =<< trim END
+    vim9script
+    export class Shape
+      var width: number = 1
+      def Area(): number
+        return this.width
+      enddef
+    endclass
+    export enum Color
+      Red,
+      Blue
+    endenum
+  END
+  call writefile(lines, 'Xdryrun/autoload/xshape.vim')
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source ++dryrun Xdryrun/autoload/xshape.vim
+  source Xdryrun/autoload/xshape.vim
+  call assert_equal([1, 'Blue'], s:DryrunShapeInfo())
+  call assert_fails('source Xdryrun/autoload/xshape.vim', 'E1041:')
+
+  " a normal source afterwards runs the script level
+  let lines =<< trim END
+    vim9script
+    g:dryrun_touched = 1
+  END
+  call writefile(lines, 'Xdryrun_normal.vim', 'D')
+  source Xdryrun_normal.vim
+  call assert_true(exists('g:dryrun_touched'))
+  unlet g:dryrun_touched
+
+  call assert_fails('source ++dryrunx Xdryrun.vim', 'E484:')
+endfunc
+
+" Test that the modifier does not override the script type when sourcing files
+" with :vim9cmd and :legacy
+func Test_source_file_ignores_modifiers()
+  let lines = ["let g:legacy_sourced = 42"]
+  call writefile(lines, 'Xsourcelegacy', 'D')
+  vim9cmd source Xsourcelegacy
+  call assert_equal(42, g:legacy_sourced)
+  unlet g:legacy_sourced
+
+  let lines = ["vim9script", "g:vim9_sourced = 42"]
+  call writefile(lines, 'Xsourcevim9', 'D')
+  legacy source Xsourcevim9
+  call assert_equal(42, g:vim9_sourced)
+  unlet g:vim9_sourced
+endfunc
+
+func Test_source_buffer_long_line()
+  " This was reading past the end of the line.
+  new
+  norm300gr0
+  so
+  bwipe!
+
+  let lines =<< trim END
+      new
+      norm 10a0000000000ø00000000000
+      norm i0000000000000000000
+      silent! so
+  END
+  call writefile(lines, 'Xtest.vim', 'D')
+  source Xtest.vim
+  bwipe!
+endfunc
+
+func Test_source_buffer_with_NUL_char()
+  " This was trying to use a line below the buffer.
+  let lines =<< trim END
+      if !exists('g:loaded')
+        let g:loaded = 1
+        source
+      endif
+  END
+  " Can't have a NL in heredoc
+  let lines += ["silent! vim9 echo [0 \<NL> ? 'a' : 'b']"]
+  call writefile(lines, 'XsourceNul', 'D')
+  edit XsourceNul
+  source
+
+  bwipe!
+endfunc
+
+
+" vim: shiftwidth=2 sts=2 expandtab

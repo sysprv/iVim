@@ -3,7 +3,9 @@
 " Maintainer:           Derek Wyatt
 " URL:                  https://github.com/derekwyatt/vim-scala
 " License:              Same as Vim
-" Last Change:          02 August 2016
+" Last Change:          11 August 2021
+"                       2023 Aug 28 by Vim Project (undo_ftplugin)
+"                       2026 Jun 27 by Vim Project (add recommended style guard)
 " ----------------------------------------------------------------------------
 
 if exists('b:did_ftplugin') || &cp
@@ -24,12 +26,17 @@ else
 endif
 setlocal commentstring=//\ %s
 
-setlocal shiftwidth=2 softtabstop=2 expandtab
+if get(g:, 'scala_recommended_style',
+      \ get(g:, 'filetype_recommended_style', 1))
+  setlocal shiftwidth=2 softtabstop=2 expandtab
+endif
 
-setlocal include='^\s*import'
-setlocal includeexpr='substitute(v:fname,"\\.","/","g")'
+setlocal include=^\\s*import
+setlocal includeexpr=substitute(v:fname,'\\.','/','g')
 
 setlocal path+=src/main/scala,src/test/scala
 setlocal suffixesadd=.scala
+
+let b:undo_ftplugin = "setlocal cms< com< et< fo< inc< inex< pa< sts< sua< sw<"
 
 " vim:set sw=2 sts=2 ts=8 et:

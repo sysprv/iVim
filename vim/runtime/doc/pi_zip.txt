@@ -1,10 +1,10 @@
-*pi_zip.txt*	For Vim version 8.1.  Last change: 2016 Sep 13
+*pi_zip.txt*	For Vim version 9.2.  Last change: 2026 Aug 19
 
 				+====================+
 				| Zip File Interface |
 				+====================+
 
-Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
+Author:  Charles E. Campbell  <NcampObell@SdrPchip.AorgM-NOSPAM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this
@@ -33,41 +33,69 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    also write to the file.  Currently, one may not make a new file in
    zip archives via the plugin.
 
+   The zip plugin tries to detect some common path traversal attack
+   patterns, but it may not catch all possible cases.  Please be very
+   careful when using this plugin with untrusted input.
+
+   COMMANDS~
 								*zip-x*
-   x : may extract a listed file when the cursor is atop it
+   x : extract a listed file when the cursor is atop it
 
-   OPTIONS
+   OPTIONS~
 
-   							*g:zip_nomax*
+							*g:zip_nomax*
 
    If this variable exists and is true, the file window will not be
    automatically maximized when opened.
 
-							*g:zip_shq*
-   Different operating systems may use one or more shells to execute
-   commands.  Zip will try to guess the correct quoting mechanism to
-   allow spaces and whatnot in filenames; however, if it is incorrectly
-   guessing the quote to use for your setup, you may use >
-	g:zip_shq
-<  which by default is a single quote under Unix (') and a double quote
-   under Windows (").  If you'd rather have no quotes, simply set
-   g:zip_shq to the empty string (let g:zip_shq= "") in your <.vimrc>.
-
-   							*g:zip_unzipcmd*
-   Use this option to specify the program which does the duty of "unzip".
-   It's used during browsing. By default: >
-   	let g:zip_unzipcmd= "unzip"
+							*g:zip_unzipcmd*
+   Use these options to specify the program which does the duty of "unzip" and
+   the required argument switches.
+   It's used during browsing.  By default: >
+	let g:zip_unzipcmd= "unzip"
+	let g:zip_unzipcmd_browseopt= "-Z1"
+	let g:zip_unzipcmd_readopt= "-p"
 <
+   Note: a `--` is appended after the g:zip_unzipcmd_browseopt and
+   g:zip_unzipcmd_readopt settings to indicate the end of options.
+
 							*g:zip_zipcmd*
-   Use this option to specify the program which does the duty of "zip".
+   Use these options to specify the program which does the duty of "zip" and
+   the required argument switches.
    It's used during the writing (updating) of a file already in a zip
    file; by default: >
-   	let g:zip_zipcmd= "zip"
+	let g:zip_zipcmd= "zip"
+	let g:zip_zipcmd_deleteopt= "-d"
+	let g:zip_zipcmd_updateopt= "-u"
 <
 							*g:zip_extractcmd*
    This option specifies the program (and any options needed) used to
    extract a file from a zip archive.  By default, >
-   	let g:zip_extractcmd= g:zip_unzipcmd
+	let g:zip_extractcmd= g:zip_unzipcmd
+	let g:zip_extractcmd_extractopt= "-o"
+<
+							*g:zip_exec*
+   For security reasons, one may prevent that Vim runs executables
+   automatically when opening a buffer.  This option (default: "1")
+   can be used to prevent executing the "unzip" command when set to
+   "0": >
+	let g:zip_exec=0
+<
+   FALLBACK TO POWERSHELL~
+
+							*g:zip_pwsh*
+   This plugin will first attempt to use the (more capable) GNU zip/unzip
+   commands.  If these commands are not available or fail, and the user is
+   using PowerShell, the plugin will fall back to a PowerShell cmdlet.
+   The PowerShell cmdlets are limited: they cannot write or extract files
+   within subdirectories of a zip archive.  The advantage, however, is that
+   no separate unzip binary needs to be installed.  The 'shell' option will
+   be checked whether to choose "pwsh" or "powershell", or set `g:zip_pwsh`.
+   If both are available, this plugin will prefer pwsh. Default value of
+   "g:zip_pwsh" is an empty string, which would not overwrite the 'shell'
+   option configuration.  This functionality is not turned on by default on
+   MS-Windows, since the default 'shell' is "cmd.exe". For example: >
+	let g:zip_pwsh='powershell'
 <
    PREVENTING LOADING~
 
@@ -92,17 +120,41 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    should be treated as zip files.
 
    Alternatively, one may change *g:zipPlugin_ext* in one's .vimrc.
-   Currently (11/30/15) it holds: >
+   Currently (as of May 2026) it holds: >
 
-	let g:zipPlugin_ext= '*.zip,*.jar,*.xpi,*.ja,*.war,*.ear,*.celzip,
-       \ *.oxt,*.kmz,*.wsz,*.xap,*.docx,*.docm,*.dotx,*.dotm,*.potx,*.potm,
-       \ *.ppsx,*.ppsm,*.pptx,*.pptm,*.ppam,*.sldx,*.thmx,*.xlam,*.xlsx,*.xlsm,
-       \ *.xlsb,*.xltx,*.xltm,*.xlam,*.crtx,*.vdw,*.glox,*.gcsx,*.gqsx,*.epub'
+        let g:zipPlugin_ext='*.aar,*.apk,*.cbz,*.celzip,*.crtx,*.docm,*.docx,
+       \ *.dotm,*.dotx,*.ear,*.epub,*.gcsx,*.glox,*.gqsx,*.ja,*.jar,*.kmz,
+       \ *.odb,*.odc,*.odf,*.odg,*.odi,*.odm,*.odp,*.ods,*.odt,*.otc,*.otf,
+       \ *.otg,*.oth,*.oti,*.otp,*.ots,*.ott,*.oxt,*.pkpass,*.potm,*.potx,
+       \ *.ppam,*.ppsm,*.ppsx,*.pptm,*.pptx,*.sldx,*.thmx,*.vdw,*.war,*.whl,
+       \ *.wsz, *.xap,*.xlam,*.xlsb,*.xlsm,*.xlsx,*.xltm,*.xltx,*.xpi,*.zip'
 
 ==============================================================================
 4. History							*zip-history* {{{1
+   unreleased:
+       Jul 25, 2026 * support both Windows PowerShell 5 and pwsh 7+
+       Sep 19, 2025 * support PowerShell Core
+       Jul 12, 2025 * drop ../ on write to prevent path traversal attacks
+       Mar 11, 2025 * handle filenames with leading '-' correctly
+       Aug 21, 2024 * simplify condition to detect MS-Windows
+       Aug 18, 2024 * correctly handle special globbing chars
+       Aug 05, 2024 * clean-up and make it work with shellslash on Windows
+       Aug 05, 2024 * workaround for the FreeBSD's unzip
+       Aug 04, 2024 * escape '[' in name of file to be extracted
+       Jul 30, 2024 * fix opening remote zipfile
+       Jul 24, 2024 * use delete() function
+       Jul 23, 2024 * fix 'x' command
+       Jun 16, 2024 * handle whitespace on Windows properly (#14998)
+   v33 Dec 07, 2021 * *.xlam mentioned twice in zipPlugin
+   v32 Oct 22, 2021 * to avoid an issue with a vim 8.2 patch, zipfile: has
+		      been changed to zipfile:// . This often shows up
+		      as zipfile:/// with zipped files that are root-based.
+   v29 Apr 02, 2017 * (Klartext) reported that an encrypted zip file could
+		      opened but the swapfile held unencrypted contents.
+		      The solution is to edit the contents of a zip file
+		      using the |:noswapfile| modifier.
    v28 Oct 08, 2014 * changed the sanity checks for executables to reflect
-   		      the command actually to be attempted in zip#Read()
+		      the command actually to be attempted in zip#Read()
 		      and zip#Write()
 		    * added the extraction of a file capability
        Nov 30, 2015 * added *.epub to the |g:zipPlugin_ext| list
@@ -149,4 +201,4 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    v1 Sep 15, 2005 * Initial release, had browsing, reading, and writing
 
 ==============================================================================
-vim:tw=78:ts=8:noet:ft=help:fdm=marker
+vim:tw=78:ts=8:ft=help:noet:norl:fdm=marker

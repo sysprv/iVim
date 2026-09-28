@@ -1,18 +1,51 @@
 " Tests for the "sort()" function and for the ":sort" command.
 
+import './util/vim9.vim' as v9
+
 func Compare1(a, b) abort
-    call sort(range(3), 'Compare2')
-    return a:a - a:b
+  call sort(range(3), 'Compare2')
+  return a:a - a:b
 endfunc
 
 func Compare2(a, b) abort
-    return a:a - a:b
+  return a:a - a:b
 endfunc
 
 func Test_sort_strings()
   " numbers compared as strings
   call assert_equal([1, 2, 3], sort([3, 2, 1]))
   call assert_equal([13, 28, 3], sort([3, 28, 13]))
+
+  call assert_equal(['A', 'O', 'P', 'a', 'o', 'p', 'Ä', 'Ô', 'ä', 'ô', 'Œ', 'œ'],
+  \            sort(['A', 'O', 'P', 'a', 'o', 'p', 'Ä', 'Ô', 'ä', 'ô', 'œ', 'Œ']))
+
+  call assert_equal(['A', 'a', 'o', 'O', 'p', 'P', 'Ä', 'Ô', 'ä', 'ô', 'Œ', 'œ'],
+  \            sort(['A', 'a', 'o', 'O', 'œ', 'Œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'i'))
+
+  " This does not appear to work correctly on Mac.
+  if !has('mac')
+    if v:collate =~? '^\(en\|fr\)_ca.utf-\?8$'
+      " with Canadian English capitals come before lower case.
+      " 'Œ' is omitted because it can sort before or after 'œ'
+      call assert_equal(['A', 'a', 'Ä', 'ä', 'O', 'o', 'Ô', 'ô', 'œ', 'P', 'p'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    elseif v:collate =~? '^\(en\|es\|de\|fr\|it\|nl\).*\.utf-\?8$'
+      " With the following locales, the accentuated letters are ordered
+      " similarly to the non-accentuated letters...
+      call assert_equal(['a', 'A', 'ä', 'Ä', 'o', 'O', 'ô', 'Ô', 'œ', 'Œ', 'p', 'P'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'Œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    elseif v:collate =~? '^sv.*utf-\?8$'
+      " ... whereas with a Swedish locale, the accentuated letters are ordered
+      " after Z.
+      call assert_equal(['a', 'A', 'o', 'O', 'p', 'P', 'ä', 'Ä', 'œ', 'œ', 'ô', 'Ô'],
+      \            sort(['A', 'a', 'o', 'O', 'œ', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
+    endif
+  endif
+endfunc
+
+func Test_sort_null_string()
+  " null strings are sorted as empty strings.
+  call assert_equal(['', 'a', 'b'], sort(['b', test_null_string(), 'a']))
 endfunc
 
 func Test_sort_numeric()
@@ -20,15 +53,48 @@ func Test_sort_numeric()
   call assert_equal([3, 13, 28], sort([13, 28, 3], 'n'))
   " strings are not sorted
   call assert_equal(['13', '28', '3'], sort(['13', '28', '3'], 'n'))
+  " a string sorts as 0 in "n" mode, even a numeric-looking one
+  call assert_equal(['a', 0, 1], sort([1, 'a', 0], 'n'))
+  call assert_equal(['10', 2], sort([2, '10'], 'n'))
 endfunc
 
 func Test_sort_numbers()
   call assert_equal([3, 13, 28], sort([13, 28, 3], 'N'))
   call assert_equal(['3', '13', '28'], sort(['13', '28', '3'], 'N'))
+  vim9cmd call assert_equal(['3', '13', '28'], sort(['13', '28', '3'], 'N'))
+  call assert_equal([3997, 4996], sort([4996, 3997], 'Compare1'))
 endfunc
 
 func Test_sort_float()
   call assert_equal([0.28, 3, 13.5], sort([13.5, 0.28, 3], 'f'))
+endfunc
+
+" The numeric compare modes precompute a sort key per item; exercise that on
+" larger lists (many comparisons), with mixed int/float, negatives, and
+" int64 values that do not fit in a double for 'N'.
+func Test_sort_numeric_precomputed()
+  " 'n' on a large shuffled list, compared against the known order.
+  let expected = range(500)
+  let shuffled = copy(expected)
+  " deterministic shuffle
+  let s = 7
+  for i in range(len(shuffled) - 1, 1, -1)
+    let s = (s * 1103515245 + 12345) % 2147483648
+    let j = s % (i + 1)
+    let [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  endfor
+  call assert_equal(expected, sort(shuffled, 'n'))
+
+  " 'n' with mixed integers and floats and negatives.
+  call assert_equal([-3, -1.5, 0, 0.5, 2, 7.25], sort([7.25, -1.5, 2, 0, -3, 0.5], 'n'))
+
+  " 'N' with int64 values beyond the exact range of a double: keys must not
+  " be rounded through a double.
+  call assert_equal([9007199254740992, 9007199254740993, 9007199254740994],
+        \ sort([9007199254740994, 9007199254740992, 9007199254740993], 'N'))
+
+  " uniq() uses the non-precomputed path; it must still work.
+  call assert_equal([1, 2, 3], uniq(sort([3, 1, 2, 2, 3, 1], 'n')))
 endfunc
 
 func Test_sort_nested()
@@ -42,7 +108,7 @@ func Test_sort_default()
   call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], ''))
   call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], 0))
   call assert_equal(['2', 'A', 'a', 'AA', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], 1))
-  call assert_fails('call sort([3.3, 1, "2"], 3)', "E474")
+  call assert_fails('call sort([3.3, 1, "2"], 3)', "E474:")
 endfunc
 
 " Tests for the ":sort" command.
@@ -1145,30 +1211,6 @@ func Test_sort_cmd()
 	\    ]
 	\ },
 	\ {
-	\    'name' : 'float',
-	\    'cmd' : 'sort f',
-	\    'input' : [
-	\	'1.234',
-	\	'0.88',
-	\	'123.456',
-	\	'1.15e-6',
-	\	'-1.1e3',
-	\	'-1.01e3',
-	\	'',
-	\	''
-	\    ],
-	\    'expected' : [
-	\	'',
-	\	'',
-	\	'-1.1e3',
-	\	'-1.01e3',
-	\	'1.15e-6',
-	\	'0.88',
-	\	'1.234',
-	\	'123.456'
-	\    ]
-	\ },
-	\ {
 	\    'name' : 'alphabetical, sorted input',
 	\    'cmd' : 'sort',
 	\    'input' : [
@@ -1197,7 +1239,158 @@ func Test_sort_cmd()
 	\	'cc',
 	\    ]
 	\ },
+	\ {
+	\    'name' : 'sort one line buffer',
+	\    'cmd' : 'sort',
+	\    'input' : [
+	\	'single line'
+	\    ],
+	\    'expected' : [
+	\	'single line'
+	\    ]
+	\ },
+	\ {
+	\    'name' : 'sort ignoring case',
+	\    'cmd' : '%sort i',
+	\    'input' : [
+	\	'BB',
+	\	'Cc',
+	\	'aa'
+	\    ],
+	\    'expected' : [
+	\	'aa',
+	\	'BB',
+	\	'Cc'
+	\    ]
+	\ },
 	\ ]
+
+    " This does not appear to work correctly on Mac.
+    if !has('mac')
+      if v:collate =~? '^\(en\|fr\)_ca.utf-\?8$'
+        " en_CA.utf-8 sorts capitals before lower case
+        " 'Œ' is omitted because it can sort before or after 'œ'
+        let tests += [
+          \ {
+          \    'name' : 'sort with locale ' .. v:collate,
+          \    'cmd' : '%sort l',
+          \    'input' : [
+          \	'A',
+          \	'E',
+          \	'O',
+          \	'À',
+          \	'È',
+          \	'É',
+          \	'Ô',
+          \	'Z',
+          \	'a',
+          \	'e',
+          \	'o',
+          \	'à',
+          \	'è',
+          \	'é',
+          \	'ô',
+          \	'œ',
+          \	'z'
+          \    ],
+          \    'expected' : [
+          \	'A',
+          \	'a',
+          \	'À',
+          \	'à',
+          \	'E',
+          \	'e',
+          \	'É',
+          \	'é',
+          \	'È',
+          \	'è',
+          \	'O',
+          \	'o',
+          \	'Ô',
+          \	'ô',
+          \	'œ',
+          \	'Z',
+          \	'z'
+          \    ]
+          \ },
+          \ ]
+      elseif v:collate =~? '^\(en\|es\|de\|fr\|it\|nl\).*\.utf-\?8$'
+      " With these locales, the accentuated letters are ordered
+      " similarly to the non-accentuated letters.
+        let tests += [
+          \ {
+          \    'name' : 'sort with locale ' .. v:collate,
+          \    'cmd' : '%sort l',
+          \    'input' : [
+          \	'A',
+          \	'E',
+          \	'O',
+          \	'À',
+          \	'È',
+          \	'É',
+          \	'Ô',
+          \	'Œ',
+          \	'Z',
+          \	'a',
+          \	'e',
+          \	'o',
+          \	'à',
+          \	'è',
+          \	'é',
+          \	'ô',
+          \	'œ',
+          \	'z'
+          \    ],
+          \    'expected' : [
+          \	'a',
+          \	'A',
+          \	'à',
+          \	'À',
+          \	'e',
+          \	'E',
+          \	'é',
+          \	'É',
+          \	'è',
+          \	'È',
+          \	'o',
+          \	'O',
+          \	'ô',
+          \	'Ô',
+          \	'œ',
+          \	'Œ',
+          \	'z',
+          \	'Z'
+          \    ]
+          \ },
+          \ ]
+    endif
+  endif
+  let tests += [
+        \ {
+        \    'name' : 'float',
+        \    'cmd' : 'sort f',
+        \    'input' : [
+        \	'1.234',
+        \	'0.88',
+        \	'  +  123.456',
+        \	'1.15e-6',
+        \	'-1.1e3',
+        \	'-1.01e3',
+        \	'',
+        \	''
+        \    ],
+        \    'expected' : [
+        \	'',
+        \	'',
+        \	'-1.1e3',
+        \	'-1.01e3',
+        \	'1.15e-6',
+        \	'0.88',
+        \	'1.234',
+        \	'  +  123.456'
+        \    ]
+        \ },
+        \ ]
 
   for t in tests
     enew!
@@ -1217,7 +1410,12 @@ func Test_sort_cmd()
     endif
   endfor
 
-  call assert_fails('sort no', 'E474')
+  " Needs at least two lines for this test
+  call setline(1, ['line1', 'line2'])
+  call assert_fails('sort no', 'E474:')
+  call assert_fails('sort c', 'E475:')
+  call assert_fails('sort #pat%', 'E654:')
+  call assert_fails('sort /\%(/', 'E53:')
 
   enew!
 endfunc
@@ -1257,9 +1455,8 @@ abc
   \                  '2147483647'], getline(1, '$'))
   bwipe!
 
-  if has('num64')
-    new
-    a
+  new
+  a
 -9223372036854775808
 -9223372036854775807
 
@@ -1274,22 +1471,21 @@ abc
 abc
 
 .
-    sort n
-    call assert_equal(['',
-    \                  'abc',
-    \                  '',
-    \                  '-9223372036854775808',
-    \                  '-9223372036854775808',
-    \                  '-9223372036854775807',
-    \                  '-9223372036854775806',
-    \                  '-1',
-    \                  '0',
-    \                  '1',
-    \                  '9223372036854775806',
-    \                  '9223372036854775807',
-    \                  '9223372036854775807'], getline(1, '$'))
-    bwipe!
-  endif
+  sort n
+  call assert_equal(['',
+  \                  'abc',
+  \                  '',
+  \                  '-9223372036854775808',
+  \                  '-9223372036854775808',
+  \                  '-9223372036854775807',
+  \                  '-9223372036854775806',
+  \                  '-1',
+  \                  '0',
+  \                  '1',
+  \                  '9223372036854775806',
+  \                  '9223372036854775807',
+  \                  '9223372036854775807'], getline(1, '$'))
+  bwipe!
 endfunc
 
 
@@ -1321,4 +1517,103 @@ func Test_sort_cmd_report()
     " the output comes from the :g command, not from the :sort
     call assert_match("6 fewer lines", res)
     enew!
+endfunc
+
+" Test for a :sort command followed by another command
+func Test_sort_followed_by_cmd()
+  new
+  let var = ''
+  call setline(1, ['cc', 'aa', 'bb'])
+  %sort | let var = "sortcmdtest"
+  call assert_equal(var, "sortcmdtest")
+  call assert_equal(['aa', 'bb', 'cc'], getline(1, '$'))
+  " Test for :sort followed by a comment
+  call setline(1, ['3b', '1c', '2a'])
+  %sort /\d\+/ " sort alphabetically
+  call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
+  bw!
+endfunc
+
+" Test for :sort using last search pattern
+func Test_sort_last_search_pat()
+  new
+  let @/ = '\d\+'
+  call setline(1, ['3b', '1c', '2a'])
+  sort //
+  call assert_equal(['2a', '3b', '1c'], getline(1, '$'))
+  bw!
+endfunc
+
+" Test for :sort with no last search pattern
+func Test_sort_with_no_last_search_pat()
+  let lines =<< trim [SCRIPT]
+    call setline(1, ['3b', '1c', '2a'])
+    call assert_fails('sort //', 'E35:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript', 'D')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xresult')
+endfunc
+
+" Test for retaining marks across a :sort
+func Test_sort_with_marks()
+  new
+  call setline(1, ['cc', 'aa', 'bb'])
+  call setpos("'c", [0, 1, 0, 0])
+  call setpos("'a", [0, 2, 0, 0])
+  call setpos("'b", [0, 3, 0, 0])
+  %sort
+  call assert_equal(['aa', 'bb', 'cc'], getline(1, '$'))
+  call assert_equal(2, line("'a"))
+  call assert_equal(3, line("'b"))
+  call assert_equal(1, line("'c"))
+  bw!
+endfunc
+
+" Test for sort() using a dict function
+func Test_sort_using_dict_func()
+  func DictSort(a, b) dict
+    if self.order == 'reverse'
+      return a:b - a:a
+    else
+      return a:a - a:b
+    endif
   endfunc
+  let d = #{order: ''}
+  call assert_equal([1, 2, 3], sort([2, 1, 3], 'DictSort', d))
+  let d = #{order: 'reverse'}
+  call assert_equal([3, 2, 1], sort([2, 1, 3], 'DictSort', d))
+  delfunc DictSort
+endfunc
+
+" Test for using sort() function with a funcref and large numbers
+func Test_sort_funcref_with_large_number()
+  let lines =<< trim END
+    call assert_equal(
+        \ [
+        \  (188325333471071, 188931909913550),
+        \  (229539777187355, 229539777187355),
+        \  (245727634348687, 249469249579525),
+        \  (264028451845520, 265514296554744),
+        \  (375117820166731, 378942174241518),
+        \  (487766135067138, 491977135306566),
+        \  (535474757750378, 535849288071548)
+        \ ],
+        \ [
+        \  (229539777187355, 229539777187355),
+        \  (487766135067138, 491977135306566),
+        \  (188325333471071, 188931909913550),
+        \  (264028451845520, 265514296554744),
+        \  (245727634348687, 249469249579525),
+        \  (375117820166731, 378942174241518),
+        \  (535474757750378, 535849288071548)
+        \ ]->sort(LSTART a, b LMIDDLE a[0] - b[0] LEND))
+  END
+  call v9.CheckSourceLegacyAndVim9Success(lines)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

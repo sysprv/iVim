@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # Fixes: symptoms and root causes
 
@@ -65,6 +65,42 @@ in the three squashed commits on `ios27-keyboard-fix` plus later ones.
 - Fix (`VimFontsManager.swift`): parse with the `en_US_POSIX` locale; fall
   back to the first font whose name starts with the given one. Shipped in
   TestFlight build 2.
+
+## Vim 9.2 upgrade
+
+Vim 8.1.2110 → 9.2.1135 ([vim-upgrade](vim-upgrade.md)). Problems found
+while porting, all checked on the simulator:
+
+- **Black screen at start**: 9.2's new `+socketserver` (clientserver over a
+  Unix socket) failed to listen, and its error waited for Enter before the
+  GUI had drawn anything. Fix: no `FEAT_SOCKETSERVER` on iOS
+  (`feature.h`), so no `+clientserver` either (8.1 didn't have it).
+- **Timers silently gone** (`has('timers')` 0, `timer_start` unknown): on
+  Darwin, 9.x only enables `+reltime`/`+timers` with
+  `HAVE_DISPATCH_DISPATCH_H`. Fix: define it in `ios_prefix.h`; the
+  macOS `timer_create()` emulation in `os_mac.h` is skipped on iOS (it
+  lives in `os_macosx.m`, not built), so timeouts use `setitimer()`.
+- **`E254: Cannot allocate color grey25`**: iVim's colour lookup fell back
+  to `$VIMRUNTIME/rgb.txt`, which 9.x removed. Fix: `gui_mch_get_color()`
+  calls vim's `gui_get_color_cmn()` (all X11 names via `v:colornames`),
+  like the Win32 and Haiku GUIs. `DarkYellow` is now vim's `#8b8b00`
+  instead of iVim's `#bbbb00`.
+- **`system(['cmd', 'arg'])`** (new in 9.x) runs argv directly via its own
+  `fork()`/`execvp()`, which would never finish under ios_system. Fix: on
+  iOS, `mch_get_cmd_output_direct()` shell-escapes the list and runs it as
+  a string command.
+- `:terminal` line endings: 9.x converts lone NL to CR NL itself for
+  `PART_ERR`; on iOS (no pty) this now applies to all parts, replacing
+  iVim's `ios_term_translate_msg()` (which also doubled existing CRs).
+- Compile fixes: `extend()` in `list.c` clashes with an enum constant from
+  `MacTypes.h` (renamed via a macro); removed `FEAT_TITLE`/`FEAT_MBYTE`
+  guards in `gui_ios.m` (the latter had silently disabled the wide cursor
+  over double-width characters since 8.1.0733); new
+  `gui_mch_get_scrollbar_{x,y}padding()` stubs; API renames
+  (`MODE_NORMAL`, `UPD_NOT_VALID`, `SOURCING_NAME`, extra args to
+  `trans_special`, `close_buffer`, `buf_reload`); macOS task QoS call
+  skipped on iOS.
+- Lua support dropped from `ios_prefix.h` (not wanted, never shipped).
 
 ## Smaller
 

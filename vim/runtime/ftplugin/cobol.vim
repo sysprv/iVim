@@ -2,7 +2,9 @@
 " Language:	cobol
 " Maintainer: Ankit Jain <ajatkj@yahoo.co.in>
 "     (formerly Tim Pope <vimNOSPAM@tpope.info>)
-" Last Update:	By Ankit Jain (changed maintainer) on 22.03.2019
+" Last Update:	By Ankit Jain (add gtk support) on 15.08.2020
+"		2024 Jan 14 by Vim Project (browsefilter)
+"		2026 Jun 27 by Vim Project (add recommended style guard)
 
 " Insert mode mappings: <C-T> <C-D> <Tab>
 " Normal mode mappings: < > << >> [[ ]] [] ][
@@ -19,8 +21,11 @@ set cpo&vim
 setlocal commentstring=\ \ \ \ \ \ *%s
 setlocal comments=:*
 setlocal fo+=croqlt
-setlocal expandtab
-setlocal textwidth=72
+if get(g:, 'cobol_recommended_style',
+      \ get(g:, 'filetype_recommended_style', 1))
+  setlocal expandtab
+  setlocal textwidth=72
+endif
 
 " matchit support
 if exists("loaded_matchit")
@@ -37,9 +42,14 @@ if exists("loaded_matchit")
     \ '-\@<!\<\%(delete\|rewrite\|start\|write\|read\)\>\%(.*\(\%$\|\%(\n\%(\%(\s*\|.\{6\}\)[*/].*\n\)*\)\=\s*\%(invalid\s\+key\|at\s\+end\|no\s\+data\|at\s\+end-of-page\)\>\)\)\@=:\%(\<not\s\+\)\@<!\<\%(not\s\+\)\=\%(invalid\s\+key\|at\s\+end\|no\s\+data\|at\s\+end-of-page\)\>:\<end-\%(delete\|rewrite\|start\|write\|read\)\>' .s:ordot
 endif
 
-if has("gui_win32") && !exists("b:browsefilter")
-  let b:browsefilter = "COBOL Source Files (*.cbl, *.cob)\t*.cbl;*.cob;*.lib\n".
-		     \ "All Files (*.*)\t*.*\n"
+" add gtk support
+if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
+  let b:browsefilter = "COBOL Source Files (*.cbl, *.cob)\t*.cbl;*.cob;*.lib\n"
+  if has("win32")
+    let b:browsefilter .= "All Files (*.*)\t*\n"
+  else
+    let b:browsefilter .= "All Files (*)\t*\n"
+  endif
 endif
 
 let b:undo_ftplugin = "setlocal com< cms< fo< et< tw<" .

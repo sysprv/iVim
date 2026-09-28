@@ -18,15 +18,24 @@
 #include <string.h>
 #include <unistd.h>
 
-#define LINELENGTH 2048
+/*
+ * sscanf() needs a literal field width on each "%[", so define the widths
+ * once and derive the buffer sizes (width + 1) and format widths (via STR()).
+ */
+#define STR_(x) #x
+#define STR(x)	STR_(x)
+#define LINEWIDTH  2047
+#define LINELENGTH (LINEWIDTH + 1)
+#define PATHWIDTH  1023
+#define PATHLENGTH (PATHWIDTH + 1)
 
 /* Collector(s) */
 char	       Line[LINELENGTH];
 char	       Line2[LINELENGTH];
 /* Components */
-char	       FileName[1024];
-char	       BasePath[1024];
-char	       CWD[1024];
+char	       FileName[PATHLENGTH];
+char	       BasePath[PATHLENGTH];
+char	       CWD[PATHLENGTH];
 unsigned long  Row;
 unsigned long  Col;
 char	       Severity;
@@ -184,7 +193,7 @@ int main( int argc, char *argv[] )
 	  case COMPILER_GCC:
 	    Severity = 'e';
 #ifdef GOTO_FROM_WHERE_INCLUDED
-	    rv = sscanf( Line, "In file included from %[^:]:%u:",
+	    rv = sscanf( Line, "In file included from %" STR(PATHWIDTH) "[^:]:%lu:",
 			       FileName, &Row );
 	    if ( rv == 2 )
 	      {
@@ -193,11 +202,11 @@ int main( int argc, char *argv[] )
 	    else
 #endif
 	      {
-		if ((rv = sscanf( Line, "%[^:]:%u: warning: %[^\n]",
+		if ((rv = sscanf( Line, "%" STR(PATHWIDTH) "[^:]:%lu: warning: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason ))==3) {
 		 Severity = 'w';
 		} else {
-		rv = sscanf( Line, "%[^:]:%u: %[^\n]",
+		rv = sscanf( Line, "%" STR(PATHWIDTH) "[^:]:%lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		}
 		ok = ( rv == 3 );
@@ -205,24 +214,24 @@ int main( int argc, char *argv[] )
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_AIX:
-	    rv = sscanf( Line, "\"%[^\"]\", line %u.%u: %*s (%c) %[^\n]",
+	    rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu.%lu: %*s (%c) %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, &Col, &Severity, Reason );
 	    ok = ( rv == 5 );
 	    break;
 	  case COMPILER_HPUX:
-	    rv = sscanf( Line, "cc: \"%[^\"]\", line %u: %c%*[^:]: %[^\n]",
+	    rv = sscanf( Line, "cc: \"%" STR(PATHWIDTH) "[^\"]\", line %lu: %c%*[^:]: %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, &Severity, Reason );
 	    ok = ( rv == 4 );
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_SOLARIS:
-	    rv = sscanf( Line, "\"%[^\"]\", line %u: warning: %[^\n]",
+	    rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu: warning: %" STR(LINEWIDTH) "[^\n]",
 			       FileName, &Row, Reason );
 	    Severity = 'w';
 	    ok = ( rv == 3 );
 	    if ( rv != 3 )
 	      {
-		rv = sscanf( Line, "\"%[^\"]\", line %u: %[^\n]",
+		rv = sscanf( Line, "\"%" STR(PATHWIDTH) "[^\"]\", line %lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		Severity = 'e';
 		ok = ( rv == 3 );
@@ -230,18 +239,18 @@ int main( int argc, char *argv[] )
 	    Col = (dec_col ? 1 : 0 );
 	    break;
 	  case COMPILER_ATT:
-	    rv	 = sscanf( Line, "%c \"%[^\"]\",L%u/C%u%*[^:]:%[^\n]",
+	    rv	 = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu/C%lu%*[^:]:%" STR(LINEWIDTH) "[^\n]",
 				 &Severity, FileName, &Row, &Col, Reason );
 	    ok = ( rv == 5 );
 
 	    if (rv != 5)
-	      { rv   = sscanf( Line, "%c \"%[^\"]\",L%u/C%u: %[^\n]",
+	      { rv   = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu/C%lu: %" STR(LINEWIDTH) "[^\n]",
 				     &Severity, FileName, &Row, &Col, Reason );
 		ok = ( rv == 5 );
 	      }
 
 	    if (rv != 5)
-	      { rv  = sscanf( Line, "%c \"%[^\"]\",L%u: %[^\n]",
+	      { rv  = sscanf( Line, "%c \"%" STR(PATHWIDTH) "[^\"]\",L%lu: %" STR(LINEWIDTH) "[^\n]",
 				   &Severity, FileName, &Row, Reason );
 		ok = ( rv == 4 );
 		Col = (dec_col ? 1 : 0 );
@@ -249,14 +258,15 @@ int main( int argc, char *argv[] )
 
 	    stay = (echogets(Line2, echo) != NULL);
 	    while ( stay && (Line2[0] == '|') )
-	      { for (p=&Line2[2]; (*p) && (isspace(*p)); p++);
-		strcat( Reason, ": " );
-		strcat( Reason, p );
+	      { size_t n;
+		for (p=&Line2[2]; (*p) && (isspace((unsigned char)*p)); p++);
+		n = strlen(Reason);
+		snprintf( Reason + n, LINELENGTH - n, ": %s", p );
 		Line2[0] = 0;
 		stay = (echogets(Line2, echo) != NULL);
 	      }
 	    prefetch = 1;
-	    strcpy( Line, Line2 );
+	    snprintf( Line, LINELENGTH, "%s", Line2 );
 	    break;
 	  case COMPILER_IRIX:
 	    Col       = 1;
@@ -265,17 +275,17 @@ int main( int argc, char *argv[] )
 	    ok	      = 0;
 	    if ( !strncmp(Line, "cfe: ", 5) )
 	      { p = &Line[5];
-		Severity = tolower(*p);
+		Severity = tolower((unsigned char)*p);
 		p = strchr( &Line[5], ':' );
 		if (p == NULL)
 		  { ok = 0;
 		  }
 		 else
 		  {
-		    rv = sscanf( p+2, "%[^:]: %u: %[^\n]",
+		    rv = sscanf( p+2, "%" STR(PATHWIDTH) "[^:]: %lu: %" STR(LINEWIDTH) "[^\n]",
 				 FileName, &Row, Reason );
 		    if (rv != 3)
-		      rv = sscanf( p+2, "%[^,], line %u: %[^\n]",
+		      rv = sscanf( p+2, "%" STR(PATHWIDTH) "[^,], line %lu: %" STR(LINEWIDTH) "[^\n]",
 				   FileName, &Row, Reason );
 		    ok = ( rv == 3 );
 		  }
@@ -291,8 +301,8 @@ int main( int argc, char *argv[] )
 			prefetch = 0;
 		      }
 		     else
-		      { strcat( Line, "\n" );
-			strcat( Line, Line2 );
+		      { size_t n = strlen(Line);
+			snprintf( Line + n, LINELENGTH - n, "\n%s", Line2 );
 		      }
 		  }
 	      }
@@ -306,19 +316,19 @@ int main( int argc, char *argv[] )
 	      p = &Line[1];
 	  else
 	      p = &Line[0];
-	  ok = sscanf( p, "make[%*d]: Entering directory `%[^']",
+	  ok = sscanf( p, "make[%*d]: Entering directory `%" STR(PATHWIDTH) "[^']",
 		       BasePath );
 	  if (verbose)
 	    printf( "[%u]?%s\n", (unsigned)ok, Line );
 	}
        else
 	{
-	  for (p=Reason; (*p) && (isspace(*p)); p++);
+	  for (p=Reason; (*p) && (isspace((unsigned char)*p)); p++);
 	  if ( BasePath[CWDlen] == 0 )
-	      printf( "%s:%u:%u:%c:%s\n", FileName, Row, Col, Severity, p );
+	      printf( "%s:%lu:%lu:%c:%s\n", FileName, Row, Col, Severity, p );
 	  else
 	    {
-	      printf( "%s/%s:%u:%u:%c:%s\n", &BasePath[CWDlen+1], FileName, Row, Col, Severity, p );
+	      printf( "%s/%s:%lu:%lu:%c:%s\n", &BasePath[CWDlen+1], FileName, Row, Col, Severity, p );
 	    }
 	}
       if (!prefetch)

@@ -1,25 +1,44 @@
-*uganda.txt*    For Vim version 8.1.  Last change: 2018 May 17
+*uganda.txt*	For Vim version 9.2.  Last change: 2026 Jun 07
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
 			*uganda* *Uganda* *copying* *copyright* *license*
 SUMMARY
-								*iccf* *ICCF*
+							*Kuwasha*
 Vim is Charityware.  You can use and copy it as much as you like, but you are
 encouraged to make a donation for needy children in Uganda.  Please see |kcc|
-below or visit the ICCF web site, available at these URLs:
+below or visit the Kuwasha web site, available at the following URL:
 
-	http://iccf-holland.org/
-	http://www.vim.org/iccf/
-	http://www.iccf.nl/
+	https://www.kuwasha.net
 
-You can also sponsor the development of Vim.  Vim sponsors can vote for
-features.  See |sponsor|.  The money goes to Uganda anyway.
+You can also sponsor the development of Vim, see |sponsor|.  The money goes to
+Uganda anyway.
+
+							*iccf* *ICCF*
+ICCF Holland and Kuwasha~
+
+|Bram| Moolenaar's charity, ICCF Holland, has long supported the education of
+children in Uganda through the Kibaale Children's Centre.  Following Bram's
+passing in 2023, ICCF Holland transferred all activities to its sister charity
+Kuwasha in Canada and dissolved at the end of 2025.
+
+Donations from Vim users are still welcome and will continue to go directly to
+Uganda.  To continue supporting this cause, please send contributions to
+Kuwasha.
+
+License~
 
 The Open Publication License applies to the Vim documentation, see
 |manual-copyright|.
+
+The icons used for the toolbar in the Win32 GUI are from the "Farm-Fresh Web
+Icons" set.  These icons are licensed under the Creative Commons Attribution
+3.0 License and were created by FatCow Web Hosting.  They were previously
+available at (dead link) fatcow.com/free-icons and are still available at:
+https://www.iconarchive.com/show/farm-fresh-icons-by-fatcow.1.html
+
 
 === begin of license ===
 
@@ -46,12 +65,14 @@ II) It is allowed to distribute a modified (or extended) version of Vim,
 	  maintainer will do with your changes and under what license they
 	  will be distributed is negotiable.  If there has been no negotiation
 	  then this license, or a later version, also applies to your changes.
-	  The current maintainer is Bram Moolenaar <Bram@vim.org>.  If this
-	  changes it will be announced in appropriate places (most likely
-	  vim.sf.net, www.vim.org and/or comp.editors).  When it is completely
-	  impossible to contact the maintainer, the obligation to send him
-	  your changes ceases.  Once the maintainer has confirmed that he has
-	  received your changes they will not have to be sent again.
+	  The current maintainers are listed here:
+	      https://github.com/orgs/vim/people
+	  If this changes it will be announced in appropriate places (most
+	  likely vim.sf.net, www.vim.org and/or comp.editors).  When it is
+	  completely impossible to contact the maintainer, the obligation to
+	  send him your changes ceases.  Once the maintainer has confirmed
+	  that he has received your changes they will not have to be sent
+	  again.
        b) If you have received a modified Vim that was distributed as
 	  mentioned under a) you are allowed to further distribute it
 	  unmodified, as mentioned at I).  If you make additional changes the
@@ -127,17 +148,21 @@ Note:
   contact information with the "--with-modified-by" configure argument or the
   MODIFIED_BY define.
 
+- This license applies to the source code of Vim.  However, different license
+  conditions may apply to some runtime files included with Vim; these will be
+  specified in the header of each respective file.
 ==============================================================================
 Kibaale Children's Centre		*kcc* *Kibaale*  *charity*
 
 Kibaale Children's Centre (KCC) is located in Kibaale, a small town in the
 south of Uganda, near Tanzania, in East Africa.  The area is known as Rakai
 District.  The population is mostly farmers.  Although people are poor, there
-is enough food.  But this district is suffering from AIDS more than any other
-part of the world.  Some say that it started there.  Estimations are that 10
-to 30% of the Ugandans are infected with HIV.  Because parents die, there are
-many orphans.  In this district about 60,000 children have lost one or both
-parents, out of a population of 350,000.  And this is still continuing.
+usually is enough food.  But this district is suffering from AIDS more than
+any other part of the world.  Some say that it started there.  Estimations are
+that in the past 10 to 30% of the Ugandans are infected with HIV.  Because
+parents die, there are many orphans.  In this district about 60,000 children
+have lost one or both parents, out of a population of 350,000.  Although AIDS
+is now mostly under control, the problems are still continuing.
 
 The children need a lot of help.  The KCC is working hard to provide the needy
 with food, medical care and education.  Food and medical care to keep them
@@ -169,120 +194,48 @@ households are stimulated to build a proper latrine.  I helped setting up a
 production site for cement slabs.  These are used to build a good latrine.
 They are sold below cost price.
 
-There is a small clinic at the project, which provides children and their
-family with medical help.  When needed, transport to a hospital is offered.
-Immunization programs are carried out and help is provided when an epidemic is
-breaking out (measles and cholera have been a problem).
-							*donate*
-Summer 1994 to summer 1995 I spent a whole year at the centre, working as a
-volunteer.  I have helped to expand the centre and worked in the area of water
-and sanitation.  I learned that the help that the KCC provides really helps.
-When I came back to Holland, I wanted to continue supporting KCC.  To do this
-I'm raising funds and organizing the sponsorship program.  Please consider one
-of these possibilities:
+There is a clinic at the project, which provides children and their family
+medical help.  Since 2020 a maternity ward was added and 24/7 service is
+available.  When needed, transport to a hospital is offered.  Immunization
+programs are carried out and help is provided when an epidemic is breaking out
+(measles and cholera have been a problem).
 
-1.  Sponsor a child in primary school: 17 euro a month (or more).
-2.  Sponsor a child in secondary school: 25 euro a month (or more).
-3.  Sponsor the clinic: Any amount a month or quarter
-4.  A one-time donation
+Summer 1994 to summer 1995 Bram spent a whole year at the centre, working as a
+volunteer.  Bram helped to expand the centre and worked in the area of water
+and sanitation.  Bram learned that the help that the KCC provides really
+helps. When Bram came back to Holland, he wanted to continue supporting KCC.
+To do this he has been raising funds and organizing the sponsorship program.
 
-Compared with other organizations that do child sponsorship the amounts are
-very low.  This is because the money goes directly to the centre.  Less than
-5% is used for administration.  This is possible because this is a small
-organization that works with volunteers.  If you would like to sponsor a
-child, you should have the intention to do this for at least one year.
-
-How do you know that the money will be spent right?  First of all you have my
-personal guarantee as the author of Vim.  I trust the people that are working
-at the centre, I know them personally.  Furthermore, the centre has been
+How do you know that the money will be spent right?  First of all you have the
+personal guarantee of Bram as the author of Vim, who knew the people working
+at the centre personally.  Furthermore, the centre has been
 co-sponsored and inspected by World Vision, Save the Children Fund and is now
-under the supervision of Pacific Academy Outreach Society.  The centre is
-visited about once a year to check the progress (at our own cost).  I have
-visited the centre myself many times, starting in 1993.  The visit reports are
-on the ICCF web site.
+under the supervision of Pacific Academy Outreach Society.  Bram has
+visited the centre many times, starting in 1993.  The visit reports are
+have been shared on the ICCF web site (may no longer be available).
 
-If you have any further questions, send me e-mail: <Bram@vim.org>.
+If you have any further questions, send an e-mail: info@kuwasha.net.
 
 The address of the centre is:
 			Kibaale Children's Centre
 			p.o. box 1658
 			Masaka, Uganda, East Africa
 
-Sending money:						*iccf-donations*
+							*donate*
+Sending money:
 
-Check the ICCF web site for the latest information!  See |iccf| for the URL.
+Check the Kuwasha web site for the latest information!
 
-
-USA:		The methods mentioned below can be used.
-		Sending a check to the Nehemiah Group Outreach Society (NGOS)
-		is no longer possible, unfortunately. We are looking for
-		another way to get you an IRS tax receipt. 
-		For sponsoring a child contact KCF in Canada (see below). US
-		checks can be sent to them to lower banking costs.
-
-Canada:		Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
-		take care of the Canadian sponsors for the children in
-		Kibaale.  KCF forwards 100% of the money to the project in
-		Uganda.  You can send them a one time donation directly.
-		Please send me a note so that I know what has been donated
-		because of Vim.  Ask KCF for information about sponsorship.
-			Kibaale Children's Fund c/o Pacific Academy
-			10238-168 Street
-			Surrey, B.C. V4N 1Z4
-			Canada
-			Phone: 604-581-5353
-		If you make a donation to Kibaale Children's Fund (KCF) you
-		will receive a tax receipt which can be submitted with your
-		tax return.
-
-Holland:	Transfer to the account of "Stichting ICCF Holland" in Lisse.
-		This will allow for tax deduction if you live in Holland.
-			Postbank, nr. 4548774
-			IBAN: NL95 INGB 0004 5487 74
-
-Germany:	It is possible to make donations that allow for a tax return.
-		Check the ICCF web site for the latest information:
-			http://iccf-holland.org/germany.html
-
-World:		Use a postal money order.  That should be possible from any
-		country, mostly from the post office.  Use this name (which is
-		in my passport): "Abraham Moolenaar".  Use Euro for the
-		currency if possible.
-
-Europe:		Use a bank transfer if possible.  Your bank should have a form
-		that you can use for this.  See "Others" below for the swift
-		code and IBAN number.
-		Any other method should work.  Ask for information about
-		sponsorship.
+		Look on their site for information about sponsorship:
+		    https://www.kuwasha.net/
+		If you make a donation to Kuwasha you will receive a tax
+		receipt which can be submitted with your tax return.
 
 Credit Card:	You can use PayPal to send money with a Credit card.  This is
 		the most widely used Internet based payment system.  It's
 		really simple to use.  Use this link to find more info:
-		    https://www.paypal.com/en_US/mrb/pal=XAC62PML3GF8Q
+		    https://www.paypal.com/ncp/payment/ZZPJ7XEYD3CZ2
 		The e-mail address for sending the money to is:
-		    Bram@iccf-holland.org
-		For amounts above 400 Euro ($500) sending a check is
-		preferred.
-
-Others:		Transfer to one of these accounts if possible:
-		    Postbank, account 4548774
-				Swift code: INGB NL 2A
-				IBAN: NL95 INGB 0004 5487 74
-			under the name "stichting ICCF Holland", Lisse
-		    If that doesn't work:
-		    Rabobank Lisse, account 3765.05.117
-				Swift code: RABO NL 2U
-			under the name "Bram Moolenaar", Lisse
-		Otherwise, send a check in euro or US dollars to the address
-		below.  Minimal amount: $70 (my bank does not accept smaller
-		amounts for foreign check, sorry)
-
-Address to send checks to:
-			Bram Moolenaar
-			Finsterruetihof 1
-			8134 Adliswil
-			Switzerland
-
-This address is expected to be valid for a long time.
+		    info@kuwasha.net
 
  vim:tw=78:ts=8:noet:ft=help:norl:

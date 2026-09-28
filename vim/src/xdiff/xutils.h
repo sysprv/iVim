@@ -34,7 +34,15 @@ void *xdl_cha_alloc(chastore_t *cha);
 long xdl_guess_lines(mmfile_t *mf, long sample);
 int xdl_blankline(const char *line, long size, long flags);
 int xdl_recmatch(const char *l1, long s1, const char *l2, long s2, long flags);
-unsigned long xdl_hash_record(char const **data, char const *top, long flags);
+unsigned long xdl_hash_record_verbatim(char const **data, char const *top);
+unsigned long xdl_hash_record_with_whitespace(char const **data, char const *top, long flags);
+static inline unsigned long xdl_hash_record(char const **data, char const *top, long flags)
+{
+	if (flags & XDF_WHITESPACE_FLAGS)
+		return xdl_hash_record_with_whitespace(data, top, flags);
+	else
+		return xdl_hash_record_verbatim(data, top);
+}
 unsigned int xdl_hashbits(unsigned int size);
 int xdl_num_out(char *out, long val);
 int xdl_emit_hunk_hdr(long s1, long c1, long s2, long c2,
@@ -42,6 +50,7 @@ int xdl_emit_hunk_hdr(long s1, long c1, long s2, long c2,
 int xdl_fall_back_diff(xdfenv_t *diff_env, xpparam_t const *xpp,
 		       int line1, int count1, int line2, int count2);
 
-
+/* Do not call this function, use XDL_ALLOC_GROW instead */
+void* xdl_alloc_grow_helper(void* p, long nr, long* alloc, size_t size);
 
 #endif /* #if !defined(XUTILS_H) */

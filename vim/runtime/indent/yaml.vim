@@ -1,20 +1,22 @@
 " Vim indent file
-" Language:         YAML
-" Maintainer:       Nikolai Pavlov <zyx.vim@gmail.com>
-" Last Change:	    2017 Jun 13
+" Language:	YAML
+" Maintainer:	Nikolai Pavlov <zyx.vim@gmail.com>
+" Last Updates:	Lukas Reineke, "lacygoill"
+" Last Change:	2022 Jun 17
+" 2024 Feb 29 by Vim project: disable mulitline indent by default
+" 2024 Aug 14 by Vim project: fix re-indenting when commenting out lines
+" 2026 Jan 08 by Vim project: fix object indentation in array
+" 2026 Jan 15 by Vim project: fix double shiftwidth from previous change
 
 " Only load this indent file when no other was loaded.
 if exists('b:did_indent')
   finish
 endif
 
-let s:save_cpo = &cpo
-set cpo&vim
-
 let b:did_indent = 1
 
 setlocal indentexpr=GetYAMLIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,0#,0},0],<:>,0-
+setlocal indentkeys=!^F,o,O,0},0],<:>,0-
 setlocal nosmartindent
 
 let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent<'
@@ -24,12 +26,15 @@ if exists('*GetYAMLIndent')
     finish
 endif
 
+let s:save_cpo = &cpo
+set cpo&vim
+
 function s:FindPrevLessIndentedLine(lnum, ...)
     let prevlnum = prevnonblank(a:lnum-1)
     let curindent = a:0 ? a:1 : indent(a:lnum)
     while           prevlnum
-                \&&  indent(prevlnum) >=  curindent
-                \&& getline(prevlnum) =~# '^\s*#'
+                \ && indent(prevlnum) >=  curindent
+                \ && getline(prevlnum) !~# '^\s*#'
         let prevlnum = prevnonblank(prevlnum-1)
     endwhile
     return prevlnum
@@ -43,30 +48,30 @@ function s:FindPrevLEIndentedLineMatchingRegex(lnum, regex)
     return plilnum
 endfunction
 
-let s:mapkeyregex='\v^\s*\#@!\S@=%(\''%([^'']|\''\'')*\'''.
-                \                 '|\"%([^"\\]|\\.)*\"'.
+let s:mapkeyregex = '\v^\s*\#@!\S@=%(\''%([^'']|\''\'')*\''' ..
+                \                 '|\"%([^"\\]|\\.)*\"' ..
                 \                 '|%(%(\:\ )@!.)*)\:%(\ |$)'
-let s:liststartregex='\v^\s*%(\-%(\ |$))'
+let s:liststartregex = '\v^\s*%(\-%(\ |$))'
 
 let s:c_ns_anchor_char = '\v%([\n\r\uFEFF \t,[\]{}]@!\p)'
-let s:c_ns_anchor_name = s:c_ns_anchor_char.'+'
-let s:c_ns_anchor_property =  '\v\&'.s:c_ns_anchor_name
+let s:c_ns_anchor_name = s:c_ns_anchor_char .. '+'
+let s:c_ns_anchor_property =  '\v\&' .. s:c_ns_anchor_name
 
 let s:ns_word_char = '\v[[:alnum:]_\-]'
-let s:ns_tag_char  = '\v%(%\x\x|'.s:ns_word_char.'|[#/;?:@&=+$.~*''()])'
-let s:c_named_tag_handle     = '\v\!'.s:ns_word_char.'+\!'
+let s:ns_tag_char  = '\v%(\x\x|' .. s:ns_word_char .. '|[#/;?:@&=+$.~*''()])'
+let s:c_named_tag_handle     = '\v\!' .. s:ns_word_char .. '+\!'
 let s:c_secondary_tag_handle = '\v\!\!'
 let s:c_primary_tag_handle   = '\v\!'
-let s:c_tag_handle = '\v%('.s:c_named_tag_handle.
-            \            '|'.s:c_secondary_tag_handle.
-            \            '|'.s:c_primary_tag_handle.')'
-let s:c_ns_shorthand_tag = '\v'.s:c_tag_handle . s:ns_tag_char.'+'
+let s:c_tag_handle = '\v%(' .. s:c_named_tag_handle.
+            \            '|' .. s:c_secondary_tag_handle.
+            \            '|' .. s:c_primary_tag_handle .. ')'
+let s:c_ns_shorthand_tag = '\v' .. s:c_tag_handle .. s:ns_tag_char .. '+'
 let s:c_non_specific_tag = '\v\!'
-let s:ns_uri_char  = '\v%(%\x\x|'.s:ns_word_char.'\v|[#/;?:@&=+$,.!~*''()[\]])'
-let s:c_verbatim_tag = '\v\!\<'.s:ns_uri_char.'+\>'
-let s:c_ns_tag_property = '\v'.s:c_verbatim_tag.
-            \               '\v|'.s:c_ns_shorthand_tag.
-            \               '\v|'.s:c_non_specific_tag
+let s:ns_uri_char  = '\v%(\x\x|' .. s:ns_word_char .. '\v|[#/;?:@&=+$,.!~*''()[\]])'
+let s:c_verbatim_tag = '\v\!\<' .. s:ns_uri_char.. '+\>'
+let s:c_ns_tag_property = '\v' .. s:c_verbatim_tag.
+            \               '\v|' .. s:c_ns_shorthand_tag.
+            \               '\v|' .. s:c_non_specific_tag
 
 let s:block_scalar_header = '\v[|>]%([+-]?[1-9]|[1-9]?[+-])?'
 
@@ -111,7 +116,13 @@ function GetYAMLIndent(lnum)
         "
         " - |-
         "     Block scalar without indentation indicator
-        return previndent+shiftwidth()
+        if prevline =~# '^\s*-\s.*:$'
+            " Special case: list item with mapping key (- key:)
+            " Need to account for the "- " prefix
+            return previndent + 2 + shiftwidth()
+        else
+            return previndent+shiftwidth()
+        endif
     elseif prevline =~# '\v[:-]\ [|>]%(\d+[+\-]?|[+\-]?\d+)%(\#.*|\s*)$'
         " - |+2
         "   block scalar with indentation indicator
@@ -133,17 +144,22 @@ function GetYAMLIndent(lnum)
         let prevmapline = s:FindPrevLEIndentedLineMatchingRegex(a:lnum,
                     \                                           s:mapkeyregex)
         if getline(prevmapline) =~# '^\s*- '
+            " Previous mapping key is in a list item (- key:)
+            " The key effectively starts at indent + 2 (after "- ")
+            " Content under it should be indented relative to the key position
             return indent(prevmapline) + 2
         else
             return indent(prevmapline)
         endif
-    elseif prevline =~# '^\s*- '
+    elseif get(g:, 'yaml_indent_multiline_scalar', 0) &&
+        \  prevline =~# '^\s*- '
         " - List with
         "   multiline scalar
         return previndent+2
-    elseif prevline =~# s:mapkeyregex . '\v\s*%(%('.s:c_ns_tag_property.
-                \                              '\v|'.s:c_ns_anchor_property.
-                \                              '\v|'.s:block_scalar_header.
+    elseif get(g:, 'yaml_indent_multiline_scalar', 0) &&
+        \ prevline =~# s:mapkeyregex .. '\v\s*%(%(' .. s:c_ns_tag_property ..
+                \                              '\v|' .. s:c_ns_anchor_property ..
+                \                              '\v|' .. s:block_scalar_header ..
                 \                             '\v)%(\s+|\s*%(\#.*)?$))*'
         " Mapping with: value
         "     that is multiline scalar

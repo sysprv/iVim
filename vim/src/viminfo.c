@@ -14,7 +14,34 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_VIMINFO) || defined(PROTO)
+/*
+ * Structure used for reading from the viminfo file.
+ */
+typedef struct
+{
+    char_u	*vir_line;	// text of the current line
+    FILE	*vir_fd;	// file descriptor
+    vimconv_T	vir_conv;	// encoding conversion
+    int		vir_version;	// viminfo version detected or -1
+    garray_T	vir_barlines;	// lines starting with |
+} vir_T;
+
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    char_u	*bv_tofree;	// free later when not NULL
+    int		bv_len;		// length of bv_string
+    int		bv_allocated;	// bv_string was allocated
+} bval_T;
+
+#if defined(FEAT_VIMINFO)
 
 static int  viminfo_errcnt;
 
@@ -72,6 +99,8 @@ viminfo_filename(char_u *file)
 {
     if (file == NULL || *file == NUL)
     {
+	size_t  len;
+
 	if (*p_viminfofile != NUL)
 	    file = p_viminfofile;
 	else if ((file = find_viminfo_parameter('n')) == NULL || *file == NUL)
@@ -100,9 +129,12 @@ viminfo_filename(char_u *file)
 #endif
 		file = (char_u *)VIMINFO_FILE;
 	}
-	expand_env(file, NameBuff, MAXPATHL);
+	len = expand_env(file, NameBuff, MAXPATHL);
 	file = NameBuff;
+
+	return vim_strnsave(file, len);
     }
+
     return vim_strsave(file);
 }
 
@@ -135,7 +167,7 @@ viminfo_writestring(FILE *fd, char_u *p)
     // the string (e.g., variable name).  Add something to the length for the
     // '<', NL and trailing NUL.
     if (len > LSIZE / 2)
-	fprintf(fd, IF_EB("\026%d\n<", CTRL_V_STR "%d\n<"), len + 3);
+	fprintf(fd, "\026%d\n<", len + 3);
 
     while ((c = *p++) != NUL)
     {
@@ -224,19 +256,20 @@ barline_writestring(FILE *fd, char_u *s, int remaining_start)
 viminfo_readstring(
     vir_T	*virp,
     int		off,		    // offset for virp->vir_line
-    int		convert UNUSED)	    // convert the string
+    int		convert)	    // convert the string
 {
-    char_u	*retval;
+    char_u	*retval = NULL;
     char_u	*s, *d;
     long	len;
 
     if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
     {
 	len = atol((char *)virp->vir_line + off + 1);
-	retval = lalloc(len, TRUE);
+	if (len > 1 && len < 1000000)
+	    retval = lalloc(len, TRUE);
 	if (retval == NULL)
 	{
-	    // Line too long?  File messed up?  Skip next line.
+	    // Invalid length, line too long, out of memory?  Skip next line.
 	    (void)vim_fgets(virp->vir_line, 10, virp->vir_fd);
 	    return NULL;
 	}
@@ -353,27 +386,25 @@ removable(char_u *name)
 {
     char_u  *p;
     char_u  part[51];
+    int	    part_len;
     int	    retval = FALSE;
-    size_t  n;
 
     name = home_replace_save(NULL, name);
-    if (name != NULL)
+    if (name == NULL)
+	return FALSE;
+    for (p = p_viminfo; *p; )
     {
-	for (p = p_viminfo; *p; )
+	part_len = copy_option_part(&p, part, sizeof(part), ", ");
+	if (part[0] == 'r')
 	{
-	    copy_option_part(&p, part, 51, ", ");
-	    if (part[0] == 'r')
+	    if (MB_STRNICMP(part + 1, name, part_len - 1) == 0)
 	    {
-		n = STRLEN(part + 1);
-		if (MB_STRNICMP(part + 1, name, n) == 0)
-		{
-		    retval = TRUE;
-		    break;
-		}
+		retval = TRUE;
+		break;
 	    }
 	}
-	vim_free(name);
     }
+    vim_free(name);
     return retval;
 }
 
@@ -404,22 +435,20 @@ write_viminfo_bufferlist(FILE *fp)
     fputs(_("\n# Buffer list:\n"), fp);
     FOR_ALL_BUFFERS(buf)
     {
+	size_t	linelen;
+
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
-#ifdef FEAT_QUICKFIX
 		|| bt_quickfix(buf)
-#endif
-#ifdef FEAT_TERMINAL
 		|| bt_terminal(buf)
-#endif
 		|| removable(buf->b_ffname))
 	    continue;
 
 	if (max_buffers-- == 0)
 	    break;
 	putc('%', fp);
-	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
-	vim_snprintf_add((char *)line, LINE_BUF_LEN, "\t%ld\t%d",
+	linelen = home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
+	vim_snprintf((char *)line + linelen, LINE_BUF_LEN - linelen, "\t%ld\t%d",
 			(long)buf->b_last_cursor.lnum,
 			buf->b_last_cursor.col);
 	viminfo_writestring(fp, line);
@@ -510,49 +539,58 @@ read_viminfo_history(vir_T *virp, int writing)
 {
     int		type;
     long_u	len;
-    char_u	*val;
+    char_u	*val = NULL;
     char_u	*p;
 
     type = hist_char2type(virp->vir_line[0]);
-    if (viminfo_hisidx[type] < viminfo_hislen[type])
-    {
-	val = viminfo_readstring(virp, 1, TRUE);
-	if (val != NULL && *val != NUL)
-	{
-	    int sep = (*val == ' ' ? NUL : *val);
+    if (viminfo_hisidx[type] >= viminfo_hislen[type])
+	goto done;
 
-	    if (!in_history(type, val + (type == HIST_SEARCH),
-					  viminfo_add_at_front, sep, writing))
-	    {
-		// Need to re-allocate to append the separator byte.
-		len = STRLEN(val);
-		p = alloc(len + 2);
-		if (p != NULL)
-		{
-		    if (type == HIST_SEARCH)
-		    {
-			// Search entry: Move the separator from the first
-			// column to after the NUL.
-			mch_memmove(p, val + 1, (size_t)len);
-			p[len] = sep;
-		    }
-		    else
-		    {
-			// Not a search entry: No separator in the viminfo
-			// file, add a NUL separator.
-			mch_memmove(p, val, (size_t)len + 1);
-			p[len + 1] = NUL;
-		    }
-		    viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
-		    viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
-		    viminfo_history[type][viminfo_hisidx[type]].viminfo = TRUE;
-		    viminfo_history[type][viminfo_hisidx[type]].hisnum = 0;
-		    viminfo_hisidx[type]++;
-		}
-	    }
-	}
-	vim_free(val);
+    val = viminfo_readstring(virp, 1, TRUE);
+    if (val == NULL || *val == NUL)
+	goto done;
+
+    int sep = (*val == ' ' ? NUL : *val);
+
+    if (in_history(type, val + (type == HIST_SEARCH), viminfo_add_at_front,
+								sep, writing))
+	goto done;
+
+    // Need to re-allocate to append the separator byte.
+    len = STRLEN(val);
+    if (type == HIST_SEARCH)
+    {
+	p = alloc((size_t)len + 1);	    // +1 for the NUL. val already
+					    // includes the separator.
+	if (p == NULL)
+	    goto done;
+
+	// Search entry: Move the separator from the first
+	// column to after the NUL.
+	mch_memmove(p, val + 1, (size_t)len);
+	p[len] = sep;
+	--len;				    // take into account the shortened string
     }
+    else
+    {
+	p = alloc((size_t)len + 2);	    // +1 for NUL and +1 for separator
+	if (p == NULL)
+	    goto done;
+
+	// Not a search entry: No separator in the viminfo
+	// file, add a NUL separator.
+	mch_memmove(p, val, (size_t)len + 1);	// +1 to include the NUL
+	p[len + 1] = NUL;			// put the separator *after* the string's NUL
+    }
+    viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
+    viminfo_history[type][viminfo_hisidx[type]].hisstrlen = (size_t)len;
+    viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
+    viminfo_history[type][viminfo_hisidx[type]].viminfo = TRUE;
+    viminfo_history[type][viminfo_hisidx[type]].hisnum = 0;
+    viminfo_hisidx[type]++;
+
+done:
+    vim_free(val);
     return viminfo_readline(virp);
 }
 
@@ -583,54 +621,57 @@ handle_viminfo_history(
     type = vp[0].bv_nr;
     if (type >= HIST_COUNT)
 	return;
-    if (viminfo_hisidx[type] < viminfo_hislen[type])
+
+    if (viminfo_hisidx[type] >= viminfo_hislen[type])
+	return;
+
+    val = vp[3].bv_string;
+    if (val == NULL || *val == NUL)
+	return;
+
+    int sep = type == HIST_SEARCH && vp[2].bv_type == BVAL_NR
+							? vp[2].bv_nr : NUL;
+    int idx;
+    int overwrite = FALSE;
+
+    if (in_history(type, val, viminfo_add_at_front, sep, writing))
+	return;
+
+    // If lines were written by an older Vim we need to avoid
+    // getting duplicates. See if the entry already exists.
+    for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
     {
-	val = vp[3].bv_string;
-	if (val != NULL && *val != NUL)
+	p = viminfo_history[type][idx].hisstr;
+	len = viminfo_history[type][idx].hisstrlen;
+	if (STRCMP(val, p) == 0
+		&& (type != HIST_SEARCH || sep == p[len + 1]))
 	{
-	    int sep = type == HIST_SEARCH && vp[2].bv_type == BVAL_NR
-						      ? vp[2].bv_nr : NUL;
-	    int idx;
-	    int overwrite = FALSE;
+	    overwrite = TRUE;
+	    break;
+	}
+    }
 
-	    if (!in_history(type, val, viminfo_add_at_front, sep, writing))
-	    {
-		// If lines were written by an older Vim we need to avoid
-		// getting duplicates. See if the entry already exists.
-		for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
-		{
-		    p = viminfo_history[type][idx].hisstr;
-		    if (STRCMP(val, p) == 0
-			  && (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
-		    {
-			overwrite = TRUE;
-			break;
-		    }
-		}
-
-		if (!overwrite)
-		{
-		    // Need to re-allocate to append the separator byte.
-		    len = vp[3].bv_len;
-		    p = alloc(len + 2);
-		}
-		else
-		    len = 0; // for picky compilers
-		if (p != NULL)
-		{
-		    viminfo_history[type][idx].time_set = vp[1].bv_nr;
-		    if (!overwrite)
-		    {
-			mch_memmove(p, val, (size_t)len + 1);
-			// Put the separator after the NUL.
-			p[len + 1] = sep;
-			viminfo_history[type][idx].hisstr = p;
-			viminfo_history[type][idx].hisnum = 0;
-			viminfo_history[type][idx].viminfo = TRUE;
-			viminfo_hisidx[type]++;
-		    }
-		}
-	    }
+    if (!overwrite)
+    {
+	// Need to re-allocate to append the separator byte.
+	len = vp[3].bv_len;
+	p = alloc(len + 2);
+    }
+    else
+	len = 0; // for picky compilers
+    if (p != NULL)
+    {
+	viminfo_history[type][idx].time_set = vp[1].bv_nr;
+	if (!overwrite)
+	{
+	    mch_memmove(p, val, (size_t)len + 1);
+	    // Put the separator after the NUL.
+	    p[len + 1] = sep;
+	    viminfo_history[type][idx].hisstr = p;
+	    viminfo_history[type][idx].hisstrlen = (size_t)len;
+	    viminfo_history[type][idx].hisnum = 0;
+	    viminfo_history[type][idx].viminfo = TRUE;
+	    viminfo_hisidx[type]++;
 	}
     }
 }
@@ -673,6 +714,7 @@ concat_history(int type)
     {
 	vim_free(histentry[idx].hisstr);
 	histentry[idx].hisstr = viminfo_history[type][i].hisstr;
+	histentry[idx].hisstrlen = viminfo_history[type][i].hisstrlen;
 	histentry[idx].viminfo = TRUE;
 	histentry[idx].time_set = viminfo_history[type][i].time_set;
 	if (--idx < 0)
@@ -742,6 +784,7 @@ merge_history(int type)
 	{
 	    new_hist[i] = *tot_hist[i];
 	    tot_hist[i]->hisstr = NULL;
+	    tot_hist[i]->hisstrlen = 0;
 	    if (new_hist[i].hisnum == 0)
 		new_hist[i].hisnum = ++*hisnum;
 	}
@@ -752,9 +795,15 @@ merge_history(int type)
 
     // Free what is not kept.
     for (i = 0; i < viminfo_hisidx[type]; i++)
+    {
 	vim_free(viminfo_history[type][i].hisstr);
+	viminfo_history[type][i].hisstrlen = 0;
+    }
     for (i = 0; i < hislen; i++)
+    {
 	vim_free(histentry[i].hisstr);
+	histentry[i].hisstrlen = 0;
+    }
     vim_free(histentry);
     set_histentry(type, new_hist);
     vim_free(tot_hist);
@@ -822,11 +871,9 @@ write_viminfo_history(FILE *fp, int merge)
 	if (num_saved > hislen)
 	    num_saved = hislen;
 
-	/*
-	 * Merge typed and viminfo history:
-	 * round 1: history of typed commands.
-	 * round 2: history from recently read viminfo.
-	 */
+	// Merge typed and viminfo history:
+	// round 1: history of typed commands.
+	// round 2: history from recently read viminfo.
 	for (round = 1; round <= 2; ++round)
 	{
 	    if (round == 1)
@@ -843,20 +890,30 @@ write_viminfo_history(FILE *fp, int merge)
 			&& !(round == 2 && i >= viminfo_hisidx[type]))
 		{
 		    char_u  *p;
+		    size_t  plen;
 		    time_t  timestamp;
 		    int	    c = NUL;
 
 		    if (round == 1)
 		    {
 			p = histentry[i].hisstr;
+			plen = histentry[i].hisstrlen;
 			timestamp = histentry[i].time_set;
 		    }
 		    else
 		    {
-			p = viminfo_history[type] == NULL ? NULL
-					    : viminfo_history[type][i].hisstr;
-			timestamp = viminfo_history[type] == NULL ? 0
-					  : viminfo_history[type][i].time_set;
+			if (viminfo_history[type] == NULL)
+			{
+			    p = NULL;
+			    plen = 0;
+			    timestamp = 0;
+			}
+			else
+			{
+			    p = viminfo_history[type][i].hisstr;
+			    plen = viminfo_history[type][i].hisstrlen;
+			    timestamp = viminfo_history[type][i].time_set;
+			}
 		    }
 
 		    if (p != NULL && (round == 2
@@ -869,7 +926,7 @@ write_viminfo_history(FILE *fp, int merge)
 			// second column; use a space if there isn't one.
 			if (type == HIST_SEARCH)
 			{
-			    c = p[STRLEN(p) + 1];
+			    c = p[plen + 1];
 			    putc(c == NUL ? ' ' : c, fp);
 			}
 			viminfo_writestring(fp, p);
@@ -907,7 +964,10 @@ write_viminfo_history(FILE *fp, int merge)
 	}
 	for (i = 0; i < viminfo_hisidx[type]; ++i)
 	    if (viminfo_history[type] != NULL)
+	    {
 		vim_free(viminfo_history[type][i].hisstr);
+		viminfo_history[type][i].hisstrlen = 0;
+	    }
 	VIM_CLEAR(viminfo_history[type]);
 	viminfo_hisidx[type] = 0;
     }
@@ -921,19 +981,19 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
     int		seen_useful = FALSE;
     char	*line;
 
-    if (gap->ga_len > 0)
-    {
-	fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
+    if (gap->ga_len <= 0)
+	return;
 
-	// Skip over continuation lines until seeing a useful line.
-	for (i = 0; i < gap->ga_len; ++i)
+    fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
+
+    // Skip over continuation lines until seeing a useful line.
+    for (i = 0; i < gap->ga_len; ++i)
+    {
+	line = ((char **)(gap->ga_data))[i];
+	if (seen_useful || line[1] != '<')
 	{
-	    line = ((char **)(gap->ga_data))[i];
-	    if (seen_useful || line[1] != '<')
-	    {
-		fputs(line, fp_out);
-		seen_useful = TRUE;
-	    }
+	    fputs(line, fp_out);
+	    seen_useful = TRUE;
 	}
     }
 }
@@ -996,7 +1056,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		// Length includes the quotes.
 		++p;
 		len = getdigits(&p);
-		buf = alloc((int)(len + 1));
+		buf = alloc(len + 1);
 		if (buf == NULL)
 		    return TRUE;
 		p = buf;
@@ -1013,7 +1073,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		    }
 		    // Get length of text, excluding |< and NL chars.
 		    n = STRLEN(virp->vir_line);
-		    while (n > 0 && (virp->vir_line[n - 1] == NL
+		    while (n > 2 && (virp->vir_line[n - 1] == NL
 					     || virp->vir_line[n - 1] == CAR))
 			--n;
 		    n -= 2;
@@ -1044,7 +1104,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    }
 	}
 
-	if (isdigit(*p))
+	if (SAFE_isdigit(*p))
 	{
 	    value->bv_type = BVAL_NR;
 	    value->bv_nr = getdigits(&p);
@@ -1077,23 +1137,26 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    s[len] = NUL;
 
 	    converted = FALSE;
+	    value->bv_tofree = NULL;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
 		sconv = string_convert(&virp->vir_conv, s, NULL);
 		if (sconv != NULL)
 		{
 		    if (s == buf)
-			vim_free(s);
+			// the converted string is stored in bv_string and
+			// freed later, also need to free "buf" later
+			value->bv_tofree = buf;
 		    s = sconv;
-		    buf = s;
+		    len = (int)STRLEN(s);
 		    converted = TRUE;
 		}
 	    }
 
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
-	    if (s != buf && allocated)
-		s = vim_strsave(s);
+	    if (s != buf && allocated && !converted)
+		s = vim_strnsave(s, len);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
 	    value->bv_len = len;
@@ -1146,7 +1209,7 @@ viminfo_error(char *errnum, char *message, char_u *line)
     emsg((char *)IObuff);
     if (++viminfo_errcnt >= 10)
     {
-	emsg(_("E136: viminfo: Too many errors, skipping rest of file"));
+	emsg(_(e_viminfo_too_many_errors_skipping_rest_of_file));
 	return TRUE;
     }
     return FALSE;
@@ -1180,7 +1243,7 @@ viminfo_encoding(vir_T *virp)
     return viminfo_readline(virp);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL)
 /*
  * Restore global vars that start with a capital from the viminfo file
  */
@@ -1201,13 +1264,12 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    switch (*tab)
 	    {
 		case 'S': type = VAR_STRING; break;
-#ifdef FEAT_FLOAT
 		case 'F': type = VAR_FLOAT; break;
-#endif
 		case 'D': type = VAR_DICT; break;
 		case 'L': type = VAR_LIST; break;
 		case 'B': type = VAR_BLOB; break;
 		case 'X': type = VAR_SPECIAL; break;
+		case 'T': type = VAR_TUPLE; break;
 	    }
 
 	    tab = vim_strchr(tab, '\t');
@@ -1215,16 +1277,20 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    {
 		tv.v_type = type;
 		if (type == VAR_STRING || type == VAR_DICT
-			|| type == VAR_LIST || type == VAR_BLOB)
+			|| type == VAR_LIST || type == VAR_BLOB
+			|| type == VAR_TUPLE)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
-#ifdef FEAT_FLOAT
 		else if (type == VAR_FLOAT)
-		    (void)string2float(tab + 1, &tv.vval.v_float);
-#endif
+		    (void)string2float(tab + 1, &tv.vval.v_float, FALSE);
 		else
+		{
 		    tv.vval.v_number = atol((char *)tab + 1);
-		if (type == VAR_DICT || type == VAR_LIST)
+		    if (type == VAR_SPECIAL && (tv.vval.v_number == VVAL_FALSE
+					     || tv.vval.v_number == VVAL_TRUE))
+			tv.v_type = VAR_BOOL;
+		}
+		if (type == VAR_DICT || type == VAR_LIST || type == VAR_TUPLE)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
 
@@ -1292,7 +1358,7 @@ write_viminfo_varlist(FILE *fp)
     fputs(_("\n# global variables:\n"), fp);
 
     todo = (int)gvht->ht_used;
-    for (hi = gvht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(gvht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1302,24 +1368,73 @@ write_viminfo_varlist(FILE *fp)
 	    {
 		switch (this_var->di_tv.v_type)
 		{
-		    case VAR_STRING: s = "STR"; break;
-		    case VAR_NUMBER: s = "NUM"; break;
-		    case VAR_FLOAT:  s = "FLO"; break;
-		    case VAR_DICT:   s = "DIC"; break;
-		    case VAR_LIST:   s = "LIS"; break;
-		    case VAR_BLOB:   s = "BLO"; break;
+		    case VAR_STRING:  s = "STR"; break;
+		    case VAR_NUMBER:  s = "NUM"; break;
+		    case VAR_FLOAT:   s = "FLO"; break;
+		    case VAR_DICT:
+			  {
+			      dict_T	*di = this_var->di_tv.vval.v_dict;
+			      int	copyID = get_copyID();
+
+			      s = "DIC";
+			      if (di != NULL && !set_ref_in_ht(
+					 &di->dv_hashtab, copyID, NULL, NULL)
+				      && di->dv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_LIST:
+			  {
+			      list_T	*l = this_var->di_tv.vval.v_list;
+			      int	copyID = get_copyID();
+
+			      s = "LIS";
+			      if (l != NULL && !set_ref_in_list_items(
+						       l, copyID, NULL, NULL)
+				      && l->lv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_TUPLE:
+			  {
+			      tuple_T	*tuple = this_var->di_tv.vval.v_tuple;
+			      int	copyID = get_copyID();
+
+			      s = "TUP";
+			      if (tuple != NULL && !set_ref_in_tuple_items(
+					       tuple, copyID, NULL, NULL)
+				      && tuple->tv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_BLOB:    s = "BLO"; break;
+		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_ANY:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
 		    case VAR_CHANNEL:
-				     continue;
+		    case VAR_INSTR:
+		    case VAR_CLASS:
+		    case VAR_OBJECT:
+		    case VAR_TYPEALIAS:
+				      continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		if (this_var->di_tv.v_type == VAR_BOOL
+				      || this_var->di_tv.v_type == VAR_SPECIAL)
 		{
+		    // do not use "v:true" but "1"
 		    sprintf((char *)numbuf, "%ld",
 					  (long)this_var->di_tv.vval.v_number);
 		    p = numbuf;
@@ -1349,11 +1464,11 @@ write_viminfo_sub_string(FILE *fp)
 {
     char_u *old_sub = get_old_sub();
 
-    if (get_viminfo_parameter('/') != 0 && old_sub != NULL)
-    {
-	fputs(_("\n# Last Substitute String:\n$"), fp);
-	viminfo_writestring(fp, old_sub);
-    }
+    if (get_viminfo_parameter('/') == 0 || old_sub == NULL)
+	return;
+
+    fputs(_("\n# Last Substitute String:\n$"), fp);
+    viminfo_writestring(fp, old_sub);
 }
 
 /*
@@ -1361,7 +1476,7 @@ write_viminfo_sub_string(FILE *fp)
  */
 
     static int
-read_viminfo_search_pattern(vir_T *virp, int force)
+read_viminfo_search_pattern(vir_T *virp, int force, int writing)
 {
     char_u	*lp;
     int		idx = -1;
@@ -1428,16 +1543,19 @@ read_viminfo_search_pattern(vir_T *virp, int force)
 									TRUE);
 	    if (val != NULL)
 	    {
-		set_last_search_pat(val, idx, magic, setlast);
-		vim_free(val);
-		spat->no_scs = no_scs;
-		spat->off.line = off_line;
-		spat->off.end = off_end;
-		spat->off.off = off;
+		if (!writing)
+		{
+		    set_last_search_pat(val, idx, magic, setlast);
+		    spat->no_scs = no_scs;
+		    spat->off.line = off_line;
+		    spat->off.end = off_end;
+		    spat->off.off = off;
 #ifdef FEAT_SEARCH_EXTRA
-		if (setlast)
-		    set_no_hlsearch(!hlsearch_on);
+		    if (setlast)
+			set_no_hlsearch(!hlsearch_on);
 #endif
+		}
+		vim_free(val);
 	    }
 	}
     }
@@ -1452,34 +1570,34 @@ wvsp_one(
     int		sc)	// dir char
 {
     spat_T	*spat = get_spat(idx);
-    if (spat->pat != NULL)
-    {
-	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
-	// off.dir is not stored, it's reset to forward
-	fprintf(fp, "%c%c%c%c%ld%s%c",
-		spat->magic    ? 'M' : 'm',	// magic
-		spat->no_scs   ? 's' : 'S',	// smartcase
-		spat->off.line ? 'L' : 'l',	// line offset
-		spat->off.end  ? 'E' : 'e',	// offset from end
-		spat->off.off,			// offset
-		get_spat_last_idx() == idx ? "~" : "",	// last used pat
-		sc);
-	viminfo_writestring(fp, spat->pat);
-    }
+    if (spat->pat == NULL)
+	return;
+
+    fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
+    // off.dir is not stored, it's reset to forward
+    fprintf(fp, "%c%c%c%c%ld%s%c",
+	    spat->magic    ? 'M' : 'm',	// magic
+	    spat->no_scs   ? 's' : 'S',	// smartcase
+	    spat->off.line ? 'L' : 'l',	// line offset
+	    spat->off.end  ? 'E' : 'e',	// offset from end
+	    spat->off.off,			// offset
+	    get_spat_last_idx() == idx ? "~" : "",	// last used pat
+	    sc);
+    viminfo_writestring(fp, spat->pat);
 }
 
     static void
 write_viminfo_search_pattern(FILE *fp)
 {
-    if (get_viminfo_parameter('/') != 0)
-    {
+    if (get_viminfo_parameter('/') == 0)
+	return;
+
 #ifdef FEAT_SEARCH_EXTRA
-	fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
+    fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
 	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
 #endif
-	wvsp_one(fp, RE_SEARCH, "", '/');
-	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
-    }
+    wvsp_one(fp, RE_SEARCH, "", '/');
+    wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
 }
 
 /*
@@ -1497,7 +1615,7 @@ static yankreg_T *y_read_regs = NULL;
     static void
 prepare_viminfo_registers(void)
 {
-     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
+    y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
 }
 
     static void
@@ -1506,17 +1624,17 @@ finish_viminfo_registers(void)
     int		i;
     int		j;
 
-    if (y_read_regs != NULL)
-    {
-	for (i = 0; i < NUM_REGISTERS; ++i)
-	    if (y_read_regs[i].y_array != NULL)
-	    {
-		for (j = 0; j < y_read_regs[i].y_size; j++)
-		    vim_free(y_read_regs[i].y_array[j]);
-		vim_free(y_read_regs[i].y_array);
-	    }
-	VIM_CLEAR(y_read_regs);
-    }
+    if (y_read_regs == NULL)
+	return;
+
+    for (i = 0; i < NUM_REGISTERS; ++i)
+	if (y_read_regs[i].y_array != NULL)
+	{
+	    for (j = 0; j < y_read_regs[i].y_size; j++)
+		vim_free(y_read_regs[i].y_array[j].string);
+	    vim_free(y_read_regs[i].y_array);
+	}
+    VIM_CLEAR(y_read_regs);
 }
 
     static int
@@ -1529,7 +1647,7 @@ read_viminfo_register(vir_T *virp, int force)
     int		i;
     int		set_prev = FALSE;
     char_u	*str;
-    char_u	**array = NULL;
+    string_T	*array = NULL;
     int		new_type = MCHAR; // init to shut up compiler
     colnr_T	new_width = 0; // init to shut up compiler
     yankreg_T	*y_current_p;
@@ -1546,7 +1664,7 @@ read_viminfo_register(vir_T *virp, int force)
 
     if (!ASCII_ISALNUM(*str) && *str != '-')
     {
-	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	if (viminfo_error("E577: ", _(e_illegal_register_name), virp->vir_line))
 	    return TRUE;	// too many errors, pretend end-of-file
 	do_it = FALSE;
     }
@@ -1572,7 +1690,7 @@ read_viminfo_register(vir_T *virp, int force)
 	// array[] needs to be freed.
 	if (set_prev)
 	    set_y_previous(y_current_p);
-	array = ALLOC_MULT(char_u *, limit);
+	array = ALLOC_MULT(string_T, limit);
 	str = skipwhite(skiptowhite(str));
 	if (STRNCMP(str, "CHAR", 4) == 0)
 	    new_type = MCHAR;
@@ -1592,8 +1710,8 @@ read_viminfo_register(vir_T *virp, int force)
 	{
 	    if (size == limit)
 	    {
-		char_u **new_array = (char_u **)
-					   alloc(limit * 2 * sizeof(char_u *));
+		string_T *new_array = (string_T *)
+				    alloc((size_t)limit * 2 * sizeof(string_T));
 
 		if (new_array == NULL)
 		{
@@ -1608,7 +1726,11 @@ read_viminfo_register(vir_T *virp, int force)
 	    }
 	    str = viminfo_readstring(virp, 1, TRUE);
 	    if (str != NULL)
-		array[size++] = str;
+	    {
+		array[size].string = str;
+		array[size].length = STRLEN(str);
+		++size;
+	    }
 	    else
 		// error, don't store the result
 		do_it = FALSE;
@@ -1619,7 +1741,7 @@ read_viminfo_register(vir_T *virp, int force)
     {
 	// free y_array[]
 	for (i = 0; i < y_current_p->y_size; i++)
-	    vim_free(y_current_p->y_array[i]);
+	    vim_free(y_current_p->y_array[i].string);
 	vim_free(y_current_p->y_array);
 
 	y_current_p->y_type = new_type;
@@ -1633,13 +1755,18 @@ read_viminfo_register(vir_T *virp, int force)
 	else
 	{
 	    // Move the lines from array[] to y_array[].
-	    y_current_p->y_array = ALLOC_MULT(char_u *, size);
+	    y_current_p->y_array = ALLOC_MULT(string_T, size);
 	    for (i = 0; i < size; i++)
 	    {
 		if (y_current_p->y_array == NULL)
-		    vim_free(array[i]);
+		{
+		    VIM_CLEAR_STRING(array[i]);
+		}
 		else
-		    y_current_p->y_array[i] = array[i];
+		{
+		    y_current_p->y_array[i].string = array[i].string;
+		    y_current_p->y_array[i].length = array[i].length;
+		}
 	    }
 	}
     }
@@ -1647,7 +1774,7 @@ read_viminfo_register(vir_T *virp, int force)
     {
 	// Free array[] if it was filled.
 	for (i = 0; i < size; i++)
-	    vim_free(array[i]);
+	    vim_free(array[i].string);
     }
     vim_free(array);
 
@@ -1711,7 +1838,7 @@ handle_viminfo_register(garray_T *values, int force)
 
     if (y_ptr->y_array != NULL)
 	for (i = 0; i < y_ptr->y_size; i++)
-	    vim_free(y_ptr->y_array[i]);
+	    vim_free(y_ptr->y_array[i].string);
     vim_free(y_ptr->y_array);
 
     if (y_read_regs == NULL)
@@ -1730,7 +1857,7 @@ handle_viminfo_register(garray_T *values, int force)
 	y_ptr->y_array = NULL;
 	return;
     }
-    y_ptr->y_array = ALLOC_MULT(char_u *, linecount);
+    y_ptr->y_array = ALLOC_MULT(string_T, linecount);
     if (y_ptr->y_array == NULL)
     {
 	y_ptr->y_size = 0; // ensure object state is consistent
@@ -1740,11 +1867,20 @@ handle_viminfo_register(garray_T *values, int force)
     {
 	if (vp[i + 6].bv_allocated)
 	{
-	    y_ptr->y_array[i] = vp[i + 6].bv_string;
+	    y_ptr->y_array[i].string = vp[i + 6].bv_string;
+	    y_ptr->y_array[i].length = vp[i + 6].bv_len;
 	    vp[i + 6].bv_string = NULL;
 	}
+	else if (vp[i + 6].bv_type != BVAL_STRING)
+	{
+	    free(y_ptr->y_array);
+	    y_ptr->y_array = NULL;
+	}
 	else
-	    y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);
+	{
+	    y_ptr->y_array[i].string = vim_strnsave(vp[i + 6].bv_string, vp[i + 6].bv_len);
+	    y_ptr->y_array[i].length = vp[i + 6].bv_len;
+	}
     }
 }
 
@@ -1759,7 +1895,7 @@ write_viminfo_registers(FILE *fp)
     int		max_kbyte;
     long	len;
     yankreg_T	*y_ptr;
-    yankreg_T	*y_regs_p = get_y_regs();;
+    yankreg_T	*y_regs_p = get_y_regs();
 
     fputs(_("\n# Registers:\n"), fp);
 
@@ -1775,9 +1911,9 @@ write_viminfo_registers(FILE *fp)
 
     for (i = 0; i < NUM_REGISTERS; i++)
     {
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(FEAT_CLIPBOARD_PROVIDER)
 	// Skip '*'/'+' register, we don't want them back next time
-	if (i == STAR_REGISTER || i == PLUS_REGISTER)
+	if (i == STAR_REGISTER || i == PLUS_REGISTER || i == REAL_PLUS_REGISTER)
 	    continue;
 #endif
 #ifdef FEAT_DND
@@ -1801,7 +1937,7 @@ write_viminfo_registers(FILE *fp)
 	num_lines = y_ptr->y_size;
 	if (num_lines == 0
 		|| (num_lines == 1 && y_ptr->y_type == MCHAR
-					&& *y_ptr->y_array[0] == NUL))
+					&& *y_ptr->y_array[0].string == NUL))
 	    continue;
 
 	if (max_kbyte > 0)
@@ -1809,7 +1945,7 @@ write_viminfo_registers(FILE *fp)
 	    // Skip register if there is more text than the maximum size.
 	    len = 0;
 	    for (j = 0; j < num_lines; j++)
-		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
+		len += (long)y_ptr->y_array[j].length + 1L;
 	    if (len > (long)max_kbyte * 1024L)
 		continue;
 	}
@@ -1826,7 +1962,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		semsg(_(e_unknown_register_type_nr), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -1844,7 +1980,7 @@ write_viminfo_registers(FILE *fp)
 	for (j = 0; j < num_lines; j++)
 	{
 	    putc('\t', fp);
-	    viminfo_writestring(fp, y_ptr->y_array[j]);
+	    viminfo_writestring(fp, y_ptr->y_array[j].string);
 	}
 
 	{
@@ -1869,7 +2005,7 @@ write_viminfo_registers(FILE *fp)
 	    {
 		putc(',', fp);
 		--remaining;
-		remaining = barline_writestring(fp, y_ptr->y_array[j],
+		remaining = barline_writestring(fp, y_ptr->y_array[j].string,
 								   remaining);
 	    }
 	    putc('\n', fp);
@@ -1882,10 +2018,8 @@ write_viminfo_registers(FILE *fp)
  */
 
 static xfmark_T *vi_namedfm = NULL;
-#ifdef FEAT_JUMPLIST
 static xfmark_T *vi_jumplist = NULL;
 static int vi_jumplist_len = 0;
-#endif
 
     static void
 write_one_mark(FILE *fp_out, int c, pos_T *pos)
@@ -1913,7 +2047,6 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     write_one_mark(fp_out, '"', &buf->b_last_cursor);
     write_one_mark(fp_out, '^', &buf->b_last_insert);
     write_one_mark(fp_out, '.', &buf->b_last_change);
-#ifdef FEAT_JUMPLIST
     // changelist positions are stored oldest first
     for (i = 0; i < buf->b_changelistlen; ++i)
     {
@@ -1922,7 +2055,6 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
 							 buf->b_changelist[i]))
 	    write_one_mark(fp_out, '+', &buf->b_changelist[i]);
     }
-#endif
     for (i = 0; i < NMARKS; i++)
 	write_one_mark(fp_out, 'a' + i, &buf->b_namedm[i]);
 }
@@ -1933,11 +2065,7 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     static int
 skip_for_viminfo(buf_T *buf)
 {
-    return
-#ifdef FEAT_TERMINAL
-	    bt_terminal(buf) ||
-#endif
-	    removable(buf->b_ffname);
+    return bt_terminal(buf) || removable(buf->b_ffname);
 }
 
 /*
@@ -2045,8 +2173,7 @@ write_viminfo_filemarks(FILE *fp)
     for (i = 0; i < NMARKS; i++)
     {
 	if (vi_namedfm != NULL
-			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
-			    || namedfm_p[i].fmark.mark.lnum == 0))
+			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set))
 	    fm = &vi_namedfm[i];
 	else
 	    fm = &namedfm_p[i];
@@ -2109,7 +2236,6 @@ write_viminfo_filemarks(FILE *fp)
 	write_one_filemark(fp, fm, '\'', i - NMARKS + '0');
     }
 
-#ifdef FEAT_JUMPLIST
     // Write the jumplist with -'
     fputs(_("\n# Jumplist (newest first):\n"), fp);
     setpcmark();	// add current cursor position
@@ -2121,7 +2247,8 @@ write_viminfo_filemarks(FILE *fp)
 	xfmark_T	*vi_fm;
 
 	fm = idx >= 0 ? &curwin->w_jumplist[idx] : NULL;
-	vi_fm = vi_idx < vi_jumplist_len ? &vi_jumplist[vi_idx] : NULL;
+	vi_fm = (vi_jumplist != NULL && vi_idx < vi_jumplist_len)
+					? &vi_jumplist[vi_idx] : NULL;
 	if (fm == NULL && vi_fm == NULL)
 	    break;
 	if (fm == NULL || (vi_fm != NULL && fm->time_set < vi_fm->time_set))
@@ -2136,13 +2263,12 @@ write_viminfo_filemarks(FILE *fp)
 		    && !skip_for_viminfo(buf)))
 	    write_one_filemark(fp, fm, '-', '\'');
     }
-#endif
 }
 
 /*
  * Compare functions for qsort() below, that compares b_last_used.
  */
-    static int
+    int
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;
@@ -2156,7 +2282,8 @@ buf_compare(const void *s1, const void *s2)
 /*
  * Handle marks in the viminfo file:
  * fp_out != NULL: copy marks, in time order with buffers in "buflist".
- * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf only
+ * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf
+ * fp_out == NULL && (flags & VIF_ONLY_CURBUF): bail out after curbuf marks
  * fp_out == NULL && (flags & VIF_GET_OLDFILES | VIF_FORCEIT): fill v:oldfiles
  */
     static void
@@ -2212,7 +2339,7 @@ copy_viminfo_marks(
 	{
 	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
 	    {
-		if (viminfo_error("E576: ", _("Missing '>'"), line))
+		if (viminfo_error("E576: ", _(e_nonr_missing_gt), line))
 		    break;	// too many errors, return now
 	    }
 	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
@@ -2272,7 +2399,7 @@ copy_viminfo_marks(
 		    // Read the next line.  If it has the "*" mark compare the
 		    // time stamps.  Write entries from "buflist" that are
 		    // newer.
-		    if (!(eof = viminfo_readline(virp)) && line[0] == TAB)
+		    if (!viminfo_readline(virp) && line[0] == TAB)
 		    {
 			did_read_line = TRUE;
 			if (line[1] == '*')
@@ -2297,7 +2424,7 @@ copy_viminfo_marks(
 			else
 			{
 			    // No timestamp, must be written by an older Vim.
-			    // Assume all remaining buffers are older then
+			    // Assume all remaining buffers are older than
 			    // ours.
 			    while (count < num_marked_files
 					    && buflist_used < buflist->ga_len)
@@ -2346,7 +2473,6 @@ copy_viminfo_marks(
 			case '^': curbuf->b_last_insert = pos; break;
 			case '.': curbuf->b_last_change = pos; break;
 			case '+':
-#ifdef FEAT_JUMPLIST
 				  // changelist positions are stored oldest
 				  // first
 				  if (curbuf->b_changelistlen == JUMPLISTSIZE)
@@ -2358,7 +2484,6 @@ copy_viminfo_marks(
 				      ++curbuf->b_changelistlen;
 				  curbuf->b_changelist[
 					   curbuf->b_changelistlen - 1] = pos;
-#endif
 				  break;
 
 				  // Using the line number for the last-used
@@ -2376,7 +2501,6 @@ copy_viminfo_marks(
 
 	if (load_marks)
 	{
-#ifdef FEAT_JUMPLIST
 	    win_T	*wp;
 
 	    FOR_ALL_WINDOWS(wp)
@@ -2384,8 +2508,8 @@ copy_viminfo_marks(
 		if (wp->w_buffer == curbuf)
 		    wp->w_changelistidx = curbuf->b_changelistlen;
 	    }
-#endif
-	    break;
+	    if (flags & VIF_ONLY_CURBUF)
+		break;
 	}
     }
 
@@ -2410,11 +2534,11 @@ check_marks_read(void)
 {
     if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
 						  && curbuf->b_ffname != NULL)
-	read_viminfo(NULL, VIF_WANT_MARKS);
+	read_viminfo(NULL, VIF_WANT_MARKS | VIF_ONLY_CURBUF);
 
     // Always set b_marks_read; needed when 'viminfo' is changed to include
     // the ' parameter after opening a buffer.
-    curbuf->b_marks_read = TRUE;
+    curbuf->b_marks_read = true;
 }
 
     static int
@@ -2428,16 +2552,13 @@ read_viminfo_filemark(vir_T *virp, int force)
     // We only get here if line[0] == '\'' or '-'.
     // Illegal mark names are ignored (for future expansion).
     str = virp->vir_line + 1;
-    if (
-#ifndef EBCDIC
-	    *str <= 127 &&
-#endif
-	    ((*virp->vir_line == '\'' && (VIM_ISDIGIT(*str) || isupper(*str)))
+    if (*str <= 127
+	    && ((*virp->vir_line == '\''
+				       && (VIM_ISDIGIT(*str) || SAFE_isupper(*str)))
 	     || (*virp->vir_line == '-' && *str == '\'')))
     {
 	if (*str == '\'')
 	{
-#ifdef FEAT_JUMPLIST
 	    // If the jumplist isn't full insert fmark as oldest entry
 	    if (curwin->w_jumplistlen == JUMPLISTSIZE)
 		fm = NULL;
@@ -2451,9 +2572,6 @@ read_viminfo_filemark(vir_T *virp, int force)
 		fm->fmark.mark.lnum = 0;
 		fm->fname = NULL;
 	    }
-#else
-	    fm = NULL;
-#endif
 	}
 	else if (VIM_ISDIGIT(*str))
 	    fm = &namedfm_p[*str - '0' + NMARKS];
@@ -2484,10 +2602,8 @@ read_viminfo_filemark(vir_T *virp, int force)
 prepare_viminfo_marks(void)
 {
     vi_namedfm = ALLOC_CLEAR_MULT(xfmark_T, NMARKS + EXTRA_MARKS);
-#ifdef FEAT_JUMPLIST
     vi_jumplist = ALLOC_CLEAR_MULT(xfmark_T, JUMPLISTSIZE);
     vi_jumplist_len = 0;
-#endif
 }
 
     static void
@@ -2501,14 +2617,12 @@ finish_viminfo_marks(void)
 	    vim_free(vi_namedfm[i].fname);
 	VIM_CLEAR(vi_namedfm);
     }
-#ifdef FEAT_JUMPLIST
     if (vi_jumplist != NULL)
     {
 	for (i = 0; i < vi_jumplist_len; ++i)
 	    vim_free(vi_jumplist[i].fname);
 	VIM_CLEAR(vi_jumplist);
     }
-#endif
 }
 
 /*
@@ -2545,7 +2659,6 @@ handle_viminfo_mark(garray_T *values, int force)
 
     if (name == '\'')
     {
-#ifdef FEAT_JUMPLIST
 	if (vi_jumplist != NULL)
 	{
 	    if (vi_jumplist_len < JUMPLISTSIZE)
@@ -2600,7 +2713,6 @@ handle_viminfo_mark(garray_T *values, int force)
 		fm->time_set = 0;
 	    }
 	}
-#endif
     }
     else
     {
@@ -2671,21 +2783,19 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
     int		i;
     int		read_next = TRUE;
 
-    /*
-     * The format is: |{bartype},{value},...
-     * For a very long string:
-     *     |{bartype},>{length of "{text}{text2}"}
-     *     |<{text1}
-     *     |<{text2},{value}
-     * For a long line not using a string
-     *     |{bartype},{lots of values},>
-     *     |<{value},{value}
-     */
+    // The format is: |{bartype},{value},...
+    // For a very long string:
+    //     |{bartype},>{length of "{text}{text2}"}
+    //     |<{text1}
+    //     |<{text2},{value}
+    // For a long line not using a string
+    //     |{bartype},{lots of values},>
+    //     |<{value},{value}
     if (*p == '<')
     {
 	// Continuation line of an unrecognized item.
 	if (writing)
-	    ga_add_string(&virp->vir_barlines, virp->vir_line);
+	    ga_copy_string(&virp->vir_barlines, virp->vir_line);
     }
     else
     {
@@ -2724,13 +2834,14 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    default:
 		// copy unrecognized line (for future use)
 		if (writing)
-		    ga_add_string(&virp->vir_barlines, virp->vir_line);
+		    ga_copy_string(&virp->vir_barlines, virp->vir_line);
 	}
 	for (i = 0; i < values.ga_len; ++i)
 	{
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
 		vim_free(vp->bv_string);
+	    vim_free(vp->bv_tofree);
 	}
 	ga_clear(&values);
     }
@@ -2797,7 +2908,8 @@ read_viminfo_up_to_marks(
 		if (virp->vir_version < VIMINFO_VERSION_WITH_REGISTERS)
 		    eof = read_viminfo_register(virp, forceit);
 		else
-		    do {
+		    do
+		    {
 			eof = viminfo_readline(virp);
 		    } while (!eof && (virp->vir_line[0] == TAB
 						|| virp->vir_line[0] == '<'));
@@ -2805,7 +2917,7 @@ read_viminfo_up_to_marks(
 	    case '/':	    // Search string
 	    case '&':	    // Substitute search string
 	    case '~':	    // Last search string, followed by '/' or '&'
-		eof = read_viminfo_search_pattern(virp, forceit);
+		eof = read_viminfo_search_pattern(virp, forceit, writing);
 		break;
 	    case '$':
 		eof = read_viminfo_sub_string(virp, forceit);
@@ -2830,7 +2942,7 @@ read_viminfo_up_to_marks(
 		    eof = viminfo_readline(virp);
 		break;
 	    default:
-		if (viminfo_error("E575: ", _("Illegal starting char"),
+		if (viminfo_error("E575: ", _(e_illegal_starting_char),
 			    virp->vir_line))
 		    eof = TRUE;
 		else
@@ -2866,7 +2978,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	return;
     vir.vir_fd = fp_in;
     vir.vir_conv.vc_type = CONV_NONE;
-    ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
+    ga_init2(&vir.vir_barlines, sizeof(char_u *), 100);
     vir.vir_version = -1;
 
     if (fp_in != NULL)
@@ -2891,8 +3003,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 		    && vir.vir_line[0] != '>')
 		;
 
-	do_copy_marks = (flags &
-			   (VIF_WANT_MARKS | VIF_GET_OLDFILES | VIF_FORCEIT));
+	do_copy_marks = (flags & (VIF_WANT_MARKS | VIF_ONLY_CURBUF
+					    | VIF_GET_OLDFILES | VIF_FORCEIT));
     }
 
     if (fp_out != NULL)
@@ -2946,6 +3058,7 @@ read_viminfo(
 {
     FILE	*fp;
     char_u	*fname;
+    stat_T	st;		// mch_stat() of existing viminfo file
 
     if (no_viminfo())
 	return FAIL;
@@ -2958,7 +3071,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",
@@ -2970,6 +3083,11 @@ read_viminfo(
     vim_free(fname);
     if (fp == NULL)
 	return FAIL;
+    if (mch_fstat(fileno(fp), &st) < 0 || S_ISDIR(st.st_mode))
+    {
+	fclose(fp);
+	return FAIL;
+    }
 
     viminfo_errcnt = 0;
     do_viminfo(fp, NULL, flags);
@@ -2993,12 +3111,12 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	// output viminfo file
     char_u	*tempname = NULL;	// name of temp viminfo file
     stat_T	st_new;		// mch_stat() of potential new file
+    stat_T	st_old;		// mch_stat() of existing viminfo file
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
 #ifdef UNIX
     int		shortname = FALSE;	// use 8.3 file name
-    stat_T	st_old;		// mch_stat() of existing viminfo file
 #endif
 #ifdef MSWIN
     int		hidden = FALSE;
@@ -3032,51 +3150,44 @@ write_viminfo(char_u *file, int forceit)
     }
     else
     {
-	/*
-	 * There is an existing viminfo file.  Create a temporary file to
-	 * write the new viminfo into, in the same directory as the
-	 * existing viminfo file, which will be renamed once all writing is
-	 * successful.
-	 */
+	// There is an existing viminfo file.  Create a temporary file to
+	// write the new viminfo into, in the same directory as the
+	// existing viminfo file, which will be renamed once all writing is
+	// successful.
+	if (mch_fstat(fileno(fp_in), &st_old) < 0
+		|| S_ISDIR(st_old.st_mode)
 #ifdef UNIX
-	/*
-	 * For Unix we check the owner of the file.  It's not very nice to
-	 * overwrite a user's viminfo file after a "su root", with a
-	 * viminfo file that the user can't read.
-	 */
-	st_old.st_dev = (dev_t)0;
-	st_old.st_ino = 0;
-	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0
-		&& getuid() != ROOT_UID
-		&& !(st_old.st_uid == getuid()
-			? (st_old.st_mode & 0200)
-			: (st_old.st_gid == getgid()
-				? (st_old.st_mode & 0020)
-				: (st_old.st_mode & 0002))))
+		// For Unix we check the owner of the file.  It's not very nice
+		// to overwrite a user's viminfo file after a "su root", with a
+		// viminfo file that the user can't read.
+		|| (getuid() != ROOT_UID
+		    && !(st_old.st_uid == getuid()
+			    ? (st_old.st_mode & 0200)
+			    : (st_old.st_gid == getgid()
+				    ? (st_old.st_mode & 0020)
+				    : (st_old.st_mode & 0002))))
+#endif
+		)
 	{
 	    int	tt = msg_didany;
 
-	    // avoid a wait_return for this message, it's annoying
-	    semsg(_("E137: Viminfo file is not writable: %s"), fname);
+	    // avoid a wait_return() for this message, it's annoying
+	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);
 	    goto end;
 	}
-#endif
 #ifdef MSWIN
 	// Get the file attributes of the existing viminfo file.
 	hidden = mch_ishidden(fname);
 #endif
 
-	/*
-	 * Make tempname, find one that does not exist yet.
-	 * Beware of a race condition: If someone logs out and all Vim
-	 * instances exit at the same time a temp file might be created between
-	 * stat() and open().  Use mch_open() with O_EXCL to avoid that.
-	 * May try twice: Once normal and once with shortname set, just in
-	 * case somebody puts his viminfo file in an 8.3 filesystem.
-	 */
+	// Make tempname, find one that does not exist yet.
+	// Beware of a race condition: If someone logs out and all Vim
+	// instances exit at the same time a temp file might be created between
+	// stat() and open().  Use mch_open() with O_EXCL to avoid that.
+	// May try twice: Once normal and once with shortname set, just in
+	// case somebody puts his viminfo file in an 8.3 filesystem.
 	for (;;)
 	{
 	    int		next_char = 'z';
@@ -3098,30 +3209,24 @@ write_viminfo(char_u *file, int forceit)
 	    if (tempname == NULL)		// out of memory
 		break;
 
-	    /*
-	     * Try a series of names.  Change one character, just before
-	     * the extension.  This should also work for an 8.3
-	     * file name, when after adding the extension it still is
-	     * the same file as the original.
-	     */
+	    // Try a series of names.  Change one character, just before
+	    // the extension.  This should also work for an 8.3
+	    // file name, when after adding the extension it still is
+	    // the same file as the original.
 	    wp = tempname + STRLEN(tempname) - 5;
 	    if (wp < gettail(tempname))	    // empty file name?
 		wp = gettail(tempname);
 	    for (;;)
 	    {
-		/*
-		 * Check if tempfile already exists.  Never overwrite an
-		 * existing file!
-		 */
+		// Check if tempfile already exists.  Never overwrite an
+		// existing file!
 		if (mch_stat((char *)tempname, &st_new) == 0)
 		{
 #ifdef UNIX
-		    /*
-		     * Check if tempfile is same as original file.  May happen
-		     * when modname() gave the same file back.  E.g.  silly
-		     * link, or file name-length reached.  Try again with
-		     * shortname set.
-		     */
+		    // Check if tempfile is same as original file.  May happen
+		    // when modname() gave the same file back.  E.g.  silly
+		    // link, or file name-length reached.  Try again with
+		    // shortname set.
 		    if (!shortname && st_new.st_dev == st_old.st_dev
 						&& st_new.st_ino == st_old.st_ino)
 		    {
@@ -3181,8 +3286,7 @@ write_viminfo(char_u *file, int forceit)
 		{
 		    // They all exist?  Must be something wrong! Don't write
 		    // the viminfo file then.
-		    semsg(_("E929: Too many viminfo temp files, like %s!"),
-								     tempname);
+		    semsg(_(e_too_many_viminfo_temp_files_like_str), tempname);
 		    break;
 		}
 		*wp = next_char;
@@ -3199,15 +3303,13 @@ write_viminfo(char_u *file, int forceit)
 	{
 		stat_T	tmp_st;
 
-	    /*
-	     * Make sure the original owner can read/write the tempfile and
-	     * otherwise preserve permissions, making sure the group matches.
-	     */
+	    // Make sure the original owner can read/write the tempfile and
+	    // otherwise preserve permissions, making sure the group matches.
 	    if (mch_stat((char *)tempname, &tmp_st) >= 0)
 	    {
 		if (st_old.st_uid != tmp_st.st_uid)
 		    // Changing the owner might fail, in which case the
-		    // file will now owned by the current user, oh well.
+		    // file will now be owned by the current user, oh well.
 		    vim_ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
 		if (st_old.st_gid != tmp_st.st_gid
 			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
@@ -3222,12 +3324,10 @@ write_viminfo(char_u *file, int forceit)
 #endif
     }
 
-    /*
-     * Check if the new viminfo file can be written to.
-     */
+    // Check if the new viminfo file can be written to.
     if (fp_out == NULL)
     {
-	semsg(_("E138: Can't write viminfo file %s!"),
+	semsg(_(e_cant_write_viminfo_file_str),
 		       (fp_in == NULL || tempname == NULL) ? fname : tempname);
 	if (fp_in != NULL)
 	    fclose(fp_in);
@@ -3258,13 +3358,13 @@ write_viminfo(char_u *file, int forceit)
 	    if (vim_rename(tempname, fname) == -1)
 	    {
 		++viminfo_errcnt;
-		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
+		semsg(_(e_cant_rename_viminfo_file_to_str), fname);
 	    }
-# ifdef MSWIN
+#ifdef MSWIN
 	    // If the viminfo file was hidden then also hide the new file.
 	    else if (hidden)
 		mch_hide(fname);
-# endif
+#endif
 	}
 	if (viminfo_errcnt > 0)
 	    mch_remove(tempname);
@@ -3291,7 +3391,7 @@ ex_viminfo(
     {
 	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
 				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
-	    emsg(_("E195: Cannot open viminfo file for reading"));
+	    emsg(_(e_cannot_open_viminfo_file_for_reading));
     }
     else
 	write_viminfo(eap->arg, eap->forceit);

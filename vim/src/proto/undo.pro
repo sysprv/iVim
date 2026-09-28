@@ -1,4 +1,4 @@
-/* undo.c */
+// undo.c
 int u_save_cursor(void);
 int u_save(linenr_T top, linenr_T bot);
 int u_savesub(linenr_T lnum);
@@ -18,14 +18,14 @@ void ex_undojoin(exarg_T *eap);
 void u_unchanged(buf_T *buf);
 void u_find_first_changed(void);
 void u_update_save_nr(buf_T *buf);
-void u_clearall(buf_T *buf);
+void u_clearallandblockfree(buf_T *buf);
 void u_clearline(void);
 void u_undoline(void);
-void u_blockfree(buf_T *buf);
 int bufIsChanged(buf_T *buf);
 int anyBufIsChanged(void);
 int bufIsChangedNotTerm(buf_T *buf);
 int curbufIsChanged(void);
 void f_undofile(typval_T *argvars, typval_T *rettv);
+void u_undofile_reset_and_delete(buf_T *buf);
 void f_undotree(typval_T *argvars, typval_T *rettv);
-/* vim: set ft=c : */
+// vim: ft=c

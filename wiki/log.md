@@ -11,3 +11,10 @@ lite build and its removal, ios_system/ivish bring-up, exit, cursor blink,
 guifont, devicectl mishaps, TestFlight builds 1–2. Pages: overview, build,
 testing, device, release-testflight, ios-system, ivish, fixes,
 known-issues, user-setup, sources.
+
+## [2026-09-28] ingest | Vim 8.1.2110 → 9.2.1135
+
+Rebased iVim's vim patches onto vim 9.2.1135 (branch `vim9-rebase`),
+tested on the simulator against the 8.1 build as baseline. New page
+vim-upgrade; fixes (vim 9.2 section), known-issues (downgrade junk files,
+`false`), overview, sources, testing updated.

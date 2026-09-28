@@ -18,9 +18,8 @@ func Test_list_method()
   call assert_equal(2, l->get(1))
   call assert_equal(1, l->index(2))
   call assert_equal([0, 1, 2, 3], [1, 2, 3]->insert(0))
-  call assert_fails('eval l->items()', 'E715:')
   call assert_equal('1 2 3', l->join())
-  call assert_fails('eval l->keys()', 'E715:')
+  call assert_fails('eval l->keys()', 'E1206:')
   call assert_equal(3, l->len())
   call assert_equal([2, 3, 4], [1, 2, 3]->map('v:val + 1'))
   call assert_equal(3, l->max())
@@ -32,7 +31,8 @@ func Test_list_method()
   call assert_equal('[1, 2, 3]', l->string())
   call assert_equal(v:t_list, l->type())
   call assert_equal([1, 2, 3], [1, 1, 2, 3, 3]->uniq())
-  call assert_fails('eval l->values()', 'E715:')
+  call assert_fails('eval l->values()', 'E1206:')
+  call assert_fails('echo []->len', 'E107:')
 endfunc
 
 func Test_dict_method()
@@ -50,7 +50,7 @@ func Test_dict_method()
   call assert_fails("let x = d->insert(0)", 'E899:')
   call assert_true(d->has_key('two'))
   call assert_equal([['one', 1], ['two', 2], ['three', 3]], d->items())
-  call assert_fails("let x = d->join()", 'E714:')
+  call assert_fails("let x = d->join()", 'E1529:')
   call assert_equal(['one', 'two', 'three'], d->keys())
   call assert_equal(3, d->len())
   call assert_equal(#{one: 2, two: 3, three: 4}, d->map('v:val + 1'))
@@ -60,7 +60,7 @@ func Test_dict_method()
   call assert_equal(2, d->remove("two"))
   let d.two = 2
   call assert_fails('let x = d->repeat(2)', 'E731:')
-  call assert_fails('let x = d->reverse()', 'E899:')
+  call assert_fails('let x = d->reverse()', 'E1253:')
   call assert_fails('let x = d->sort()', 'E686:')
   call assert_equal("{'one': 1, 'two': 2, 'three': 3}", d->string())
   call assert_equal(v:t_dict, d->type())
@@ -76,6 +76,7 @@ func Test_string_method()
   eval "a\rb\ec"->strtrans()->assert_equal('a^Mb^[c')
   eval "aあb"->strwidth()->assert_equal(4)
   eval 'abc'->substitute('b', 'x', '')->assert_equal('axc')
+  call assert_fails('eval 123->items()', 'E1251: List, Tuple, Dictionary, Blob or String required for argument 1')
 
   eval 'abc'->printf('the %s arg')->assert_equal('the abc arg')
 endfunc
@@ -124,12 +125,22 @@ endfunc
 
 func Test_method_syntax()
   eval [1, 2, 3]  ->sort( )
-  eval [1, 2, 3]  
+  eval [1, 2, 3]
 	\ ->sort(
 	\ )
-  call assert_fails('eval [1, 2, 3]-> sort()', 'E260:')
+  eval [1, 2, 3]->sort()
+
   call assert_fails('eval [1, 2, 3]->sort ()', 'E274:')
-  call assert_fails('eval [1, 2, 3]-> sort ()', 'E260:')
+  call assert_fails('eval [1, 2, 3] ->sort ()', 'E274:')
+  call assert_fails('eval [1, 2, 3]-> sort ()', 'E274:')
+  call assert_fails('eval [1, 2, 3]-> sort()', 'E274:')
+
+  " Test for using a method name containing a curly brace name
+  let s = 'len'
+  call assert_equal(4, "xxxx"->str{s}())
+
+  " Test for using a method in an interpolated string
+  call assert_equal('4', $'{"xxxx"->strlen()}')
 endfunc
 
 func Test_method_lambda()
@@ -148,4 +159,22 @@ endfunc
 
 func Test_method_not_supported()
   call assert_fails('eval 123->changenr()', 'E276:')
+  call assert_fails('echo "abc"->invalidfunc()', 'E117:')
+  " Test for too many or too few arguments to a method
+  call assert_fails('let n="abc"->len(2)', 'E118:')
+  call assert_fails('let n=10->setwinvar()', 'E119:')
 endfunc
+
+" Test for passing optional arguments to methods
+func Test_method_args()
+  let v:errors = []
+  let n = 10->assert_inrange(1, 5, "Test_assert_inrange")
+  if v:errors[0] !~ 'Test_assert_inrange'
+    call assert_report(v:errors[0])
+  else
+    " Test passed
+    let v:errors = []
+  endif
+endfunc
+
+" vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

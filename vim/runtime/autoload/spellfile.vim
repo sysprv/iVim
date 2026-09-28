@@ -1,15 +1,12 @@
 " Vim script to download a missing spell file
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2012 Jan 08
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2026 Jul 22
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 if !exists('g:spellfile_URL')
-  " Prefer using http:// when netrw should be able to use it, since
-  " more firewalls let this through.
-  if executable("curl") || executable("wget") || executable("fetch")
-    let g:spellfile_URL = 'http://ftp.vim.org/pub/vim/runtime/spell'
-  else
-    let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
-  endif
+  " Always use https:// because it's secure.  The certificate is for nluug.nl,
+  " thus we can't use the alias ftp.vim.org here.
+  let g:spellfile_URL = 'https://ftp.nluug.nl/pub/vim/runtime/spell'
 endif
 let s:spellfile_URL = ''    " Start with nothing so that s:donedict is reset.
 
@@ -197,10 +194,6 @@ function! spellfile#GetDirChoices()
 endfunc
 
 function! spellfile#WritableSpellDir()
-  if has("unix")
-    " For Unix always use the $HOME/.vim directory
-    return $HOME . "/.vim/spell"
-  endif
   for dir in split(&rtp, ',')
     if filewritable(dir) == 2
       return dir . "/spell"

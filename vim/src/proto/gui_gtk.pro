@@ -1,4 +1,4 @@
-/* gui_gtk.c */
+// gui_gtk.c
 void gui_gtk_register_stock_icons(void);
 void gui_mch_add_menu(vimmenu_T *menu, int idx);
 void gui_mch_add_menu_item(vimmenu_T *menu, int idx);
@@ -9,6 +9,8 @@ void gui_mch_menu_set_tip(vimmenu_T *menu);
 void gui_mch_destroy_menu(vimmenu_T *menu);
 void gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max);
 void gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h);
+int gui_mch_get_scrollbar_xpadding(void);
+int gui_mch_get_scrollbar_ypadding(void);
 void gui_mch_create_scrollbar(scrollbar_T *sb, int orient);
 void gui_mch_destroy_scrollbar(scrollbar_T *sb);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
@@ -19,4 +21,5 @@ void gui_make_popup(char_u *path_name, int mouse_pos);
 void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);
 void ex_helpfind(exarg_T *eap);
-/* vim: set ft=c : */
+void gui_mch_set_fullscreen(int flag);
+// vim: ft=c

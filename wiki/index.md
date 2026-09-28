@@ -20,6 +20,7 @@ LLM-maintained knowledge base for this fork; conventions are in
 
 - [ios-system](ios-system.md) — one-process model, upstream differences
 - [ivish](ivish.md) — the shell, the patch, how iVim talks to it
+- [vim-upgrade](vim-upgrade.md) — vim 9.2 in `vim/`, iVim's patches to it, how to upgrade
 
 ## People and sources
 

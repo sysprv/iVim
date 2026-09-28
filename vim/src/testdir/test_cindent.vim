@@ -1,23 +1,22 @@
 " Test for cinoptions and cindent
-"
 
-func Test_cino_hash()
-  " Test that curbuf->b_ind_hash_comment is correctly reset
+def Test_cino_hash()
+  # Test that curbuf->b_ind_hash_comment is correctly reset
   new
   setlocal cindent cinoptions=#1
   setlocal cinoptions=
-  call setline(1, ["#include <iostream>"])
-  call cursor(1, 1)
+  setline(1, ["#include <iostream>"])
+  cursor(1, 1)
   norm! o#include
-  "call feedkeys("o#include\<esc>", 't')
-  call assert_equal(["#include <iostream>", "#include"], getline(1,2))
+  assert_equal(["#include <iostream>", "#include"], getline(1, 2))
+
   bwipe!
-endfunc
+enddef
 
-func Test_cino_extern_c()
-  " Test for cino-E
+def Test_cino_extern_c()
+  # Test for cino-E
 
-  let without_ind =<< trim [CODE]
+  var without_ind =<< trim [CODE]
     #ifdef __cplusplus
     extern "C" {
     #endif
@@ -27,7 +26,7 @@ func Test_cino_extern_c()
     #endif
   [CODE]
 
-  let with_ind =<< trim [CODE]
+  var with_ind =<< trim [CODE]
     #ifdef __cplusplus
     extern "C" {
     #endif
@@ -38,17 +37,17 @@ func Test_cino_extern_c()
   [CODE]
   new
   setlocal cindent cinoptions=E0
-  call setline(1, without_ind)
-  call feedkeys("gg=G", 'tx')
-  call assert_equal(with_ind, getline(1, '$'))
+  setline(1, without_ind)
+  feedkeys("gg=G", 'tx')
+  assert_equal(with_ind, getline(1, '$'))
 
   setlocal cinoptions=E-s
-  call setline(1, with_ind)
-  call feedkeys("gg=G", 'tx')
-  call assert_equal(without_ind, getline(1, '$'))
+  setline(1, with_ind)
+  feedkeys("gg=G", 'tx')
+  assert_equal(without_ind, getline(1, '$'))
 
   setlocal cinoptions=Es
-  let tests = [
+  var tests = [
         \ ['recognized', ['extern "C" {'], "\t\t;"],
         \ ['recognized', ['extern "C++" {'], "\t\t;"],
         \ ['recognized', ['extern /* com */ "C"{'], "\t\t;"],
@@ -61,78 +60,84 @@ func Test_cino_extern_c()
         \ ]
 
   for pair in tests
-    let lines = pair[1]
-    call setline(1, lines)
-    call feedkeys(len(lines) . "Go;", 'tx')
-    call assert_equal(pair[2], getline(len(lines) + 1), 'Failed for "' . string(lines) . '"')
+    var lines = pair[1]
+    setline(1, lines)
+    feedkeys(len(lines) .. "Go;", 'tx')
+    assert_equal(pair[2], getline(len(lines) + 1),
+                    'Failed for "' .. string(lines) .. '"')
   endfor
 
   bwipe!
-endfunc
+enddef
 
-func Test_cindent_rawstring()
+def Test_cindent_rawstring()
   new
   setl cindent
-  call feedkeys("i" .
-          \ "int main() {\<CR>" .
-          \ "R\"(\<CR>" .
-          \ ")\";\<CR>" .
+  feedkeys("i" ..
+          \ "int main() {\<CR>" ..
+          \ "R\"(\<CR>" ..
+          \ ")\";\<CR>" ..
           \ "statement;\<Esc>", "x")
-  call assert_equal("\tstatement;", getline(line('.')))
-  bw!
-endfunc
+  assert_equal("\tstatement;", getline(line('.')))
 
-func Test_cindent_expr()
+  bwipe!
+enddef
+
+def Test_cindent_expr()
   new
-  func! MyIndentFunction()
+  def g:MyIndentFunction(): number
     return v:lnum == 1 ? shiftwidth() : 0
-  endfunc
-  setl expandtab sw=8 indentkeys+=; indentexpr=MyIndentFunction()
-  let testinput =<< trim [CODE]
+  enddef
+  setl expandtab sw=8 indentkeys+=; indentexpr=g:MyIndentFunction()
+  var testinput =<< trim [CODE]
     var_a = something()
     b = something()
   [CODE]
-  call setline(1, testinput)
-  call cursor(1, 1)
-  call feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
-  let expected =<< [CODE]
+  setline(1, testinput)
+  cursor(1, 1)
+  feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
+  var expected =<< [CODE]
         var_a = something();
 b = something();
 [CODE]
-  call assert_equal(expected, getline(1, '$'))
+  assert_equal(expected, getline(1, '$'))
 
-  %d
-  let testinput =<< [CODE]
+  :%d
+  testinput =<< [CODE]
                 var_a = something()
                 b = something()
 [CODE]
-  call setline(1, testinput)
-  call cursor(1, 1)
-  call feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
-  let expected =<< [CODE]
+  setline(1, testinput)
+  cursor(1, 1)
+  feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
+  expected =<< [CODE]
         var_a = something();
                 b = something()
 [CODE]
-  call assert_equal(expected, getline(1, '$'))
-  bw!
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_func()
+  delfunc g:MyIndentFunction
+
+  bwipe!
+enddef
+
+def Test_cindent_func()
   new
   setlocal cindent
-  call setline(1, ['int main(void)', '{', 'return 0;', '}'])
-  call assert_equal(-1, cindent(0))
-  call assert_equal(&sw, 3->cindent())
-  call assert_equal(-1, cindent(line('$')+1))
-  bwipe!
-endfunc
+  setline(1, ['int main(void)', '{', 'return 0;', '}'])
+  assert_equal(-1, cindent(0))
+  assert_equal(&sw, 3->cindent())
+  assert_equal(-1, cindent(line('$') + 1))
 
-func Test_cindent_1()
+  bwipe!
+enddef
+
+def Test_cindent_01()
   new
   setl cindent ts=4 sw=4
   setl cino& sts&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   /* start of AUTO matically checked vim: set ts=4 : */
   {
   	if (test)
@@ -815,7 +820,7 @@ func Test_cindent_1()
         }
      }
 
-  public: // <-- this was incorectly indented before!!
+  public: // <-- this was incorrectly indented before!!
      void testfall();
   protected:
      void testfall();
@@ -997,6 +1002,15 @@ func Test_cindent_1()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1018,6 +1032,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+    111111111111111111;
+  }
+  inlinenamespace {
     111111111111111111;
   }
 
@@ -1089,15 +1106,47 @@ func Test_cindent_1()
   }
   }
 
+  void foo() {
+  float a[5],
+  b;
+  }
+
+  void func() {
+  if (0)
+  do
+  if (0);
+  while (0);
+  else;
+  }
+
+  void func() {
+  if (0)
+  do
+  if (0)
+  do
+  if (0)
+  a();
+  while (0);
+  while (0);
+  else
+  a();
+  }
+
+  void func() {
+  /* aaaaaa
+  bbbbb:
+  ccccccc */
+  }
+
   /* end of AUTO */
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('start of AUTO')
+  search('start of AUTO')
   exe "normal =/end of AUTO\<CR>"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   /* start of AUTO matically checked vim: set ts=4 : */
   {
   	if (test)
@@ -1695,9 +1744,9 @@ func Test_cindent_1()
   #endif
 
   int y;		// comment
-  // comment
+			// comment
 
-  // comment
+			// comment
 
   {
   	Constructor(int a,
@@ -1780,7 +1829,7 @@ func Test_cindent_1()
   		}
   	}
 
-  	public: // <-- this was incorectly indented before!!
+  	public: // <-- this was incorrectly indented before!!
   	void testfall();
   	protected:
   	void testfall();
@@ -1962,6 +2011,15 @@ func Test_cindent_1()
   		22222222222222222;
   	}
   }
+  inline namespace {
+  	111111111111111111;
+  }
+  inline /* test */ namespace {
+  	111111111111111111;
+  }
+  inline/* test */namespace {
+  	111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -1983,6 +2041,9 @@ func Test_cindent_1()
   }
   namespace111111111
   {
+  	111111111111111111;
+  }
+  inlinenamespace {
   	111111111111111111;
   }
 
@@ -2054,21 +2115,54 @@ func Test_cindent_1()
   	}
   }
 
+  void foo() {
+  	float a[5],
+  		  b;
+  }
+
+  void func() {
+  	if (0)
+  		do
+  			if (0);
+  		while (0);
+  	else;
+  }
+
+  void func() {
+  	if (0)
+  		do
+  			if (0)
+  				do
+  					if (0)
+  						a();
+  				while (0);
+  		while (0);
+  	else
+  		a();
+  }
+
+  void func() {
+  	/* aaaaaa
+  	   bbbbb:
+  	   ccccccc */
+  }
+
   /* end of AUTO */
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_2()
+  bwipe!
+enddef
+
+def Test_cindent_02()
   new
   setl cindent ts=4 sw=4
   setl tw=0 noai fo=croq
-  let &wm = &columns - 20
+  &wm = &columns - 20
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
     {
   
     /* this is
@@ -2079,12 +2173,12 @@ func Test_cindent_2()
     }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('serious', 'e')
+  search('serious', 'e')
   normal a about life, the universe, and the rest
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   {
 
   /* this is
@@ -2099,16 +2193,17 @@ func Test_cindent_2()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
+  assert_equal(expected, getline(1, '$'))
   set wm&
-  enew! | close
-endfunc
 
-func Test_cindent_3()
+  bwipe!
+enddef
+
+def Test_cindent_03()
   new
   setl nocindent ts=4 sw=4
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   {
   	/*
   	 * Testing for comments, without 'cin' set
@@ -2126,18 +2221,18 @@ func Test_cindent_3()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('comments')
+  search('comments')
   normal joabout life
-  call search('happens')
+  search('happens')
   normal jothere
-  call search('below')
+  search('below')
   normal oline
-  call search('this')
+  search('this')
   normal Ohello
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   {
   	/*
   	 * Testing for comments, without 'cin' set
@@ -2160,15 +2255,16 @@ func Test_cindent_3()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_4()
+  bwipe!
+enddef
+
+def Test_cindent_04()
   new
   setl cindent ts=4 sw=4
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   {
       var = this + that + vec[0] * vec[0]
   				      + vec[1] * vec[1]
@@ -2176,12 +2272,12 @@ func Test_cindent_4()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('vec2')
+  search('vec2')
   normal ==
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   {
       var = this + that + vec[0] * vec[0]
   				      + vec[1] * vec[1]
@@ -2190,16 +2286,17 @@ func Test_cindent_4()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_5()
+  bwipe!
+enddef
+
+def Test_cindent_05()
   new
   setl cindent ts=4 sw=4
   setl cino=}4
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   {
   		asdf asdflkajds f;
   	if (tes & ting) {
@@ -2216,13 +2313,13 @@ func Test_cindent_5()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('testing1')
+  search('testing1')
   exe "normal k2==/testing2\<CR>"
   normal k2==
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   {
   		asdf asdflkajds f;
   	if (tes & ting) {
@@ -2240,16 +2337,17 @@ func Test_cindent_5()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_6()
+  bwipe!
+enddef
+
+def Test_cindent_06()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,)20
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   main ( int first_par, /*
                          * Comment for
                          * first par
@@ -2273,12 +2371,12 @@ func Test_cindent_6()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('main')
+  search('main')
   normal =][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   main ( int first_par, /*
   					   * Comment for
   					   * first par
@@ -2303,16 +2401,17 @@ func Test_cindent_6()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_7()
+  bwipe!
+enddef
+
+def Test_cindent_07()
   new
   setl cindent ts=4 sw=4
   setl cino=es,n0s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   main(void)
   {
   	/* Make sure that cino=X0s is not parsed like cino=Xs. */
@@ -2325,12 +2424,12 @@ func Test_cindent_7()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('main')
+  search('main')
   normal =][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   main(void)
   {
   	/* Make sure that cino=X0s is not parsed like cino=Xs. */
@@ -2343,17 +2442,17 @@ func Test_cindent_7()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_8()
+def Test_cindent_08()
   new
   setl cindent ts=4 sw=4
   setl cino=
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
 
   {
   	do
@@ -2370,11 +2469,11 @@ func Test_cindent_8()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
 
   {
   	do
@@ -2392,15 +2491,16 @@ func Test_cindent_8()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_9()
+  bwipe!
+enddef
+
+def Test_cindent_09()
   new
   setl cindent ts=4 sw=4
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
 
   void f()
   {
@@ -2415,11 +2515,11 @@ func Test_cindent_9()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
 
   void f()
   {
@@ -2435,16 +2535,17 @@ func Test_cindent_9()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_10()
+  bwipe!
+enddef
+
+def Test_cindent_10()
   new
   setl cindent ts=4 sw=4
   setl cino={s,e-s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
 
   void f()
   {
@@ -2458,11 +2559,11 @@ func Test_cindent_10()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
 
   void f()
   {
@@ -2477,16 +2578,17 @@ func Test_cindent_10()
 
   [CODE]
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  assert_equal(expected, getline(1, '$'))
 
-func Test_cindent_11()
+  bwipe!
+enddef
+
+def Test_cindent_11()
   new
   setl cindent ts=4 sw=4
   setl cino={s,fs
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void bar(void)
   {
   	static array[2][2] =
@@ -2521,11 +2623,11 @@ func Test_cindent_11()
   /* foo */
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   exe "normal ]]=/ foo\<CR>"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void bar(void)
   	{
   	static array[2][2] =
@@ -2560,17 +2662,17 @@ func Test_cindent_11()
   /* foo */
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_12()
+def Test_cindent_12()
   new
   setl cindent ts=4 sw=4
   setl cino=
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   a()
   {
     do {
@@ -2582,12 +2684,12 @@ func Test_cindent_12()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('while')
+  search('while')
   normal ohere
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   a()
   {
     do {
@@ -2600,17 +2702,17 @@ func Test_cindent_12()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_13()
+def Test_cindent_13()
   new
   setl cindent ts=4 sw=4
   setl cino= com=
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   a()
   {
   label1:
@@ -2619,13 +2721,13 @@ func Test_cindent_13()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('comment')
-  exe "normal olabel2: b();\rlabel3 /* post */:\r/* pre */ label4:\r" .
-        \ "f(/*com*/);\rif (/*com*/)\rcmd();"
+  search('comment')
+  exe "normal olabel2: b();\rlabel3 /* post */:\r/* pre */ label4:\r"
+        .. "f(/*com*/);\rif (/*com*/)\rcmd();"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   a()
   {
   label1:
@@ -2640,17 +2742,17 @@ func Test_cindent_13()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_14()
+def Test_cindent_14()
   new
   setl cindent ts=4 sw=4
   setl comments& comments^=s:/*,m:**,ex:*/
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   /*
     * A simple comment
      */
@@ -2660,12 +2762,12 @@ func Test_cindent_14()
      */
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('simple')
+  search('simple')
   normal =5j
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   /*
    * A simple comment
    */
@@ -2675,18 +2777,18 @@ func Test_cindent_14()
   */
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_15()
+def Test_cindent_15()
   new
   setl cindent ts=4 sw=4
   setl cino=c0
   setl comments& comments-=s1:/* comments^=s0:/*
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
 
@@ -2696,11 +2798,11 @@ func Test_cindent_15()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
 
@@ -2710,18 +2812,18 @@ func Test_cindent_15()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_16()
+def Test_cindent_16()
   new
   setl cindent ts=4 sw=4
   setl cino=c0,C1
   setl comments& comments-=s1:/* comments^=s0:/*
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
 
@@ -2731,11 +2833,11 @@ func Test_cindent_16()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
 
@@ -2745,17 +2847,17 @@ func Test_cindent_16()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_17()
+def Test_cindent_17()
   new
   setl cindent ts=4 sw=4
   setl cino=
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2766,11 +2868,11 @@ func Test_cindent_17()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2781,17 +2883,17 @@ func Test_cindent_17()
   }
 
   [CODE]
-
   call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
 
-func Test_cindent_18()
+  bwipe!
+enddef
+
+def Test_cindent_18()
   new
   setl cindent ts=4 sw=4
   setl cino=(s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2802,11 +2904,11 @@ func Test_cindent_18()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2817,17 +2919,17 @@ func Test_cindent_18()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_19()
+def Test_cindent_19()
   new
   setl cindent ts=4 sw=4
   set cino=(s,U1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2838,11 +2940,11 @@ func Test_cindent_19()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	c = c1 &&
@@ -2853,17 +2955,17 @@ func Test_cindent_19()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_20()
+def Test_cindent_20()
   new
   setl cindent ts=4 sw=4
   setl cino=(0
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	if (   c1
@@ -2873,11 +2975,11 @@ func Test_cindent_20()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	if (   c1
@@ -2887,17 +2989,17 @@ func Test_cindent_20()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_21()
+def Test_cindent_21()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,w1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	if (   c1
@@ -2907,11 +3009,11 @@ func Test_cindent_21()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	if (   c1
@@ -2921,17 +3023,17 @@ func Test_cindent_21()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_22()
+def Test_cindent_22()
   new
   setl cindent ts=4 sw=4
   setl cino=(s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	c = c1 && (
@@ -2945,11 +3047,11 @@ func Test_cindent_22()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	c = c1 && (
@@ -2963,17 +3065,17 @@ func Test_cindent_22()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_23()
+def Test_cindent_23()
   new
   setl cindent ts=4 sw=4
   setl cino=(s,m1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	c = c1 && (
@@ -2987,11 +3089,11 @@ func Test_cindent_23()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	c = c1 && (
@@ -3005,17 +3107,17 @@ func Test_cindent_23()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_24()
+def Test_cindent_24()
   new
   setl cindent ts=4 sw=4
   setl cino=b1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	switch (x)
@@ -3030,11 +3132,11 @@ func Test_cindent_24()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	switch (x)
@@ -3049,17 +3151,17 @@ func Test_cindent_24()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_25()
+def Test_cindent_25()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,W5
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	invokeme(
@@ -3075,11 +3177,11 @@ func Test_cindent_25()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	invokeme(
@@ -3095,17 +3197,17 @@ func Test_cindent_25()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_26()
+def Test_cindent_26()
   new
   setl cindent ts=4 sw=4
   setl cino=/6
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	statement;
@@ -3114,11 +3216,11 @@ func Test_cindent_26()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	statement;
@@ -3127,17 +3229,17 @@ func Test_cindent_26()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_27()
+def Test_cindent_27()
   new
   setl cindent ts=4 sw=4
   setl cino=
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void f()
   {
   	statement;
@@ -3146,11 +3248,11 @@ func Test_cindent_27()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   exe "normal ]]/comment 1/+1\<CR>=="
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void f()
   {
   	statement;
@@ -3159,17 +3261,17 @@ func Test_cindent_27()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_28()
+def Test_cindent_28()
   new
   setl cindent ts=4 sw=4
   setl cino=g0
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   class CAbc
   {
      int Test() { return FALSE; }
@@ -3181,11 +3283,11 @@ func Test_cindent_28()
   };
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   class CAbc
   {
   	int Test() { return FALSE; }
@@ -3197,17 +3299,17 @@ func Test_cindent_28()
   };
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_29()
+def Test_cindent_29()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,gs,hs
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   class Foo : public Bar
   {
   public:
@@ -3218,11 +3320,11 @@ func Test_cindent_29()
   };
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   class Foo : public Bar
   {
   	public:
@@ -3233,17 +3335,17 @@ func Test_cindent_29()
   };
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_30()
+def Test_cindent_30()
   new
   setl cindent ts=4 sw=4
   setl cino=+20
 
-  let code =<< [CODE]
+  var code =<< [CODE]
 	void
 foo()
 {
@@ -3254,11 +3356,11 @@ foo()
 }
 [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< [CODE]
+  var expected =<< [CODE]
 	void
 foo()
 {
@@ -3269,17 +3371,17 @@ foo()
 }
 
 [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_31()
+def Test_cindent_31()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,W2s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
 
   {
      averylongfunctionnamelongfunctionnameaverylongfunctionname()->asd(
@@ -3319,11 +3421,11 @@ func Test_cindent_31()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
 
   {
   	averylongfunctionnamelongfunctionnameaverylongfunctionname()->asd(
@@ -3363,17 +3465,17 @@ func Test_cindent_31()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_32()
+def Test_cindent_32()
   new
   setl cindent ts=4 sw=4
   setl cino=M1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   int main ()
   {
   	if (cond1 &&
@@ -3383,11 +3485,11 @@ func Test_cindent_32()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   int main ()
   {
   	if (cond1 &&
@@ -3397,17 +3499,17 @@ func Test_cindent_32()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_33()
+def Test_cindent_33()
   new
   setl cindent ts=4 sw=4
   setl cino=(0,ts
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(int a
   #if defined(FOO)
   		  , int b
@@ -3418,11 +3520,11 @@ func Test_cindent_33()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal 2j=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(int a
   #if defined(FOO)
   		  , int b
@@ -3433,17 +3535,17 @@ func Test_cindent_33()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_34()
+def Test_cindent_34()
   new
   setl cindent ts=4 sw=4
   setl cino=(0
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
 
   void
   func(int a
@@ -3456,11 +3558,11 @@ func Test_cindent_34()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal =][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   
   	void
   func(int a
@@ -3473,17 +3575,17 @@ func Test_cindent_34()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_35()
+def Test_cindent_35()
   new
   setl cindent ts=4 sw=4
   setl cino&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if(x==y)
@@ -3556,11 +3658,11 @@ func Test_cindent_35()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=7][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if(x==y)
@@ -3633,18 +3735,18 @@ func Test_cindent_35()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_36()
+def Test_cindent_36()
   new
   setl cindent ts=4 sw=4
   setl cino&
   setl cino+=l1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	int tab[] =
@@ -3670,11 +3772,11 @@ func Test_cindent_36()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	int tab[] =
@@ -3700,17 +3802,17 @@ func Test_cindent_36()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_37()
+def Test_cindent_37()
   new
   setl cindent ts=4 sw=4
   setl cino&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	cout << "a"
@@ -3720,11 +3822,11 @@ func Test_cindent_37()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	cout << "a"
@@ -3734,17 +3836,17 @@ func Test_cindent_37()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_38()
+def Test_cindent_38()
   new
   setl cindent ts=4 sw=4
   setl com=s1:/*,m:*,ex:*/
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	/*
@@ -3753,11 +3855,11 @@ func Test_cindent_38()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]3jofoo();
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	/*
@@ -3767,17 +3869,17 @@ func Test_cindent_38()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_39()
+def Test_cindent_39()
   new
   setl cindent ts=4 sw=4
   setl cino&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	for (int i = 0; i < 10; ++i)
@@ -3789,11 +3891,11 @@ func Test_cindent_39()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	for (int i = 0; i < 10; ++i)
@@ -3805,17 +3907,17 @@ func Test_cindent_39()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_40()
+def Test_cindent_40()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,(0
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -3843,11 +3945,11 @@ func Test_cindent_40()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -3875,17 +3977,17 @@ func Test_cindent_40()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_41()
+def Test_cindent_41()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,(s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -3913,11 +4015,11 @@ func Test_cindent_41()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -3945,17 +4047,17 @@ func Test_cindent_41()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_42()
+def Test_cindent_42()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,(s,U1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -3984,11 +4086,11 @@ func Test_cindent_42()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4017,17 +4119,17 @@ func Test_cindent_42()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_43()
+def Test_cindent_43()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,(0,W4
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4061,11 +4163,11 @@ func Test_cindent_43()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4099,17 +4201,17 @@ func Test_cindent_43()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_44()
+def Test_cindent_44()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,u2
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4132,11 +4234,11 @@ func Test_cindent_44()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4159,17 +4261,17 @@ func Test_cindent_44()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_45()
+def Test_cindent_45()
   new
   setl cindent ts=4 sw=4
   setl cino=k2s,(0,w1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4201,11 +4303,11 @@ func Test_cindent_45()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4237,17 +4339,17 @@ func Test_cindent_45()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_46()
+def Test_cindent_46()
   new
   setl cindent ts=4 sw=4
   setl cino=k2,(s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4266,11 +4368,11 @@ func Test_cindent_46()
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   void func(void)
   {
   	if (condition1
@@ -4289,17 +4391,17 @@ func Test_cindent_46()
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_47()
+def Test_cindent_47()
   new
   setl cindent ts=4 sw=4
   setl cino=N-s
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   NAMESPACESTART
   /* valid namespaces with normal indent */
   namespace
@@ -4359,6 +4461,27 @@ func Test_cindent_47()
     22222222222222222;
   }
   }
+  inline namespace {
+    111111111111111111;
+  }
+  inline /* test */ namespace {
+    111111111111111111;
+  }
+  inline/* test */namespace {
+    111111111111111111;
+  }
+  export namespace {
+    111111111111111111;
+  }
+  export inline namespace {
+    111111111111111111;
+  }
+  export/* test */inline namespace {
+    111111111111111111;
+  }
+  inline export namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4382,15 +4505,18 @@ func Test_cindent_47()
   {
     111111111111111111;
   }
+  inlinenamespace {
+    111111111111111111;
+  }
   NAMESPACEEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
   call search('^NAMESPACESTART')
   exe "normal =/^NAMESPACEEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   NAMESPACESTART
   /* valid namespaces with normal indent */
   namespace
@@ -4450,6 +4576,27 @@ func Test_cindent_47()
   22222222222222222;
   }
   }
+  inline namespace {
+  111111111111111111;
+  }
+  inline /* test */ namespace {
+  111111111111111111;
+  }
+  inline/* test */namespace {
+  111111111111111111;
+  }
+  export namespace {
+  111111111111111111;
+  }
+  export inline namespace {
+  111111111111111111;
+  }
+  export/* test */inline namespace {
+  111111111111111111;
+  }
+  inline export namespace {
+  111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4473,20 +4620,23 @@ func Test_cindent_47()
   {
   	111111111111111111;
   }
+  inlinenamespace {
+  	111111111111111111;
+  }
   NAMESPACEEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_48()
+def Test_cindent_48()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   var bar = {
   foo: {
@@ -4503,12 +4653,12 @@ func Test_cindent_48()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   var bar = {
   	foo: {
@@ -4525,17 +4675,17 @@ func Test_cindent_48()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_49()
+def Test_cindent_49()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   var foo = [
   1,
@@ -4545,12 +4695,12 @@ func Test_cindent_49()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   var foo = [
   	1,
@@ -4560,17 +4710,17 @@ func Test_cindent_49()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_50()
+def Test_cindent_50()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   function bar() {
   var foo = [
@@ -4582,12 +4732,12 @@ func Test_cindent_50()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   function bar() {
   	var foo = [
@@ -4599,17 +4749,17 @@ func Test_cindent_50()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_51()
+def Test_cindent_51()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   (function($){
 
@@ -4672,12 +4822,12 @@ func Test_cindent_51()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   (function($){
 
@@ -4740,17 +4890,17 @@ func Test_cindent_51()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_52()
+def Test_cindent_52()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   function init(options) {
   $(this).data(class_name+'_public',$.extend({},{
@@ -4769,12 +4919,12 @@ func Test_cindent_52()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   function init(options) {
   	$(this).data(class_name+'_public',$.extend({},{
@@ -4793,17 +4943,17 @@ func Test_cindent_52()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_53()
+def Test_cindent_53()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   (function($){
   function init(options) {
@@ -4824,12 +4974,12 @@ func Test_cindent_53()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   (function($){
   	function init(options) {
@@ -4850,17 +5000,17 @@ func Test_cindent_53()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_54()
+def Test_cindent_54()
   new
   setl cindent ts=4 sw=4
   setl cino=j1,J1,+2
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   JSSTART
   // Results of JavaScript indent
   // 1
@@ -5014,12 +5164,12 @@ func Test_cindent_54()
   JSEND
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('^JSSTART')
+  search('^JSSTART')
   exe "normal =/^JSEND\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   JSSTART
   // Results of JavaScript indent
   // 1
@@ -5173,17 +5323,17 @@ func Test_cindent_54()
   JSEND
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_55()
+def Test_cindent_55()
   new
   setl cindent ts=4 sw=4
   setl cino&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   /* start of define */
   {
   }
@@ -5198,12 +5348,12 @@ func Test_cindent_55()
   /* end of define */
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('start of define')
+  search('start of define')
   exe "normal =/end of define\n"
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   /* start of define */
   {
   }
@@ -5218,37 +5368,274 @@ func Test_cindent_55()
   /* end of define */
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
 
-func Test_cindent_56()
+def Test_cindent_56()
   new
   setl cindent ts=4 sw=4
   setl cino&
 
-  let code =<< trim [CODE]
+  var code =<< trim [CODE]
   {
   	a = second/*bug*/*line;
   }
   [CODE]
 
-  call append(0, code)
+  append(0, code)
   normal gg
-  call search('a = second')
+  search('a = second')
   normal ox
 
-  let expected =<< trim [CODE]
+  var expected =<< trim [CODE]
   {
   	a = second/*bug*/*line;
   	x
   }
 
   [CODE]
+  assert_equal(expected, getline(1, '$'))
 
-  call assert_equal(expected, getline(1, '$'))
-  enew! | close
-endfunc
+  bwipe!
+enddef
+
+" this was going beyond the end of the line.
+def Test_cindent_case()
+  new
+  setline(1, 'case x: // x')
+  set cindent
+  norm! f:a:
+  assert_equal('case x:: // x', getline(1))
+  set cindent&
+  bwipe!
+enddef
+
+" Test for changing multiple lines (using c) with cindent
+def Test_cindent_change_multline()
+  new
+  setlocal cindent
+  setline(1, ['if (a)', '{', '    i = 1;', '}'])
+  normal! jc3jm = 2;
+  assert_equal("\tm = 2;", getline(2))
+  bwipe!
+enddef
+
+" This was reading past the end of the line
+def Test_cindent_check_funcdecl()
+  new
+  sil norm o0('\0=L
+  bwipe!
+enddef
+
+def Test_cindent_scopedecls()
+  new
+  setl cindent ts=4 sw=4
+  setl cino=g0
+  setl cinsd+=public\ slots,signals
+
+  var code =<< trim [CODE]
+  class Foo
+  {
+  public:
+  virtual void foo() = 0;
+  public slots:
+  void onBar();
+  signals:
+  void baz();
+  private:
+  int x;
+  };
+  [CODE]
+
+  append(0, code)
+  normal gg
+  normal ]]=][
+
+  var expected =<< trim [CODE]
+  class Foo
+  {
+  public:
+	virtual void foo() = 0;
+  public slots:
+	void onBar();
+  signals:
+	void baz();
+  private:
+	int x;
+  };
+
+  [CODE]
+  assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+enddef
+
+def Test_cindent_pragma()
+  new
+  setl cindent ts=4 sw=4
+  setl cino=Ps
+
+  var code =<< trim [CODE]
+  {
+  #pragma omp parallel
+  {
+  #pragma omp task
+  foo();
+  # pragma omp taskwait
+  }
+  }
+  [CODE]
+
+  append(0, code)
+  normal gg
+  normal =G
+
+  var expected =<< trim [CODE]
+  {
+	#pragma omp parallel
+	{
+		#pragma omp task
+		foo();
+		# pragma omp taskwait
+	}
+  }
+
+  [CODE]
+  assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+enddef
+
+def Test_backslash_at_end_of_line()
+  new
+  exe "norm v>O'\\\<C-m>-"
+  exe "norm \<C-q>="
+  bwipe!
+enddef
+
+def Test_find_brace_backwards()
+  # this was looking beyond the end of the line
+  new
+  norm R/*
+  norm o0{
+  norm o//
+  norm V{=
+  assert_equal(['/*', '   0{', '//'], getline(1, 3))
+  bwipe!
+enddef
+
+" Brackets inside comments must not affect C indent calculation (FM_SKIPCOMM)
+def Test_cindent_comment_brackets()
+  # stray } in inline block comment must not confuse enclosing-brace search
+  new
+  setl cindent sw=4
+  var code =<< trim [CODE]
+  int foo() {
+      /* } */
+      int bar;
+  }
+  [CODE]
+  setline(1, code)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # stray } in // line comment: same
+  new
+  setl cindent sw=4
+  var code2 =<< trim [CODE]
+  int foo() {
+      // }
+      int bar;
+  }
+  [CODE]
+  setline(1, code2)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # stray } on continuation line inside multi-line block comment
+  new
+  setl cindent sw=4
+  var code3 =<< trim [CODE]
+  int foo() {
+      /*
+         }
+      */
+      int bar;
+  }
+  [CODE]
+  setline(1, code3)
+  cursor(5, 1)
+  normal ==
+  assert_equal('    int bar;', getline(5))
+  bwipe!
+
+  # { in inline block comment must not be treated as enclosing brace
+  new
+  setl cindent sw=4
+  var code4 =<< trim [CODE]
+  int foo() {
+      /* { */
+      int bar;
+  }
+  [CODE]
+  setline(1, code4)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int bar;', getline(3))
+  bwipe!
+
+  # ) in inline block comment must not be treated as enclosing brace
+  new
+  setl cindent sw=4
+  var code5 =<< trim [CODE]
+  some_func(arg1,
+      /* ) */ arg2,
+      arg3);
+  [CODE]
+  setline(1, code5)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    arg3);', getline(3))
+  bwipe!
+
+  # stray } in a // line comment inside an aggregate (enum/struct) whose
+  # opening brace is at the end of the line must not affect the next member
+  new
+  setl cindent sw=4
+  var code6 =<< trim [CODE]
+  typedef enum {
+      ND_BLOCK,  // { ... }
+      ND_FUNCALL,
+  } NodeKind;
+  [CODE]
+  setline(1, code6)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    ND_FUNCALL,', getline(3))
+  bwipe!
+
+  # same, a struct member with a trailing // } comment
+  new
+  setl cindent sw=4
+  var code7 =<< trim [CODE]
+  struct S {
+      int a;  // }
+      int b;
+  };
+  [CODE]
+  setline(1, code7)
+  cursor(3, 1)
+  normal ==
+  assert_equal('    int b;', getline(3))
+  bwipe!
+
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab

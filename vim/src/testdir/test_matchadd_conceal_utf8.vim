@@ -1,6 +1,5 @@
 " Test for matchadd() and conceal feature using utf-8.
 
-source check.vim
 CheckFeature conceal
 
 if !has('gui_running') && has('unix')
@@ -41,3 +40,5 @@ func Test_match_using_multibyte_conceal_char()
 
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

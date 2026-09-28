@@ -1,22 +1,23 @@
-/* spell.c */
+// spell.c
 int spell_check(win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol, int docount);
 int match_checkcompoundpattern(char_u *ptr, int wlen, garray_T *gap);
 int can_compound(slang_T *slang, char_u *word, char_u *flags);
 int match_compoundrule(slang_T *slang, char_u *compflags);
 int valid_word_prefix(int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req);
 int spell_valid_case(int wordflags, int treeflags);
-int no_spell_checking(win_T *wp);
-int spell_move_to(win_T *wp, int dir, int allwords, int curline, hlf_T *attrp);
+int spell_check_window(win_T *wp);
+int spell_move_to(win_T *wp, int dir, smt_T behaviour, int curline, hlf_T *attrp);
 void spell_cat_line(char_u *buf, char_u *line, int maxlen);
 char_u *spell_enc(void);
 slang_T *slang_alloc(char_u *lang);
 void slang_free(slang_T *lp);
+void free_sal_items(garray_T *gap);
 void slang_clear(slang_T *lp);
 void slang_clear_sug(slang_T *lp);
 void count_common_word(slang_T *lp, char_u *word, int len, int count);
 int byte_in_str(char_u *str, int n);
 int init_syl_tab(slang_T *slang);
-char *did_set_spelllang(win_T *wp);
+char *parse_spelllang(win_T *wp);
 int captype(char_u *word, char_u *end);
 void spell_delete_wordlist(void);
 void spell_free_all(void);
@@ -27,8 +28,8 @@ void clear_spell_chartab(spelltab_T *sp);
 void init_spell_chartab(void);
 int spell_iswordp(char_u *p, win_T *wp);
 int spell_iswordp_nmw(char_u *p, win_T *wp);
-int spell_casefold(char_u *str, int len, char_u *buf, int buflen);
-int check_need_cap(linenr_T lnum, colnr_T col);
+int spell_casefold(win_T *wp, char_u *str, int len, char_u *buf, int buflen);
+int check_need_cap(win_T *wp, linenr_T lnum, colnr_T col);
 void ex_spellrepall(exarg_T *eap);
 void onecap_copy(char_u *word, char_u *wcopy, int upper);
 void allcap_copy(char_u *word, char_u *wcopy);
@@ -43,8 +44,8 @@ char_u *spell_to_word_end(char_u *start, win_T *win);
 int spell_word_start(int startcol);
 void spell_expand_check_cap(colnr_T col);
 int expand_spelling(linenr_T lnum, char_u *pat, char_u ***matchp);
-int valid_spellang(char_u *val);
+int valid_spelllang(char_u *val);
 int valid_spellfile(char_u *val);
-char *did_set_spell_option(int is_spellfile);
+char *did_set_spell_option(void);
 char *compile_cap_prog(synblock_T *synblock);
-/* vim: set ft=c : */
+// vim: ft=c

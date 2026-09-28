@@ -114,7 +114,7 @@ void input_special_key(int key) {
 void input_special_name(const char * name) {
     char_u * n = (char_u *)name;
     char_u re[6];
-    int len = trans_special(&n, re, FALSE, FALSE);
+    int len = trans_special(&n, re, 0, TRUE, NULL);
     for (int i = 0; i < len; i += 3) {
         if (re[i] == K_SPECIAL) { re[i] = CSI; }
     }
@@ -192,7 +192,8 @@ NSString * _Nonnull ivim_escaping_filepath(NSString *path) {
  * get the current sourcing file name
  */
 NSString * get_current_sourcing_name(void) {
-    return sourcing_name == NULL ? nil : TONSSTRING(sourcing_name);
+    return exestack.ga_len == 0 || SOURCING_NAME == NULL
+        ? nil : TONSSTRING(SOURCING_NAME);
 }
 
 /*
@@ -209,7 +210,7 @@ static void clean_buffer(buf_T *buf) {
     NSString *cmd = [NSString stringWithFormat:@"bdelete! %d",
                      buf->b_fnum];
     do_cmdline_cmd(TOCHARS(cmd));
-    close_buffer(nil, buf, DOBUF_WIPE, FALSE);
+    close_buffer(nil, buf, DOBUF_WIPE, FALSE, FALSE, FALSE);
 }
 
 static void reload_netrw_wins_for_buf(buf_T *buf) {
@@ -291,13 +292,13 @@ void ivim_reload_buffer_for_mirror(NSString * path) {
                 reload_netrw_wins_for_buf(buf);
             } else {
 //                NSLog(@"reload file %s", buf->b_ffname);
-                buf_reload(buf, buf->b_orig_mode);
+                buf_reload(buf, buf->b_orig_mode, FALSE);
             }
             need_redraw = YES;
         }
     });
     if (need_redraw) {
-        update_screen(NOT_VALID);
+        update_screen(UPD_NOT_VALID);
     }
 }
 
@@ -475,7 +476,7 @@ static NSString * string_value_of_tv(typval_T * tv) {
 static NSString * force_string_value_of_tv(typval_T * tv) {
     switch (tv->v_type) {
         case VAR_NUMBER:
-            return [NSString stringWithFormat:@"%d", tv->vval.v_number];
+            return [NSString stringWithFormat:@"%lld", (long long)tv->vval.v_number];
             break;
         case VAR_FLOAT:
             return [NSString stringWithFormat:@"%f", tv->vval.v_float];
@@ -777,7 +778,7 @@ void move_cursor(char_u direction, long times) {
     if (times <= 0)
         return;
     char_u key[] = {CSI, 'k', direction};
-    if (State & NORMAL)
+    if (State & MODE_NORMAL)
         return;
     for(; times > 0; --times)
         add_to_input_buf(key, (int)sizeof(key));
@@ -873,7 +874,7 @@ BOOL clean_buffer_for_mirror_path(NSString * path) {
  * If currently in normal mode
  */
 BOOL is_in_normal_mode(void) {
-    return State & NORMAL;
+    return State & MODE_NORMAL;
 }
 
 /*
@@ -881,7 +882,7 @@ BOOL is_in_normal_mode(void) {
  */
 BOOL is_in_insert_mode(void)
 {
-    return State & INSERT;
+    return State & MODE_INSERT;
 }
 
 /*
@@ -1644,6 +1645,21 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 }
 
 
+/*
+ * No scrollbars on iOS, so no padding either.
+ */
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    return 0;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    return 0;
+}
+
     void
 gui_mch_enable_scrollbar(
 	scrollbar_T	*sb,
@@ -1686,11 +1702,9 @@ gui_mch_set_scrollbar_thumb(
 gui_mch_draw_hollow_cursor(guicolor_T color)
 {
     int cw = 1;
-#ifdef FEAT_MBYTE
     if (mb_lefthalve(gui.row, gui.col)) {
         cw = 2;
     }
-#endif
     CGRect rect = CGRectMake(FILL_X(gui.col), FILL_Y(gui.row), cw * gui.char_width, gui.char_height);
 //    CGColorRef cgColor = CGColorCreateFromVimColor(color);
     rect.size.width -= 1;
@@ -2083,137 +2097,8 @@ gui_mch_flash(int msec)
 guicolor_T
 gui_mch_get_color(char_u *name)
 {
-    int i;
-    int r, g, b;
-    
-    
-    typedef struct GuiColourTable
-    {
-        char	    *name;
-        guicolor_T     colour;
-    } GuiColourTable;
-    
-    static GuiColourTable table[] =
-    {
-        {"Black",       RGB(0x00, 0x00, 0x00)},
-        {"DarkGray",    RGB(0xA9, 0xA9, 0xA9)},
-        {"DarkGrey",    RGB(0xA9, 0xA9, 0xA9)},
-        {"Gray",        RGB(0xC0, 0xC0, 0xC0)},
-        {"Grey",        RGB(0xC0, 0xC0, 0xC0)},
-        {"LightGray",   RGB(0xD3, 0xD3, 0xD3)},
-        {"LightGrey",   RGB(0xD3, 0xD3, 0xD3)},
-        {"Gray10",      RGB(0x1A, 0x1A, 0x1A)},
-        {"Grey10",      RGB(0x1A, 0x1A, 0x1A)},
-        {"Gray20",      RGB(0x33, 0x33, 0x33)},
-        {"Grey20",      RGB(0x33, 0x33, 0x33)},
-        {"Gray30",      RGB(0x4D, 0x4D, 0x4D)},
-        {"Grey30",      RGB(0x4D, 0x4D, 0x4D)},
-        {"Gray40",      RGB(0x66, 0x66, 0x66)},
-        {"Grey40",      RGB(0x66, 0x66, 0x66)},
-        {"Gray50",      RGB(0x7F, 0x7F, 0x7F)},
-        {"Grey50",      RGB(0x7F, 0x7F, 0x7F)},
-        {"Gray60",      RGB(0x99, 0x99, 0x99)},
-        {"Grey60",      RGB(0x99, 0x99, 0x99)},
-        {"Gray70",      RGB(0xB3, 0xB3, 0xB3)},
-        {"Grey70",      RGB(0xB3, 0xB3, 0xB3)},
-        {"Gray80",      RGB(0xCC, 0xCC, 0xCC)},
-        {"Grey80",      RGB(0xCC, 0xCC, 0xCC)},
-        {"Gray90",      RGB(0xE5, 0xE5, 0xE5)},
-        {"Grey90",      RGB(0xE5, 0xE5, 0xE5)},
-        {"White",       RGB(0xFF, 0xFF, 0xFF)},
-        {"DarkRed",     RGB(0x80, 0x00, 0x00)},
-        {"Red",         RGB(0xFF, 0x00, 0x00)},
-        {"LightRed",    RGB(0xFF, 0xA0, 0xA0)},
-        {"DarkBlue",    RGB(0x00, 0x00, 0x80)},
-        {"Blue",        RGB(0x00, 0x00, 0xFF)},
-        {"LightBlue",   RGB(0xAD, 0xD8, 0xE6)},
-        {"SlateBlue",   RGB(0x6A, 0x5A, 0xCD)},
-        {"DarkGreen",   RGB(0x00, 0x80, 0x00)},
-        {"Green",       RGB(0x00, 0xFF, 0x00)},
-        {"LightGreen",  RGB(0x90, 0xEE, 0x90)},
-        {"SeaGreen",    RGB(0x2E, 0x8B, 0x57)},
-        {"DarkCyan",    RGB(0x00, 0x80, 0x80)},
-        {"Cyan",        RGB(0x00, 0xFF, 0xFF)},
-        {"LightCyan",   RGB(0xE0, 0xFF, 0xFF)},
-        {"DarkMagenta", RGB(0x80, 0x00, 0x80)},
-        {"Magenta",	RGB(0xFF, 0x00, 0xFF)},
-        {"LightMagenta",RGB(0xFF, 0xA0, 0xFF)},
-        {"Brown",       RGB(0x80, 0x40, 0x40)},
-	{"DarkYellow",	RGB(0xBB, 0xBB, 0x00)},
-        {"Yellow",      RGB(0xFF, 0xFF, 0x00)},
-        {"LightYellow", RGB(0xFF, 0xFF, 0xE0)},
-        {"Orange",      RGB(0xFF, 0xA5, 0x00)},
-        {"Purple",      RGB(0xA0, 0x20, 0xF0)},
-        {"Violet",      RGB(0xEE, 0x82, 0xEE)},
-    };
-    
-    /* is name #rrggbb format? */
-    if (name[0] == '#' && STRLEN(name) == 7)
-    {
-        r = (hex_digit(name[1]) << 4) + hex_digit(name[2]);
-        g = (hex_digit(name[3]) << 4) + hex_digit(name[4]);
-        b = (hex_digit(name[5]) << 4) + hex_digit(name[6]);
-        if (r < 0 || g < 0 || b < 0)
-            return INVALCOLOR;
-        return RGB(r, g, b);
-    }
-    
-    for (i = 0; i < ARRAY_LENGTH(table); i++)
-    {
-        if (STRICMP(name, table[i].name) == 0)
-            return table[i].colour;
-    }
-    
-    /*
-     * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
-     */
-    {
-#define LINE_LEN 100
-        FILE	*fd;
-        char	line[LINE_LEN];
-        char_u	*fname;
-        
-        fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-        if (fname == NULL)
-            return INVALCOLOR;
-        
-        fd = fopen((char *)fname, "rt");
-        vim_free(fname);
-        if (fd == NULL)
-            return INVALCOLOR;
-        
-        while (!feof(fd))
-        {
-            int	    len;
-            int	    pos;
-            char    *color;
-            
-            fgets(line, LINE_LEN, fd);
-            len = (int)STRLEN(line);
-            
-            if (len <= 1 || line[len-1] != '\n')
-                continue;
-            
-            line[len-1] = '\0';
-            
-            i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-            if (i != 3)
-                continue;
-            
-            color = line + pos;
-            
-            if (STRICMP(color, name) == 0)
-            {
-                fclose(fd);
-                return (guicolor_T)RGB(r, g, b);
-            }
-        }
-        
-        fclose(fd);
-    }
-    
-    
-    return INVALCOLOR;
+    // named colors come from v:colornames ($VIMRUNTIME/colors/lists)
+    return gui_get_color_cmn(name);
 }
 
 
@@ -2337,7 +2222,6 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 
 
 
-#ifdef FEAT_TITLE
 /*
  * Set the window title and icon.
  * (The icon is not taken care of).
@@ -2349,7 +2233,6 @@ gui_mch_settitle(char_u *title, char_u *icon)
 //    NSLog(@"%s\n",__func__);
 //    NSLog(@"Title %i", length);
 }
-#endif
 
 // ----------------- Input Method -----------------
 // Not really support HAVE_INPUT_METHOD

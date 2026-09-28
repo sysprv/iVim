@@ -2,7 +2,8 @@
 " Language: PoV-Ray(tm) 3.7 Scene Description Language
 " Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
 " Last Change: 2011-04-23
-" Required Vim Version: 6.0
+" 2025 Apr 21 by Vim Project (deprecate render and statistics #17177)
+" 2026 Aug 20 by Vim Project (allow nesting of different comments #21109)
 
 " Setup
 " quit when a syntax file was already loaded
@@ -70,10 +71,10 @@ syn match povConsts "\<[tuvxyz]\>"
 syn match povDotItem "\.\@<=\(blue\|green\|gray\|filter\|red\|transmit\|hf\|t\|u\|v\|x\|y\|z\)\>" display
 
 " Comments
-syn region povComment start="/\*" end="\*/" contains=povTodo,povComment
-syn match povComment "//.*" contains=povTodo
+syn region povBlockComment start="/\*" end="\*/" contains=povTodo,povBlockComment
+syn match povLineComment "//.*" contains=povTodo
 syn match povCommentError "\*/"
-syn sync ccomment povComment
+syn sync ccomment povBlockComment
 syn sync minlines=50
 syn keyword povTodo TODO FIXME XXX NOT contained
 syn cluster povPRIVATE add=povTodo
@@ -86,7 +87,8 @@ syn keyword povDeclareOption deprecated once contained nextgroup=povDeclareOptio
 syn match povIncludeDir "#\s*include\>"
 syn match povFileDir "#\s*\(fclose\|fopen\|read\|write\)\>"
 syn keyword povFileDataType uint8 sint8 unit16be uint16le sint16be sint16le sint32le sint32be
-syn match povMessageDir "#\s*\(debug\|error\|render\|statistics\|warning\)\>"
+syn match povMessageDir "#\s*\(debug\|error\|warning\)\>"
+syn match povMessageDirDeprecated "#\s*\%(render\|statistics\)\>"
 syn region povFileOpen start="#\s*fopen\>" skip=+"[^"]*"+ matchgroup=povOpenType end="\<\(read\|write\|append\)\>" contains=ALLBUT,PovParenError,PovBraceError,@PovPRIVATE transparent keepend
 
 " Literal strings
@@ -104,7 +106,8 @@ syn match povBraceError "}"
 syn match povNumber "\(^\|\W\)\@<=[+-]\=\(\d\+\)\=\.\=\d\+\([eE][+-]\=\d\+\)\="
 
 " Define the default highlighting
-hi def link povComment Comment
+hi def link povBlockComment Comment
+hi def link povLineComment Comment
 hi def link povTodo Todo
 hi def link povNumber Number
 hi def link povString String
@@ -126,6 +129,7 @@ hi def link povIncludeDir Include
 hi def link povFileDir PreProc
 hi def link povFileDataType Special
 hi def link povMessageDir Debug
+hi def link povMessageDirDeprecated povError
 hi def link povAppearance povDescriptors
 hi def link povObjects povDescriptors
 hi def link povGlobalSettings povDescriptors

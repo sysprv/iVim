@@ -118,15 +118,14 @@
 		DEBE7EB723711DD100FC887E /* channel.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4962347275E00F3E794 /* channel.c */; };
 		DEBE7EB82371258A00FC887E /* terminal.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3B62347275D00F3E794 /* terminal.c */; };
 		DEBE7EB92371295C00FC887E /* vterm.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80A2347276C00F3E794 /* vterm.c */; };
-		DEBE7EBA237137CB00FC887E /* harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C7E02347276B00F3E794 /* harness.c */; };
-		DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80B2347276C00F3E794 /* termscreen.c */; };
+		DEBE7EBB237137EE00FC887E /* screen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C80B2347276C00F3E794 /* screen.c */; };
 		DEBE7EBC2371380F00FC887E /* pen.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8122347276C00F3E794 /* pen.c */; };
 		DEBE7EBD2371383200FC887E /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8092347276C00F3E794 /* state.c */; };
 		DEBE7EBE2371385000FC887E /* unicode.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8052347276C00F3E794 /* unicode.c */; };
 		DEBE7EBF2371386A00FC887E /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8082347276C00F3E794 /* keyboard.c */; };
 		DEBE7EC02371388100FC887E /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8152347276C00F3E794 /* encoding.c */; };
 		DEBE7EC1237138EA00FC887E /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8132347276C00F3E794 /* parser.c */; };
-		DEBE7EC2237138F700FC887E /* termmouse.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8072347276C00F3E794 /* termmouse.c */; };
+		DEBE7EC2237138F700FC887E /* mouse.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C8072347276C00F3E794 /* mouse.c */; };
 		DEBEBDB923540FD700CDAD9C /* FilesystemItemWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBEBDB823540FD700CDAD9C /* FilesystemItemWatcher.swift */; };
 		DEC1D02F23474577008DB801 /* gui_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = DEC1D02E2347455A008DB801 /* gui_ios.m */; };
 		DEC1D0322347565A008DB801 /* viminfo.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3A92347275C00F3E794 /* viminfo.c */; };
@@ -242,6 +241,41 @@
 		DEF17D8420B3BBF400FE0693 /* OldDocumentsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8320B3BBF400FE0693 /* OldDocumentsManager.swift */; };
 		DEF17D8720B3BD3A00FE0693 /* CoreDataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8620B3BD3A00FE0693 /* CoreDataExtension.swift */; };
 		DEF17D8920B3BEBF00FE0693 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */; };
+		89D2E3AF173BD8AAC9912F95 /* alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = DCDF112887BAC727B014AECB /* alloc.c */; };
+		4BE248D4164C768D3C5850D7 /* cindent.c in Sources */ = {isa = PBXBuildFile; fileRef = A7F5171FC03BD0A27BE0163D /* cindent.c */; };
+		9E80BD725E9F9FBE9258C3AE /* clientserver.c in Sources */ = {isa = PBXBuildFile; fileRef = A3E550F92628CD85FCEB4B9C /* clientserver.c */; };
+		71CD7CF60662905EE4C763A3 /* clipboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 67827AECA134C0F7B57ABF51 /* clipboard.c */; };
+		DC0E112E6EFD988C0ACE4387 /* float.c in Sources */ = {isa = PBXBuildFile; fileRef = A877E4F085828C17F24C7844 /* float.c */; };
+		EA09A37FC0A643A3B3CC3B01 /* fuzzy.c in Sources */ = {isa = PBXBuildFile; fileRef = E30E473130F195DFF7624FA8 /* fuzzy.c */; };
+		9B4E3C90492E590B62E9BDE1 /* gc.c in Sources */ = {isa = PBXBuildFile; fileRef = 40DC45817677158A08435EE7 /* gc.c */; };
+		AB9AA1B2D464657E90BF2697 /* gui_xim.c in Sources */ = {isa = PBXBuildFile; fileRef = C97BA33007495C7860881AED /* gui_xim.c */; };
+		F1726F36AA7DEF9AE9809F7C /* hardcopy_postscript.c in Sources */ = {isa = PBXBuildFile; fileRef = B638980A8E4DE07E71F5C7B3 /* hardcopy_postscript.c */; };
+		5E44F2DA228C262123755A64 /* help.c in Sources */ = {isa = PBXBuildFile; fileRef = 783060DE6D2E36D9D684B1F8 /* help.c */; };
+		BC4F9AF08B2FF998411A8ECA /* job.c in Sources */ = {isa = PBXBuildFile; fileRef = 9296931D18F501D945C0B568 /* job.c */; };
+		27056362A53A343D90FC8A02 /* kitty.c in Sources */ = {isa = PBXBuildFile; fileRef = B638052C9B8C3A0D832FDEF3 /* kitty.c */; };
+		7352847F6BE7F66CC920A4E1 /* linematch.c in Sources */ = {isa = PBXBuildFile; fileRef = D21D1FE97AA4DDF06B070532 /* linematch.c */; };
+		A7653FBAFABBE8157A0B648D /* locale.c in Sources */ = {isa = PBXBuildFile; fileRef = E7073A88615EF14ACEFCB9E2 /* locale.c */; };
+		ABE5AD17CBA3CECBB6147D85 /* logfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 900C8BB5BBEF9C1B99D76867 /* logfile.c */; };
+		4CBD68735418035636EA0A67 /* match.c in Sources */ = {isa = PBXBuildFile; fileRef = A0E3FB572A7040DD7C13498A /* match.c */; };
+		7CBB33772BAA8DC2D24D01BF /* sixel.c in Sources */ = {isa = PBXBuildFile; fileRef = FA2E9BAE76F69E4CD3D43C77 /* sixel.c */; };
+		B1CC39E4BC2144C060D39353 /* socketserver.c in Sources */ = {isa = PBXBuildFile; fileRef = 775E61DA39CD7604F4F22254 /* socketserver.c */; };
+		46F294F992E9742A03255FFD /* sound.c in Sources */ = {isa = PBXBuildFile; fileRef = 1E8520B8BDDA484D2104B766 /* sound.c */; };
+		473B6C7B157937BC979C0F8C /* strings.c in Sources */ = {isa = PBXBuildFile; fileRef = 0E0544330ED7728ABC734F9B /* strings.c */; };
+		68CCF6A3DD81F36D51FB8FBF /* tabpanel.c in Sources */ = {isa = PBXBuildFile; fileRef = EE90664E93F822626CBE578C /* tabpanel.c */; };
+		D51FC48F2ED6B899C84248EC /* textformat.c in Sources */ = {isa = PBXBuildFile; fileRef = A8CEFF615E66306E3B8ED36D /* textformat.c */; };
+		DE9746A8F27FB7A8231C98D2 /* textobject.c in Sources */ = {isa = PBXBuildFile; fileRef = 67916D251E9E2E95EC3A4FC3 /* textobject.c */; };
+		FAA43A26A8597A49CD35C486 /* time.c in Sources */ = {isa = PBXBuildFile; fileRef = 0BAEABBC016739B0151C1D13 /* time.c */; };
+		09FD8698BF9B15B9E07DC4DC /* tuple.c in Sources */ = {isa = PBXBuildFile; fileRef = 3C9B38FADE98444039DFA342 /* tuple.c */; };
+		DD753155CE2184FD92A60885 /* typval.c in Sources */ = {isa = PBXBuildFile; fileRef = FACCB82C0CBAAA04C4AF42DC /* typval.c */; };
+		A86EE25A4A597ED537B6DBE1 /* vim9class.c in Sources */ = {isa = PBXBuildFile; fileRef = 53E3E26260146C9B70B2D0FA /* vim9class.c */; };
+		EAB79D120A335DFDBE5B6256 /* vim9cmds.c in Sources */ = {isa = PBXBuildFile; fileRef = D055137117DA181A1D4E7926 /* vim9cmds.c */; };
+		3418762C0B4C46CD835AFEE7 /* vim9compile.c in Sources */ = {isa = PBXBuildFile; fileRef = C713A68338E3C463FCE65711 /* vim9compile.c */; };
+		1F278C4EF97F37B45464E937 /* vim9execute.c in Sources */ = {isa = PBXBuildFile; fileRef = 53FD945F7471A772EC423E0D /* vim9execute.c */; };
+		B07C0C9FBBB60554CCBE4219 /* vim9expr.c in Sources */ = {isa = PBXBuildFile; fileRef = AE74523B6CD73CA726BF4AA8 /* vim9expr.c */; };
+		BD1DC03EB82B69B491CAC68F /* vim9generics.c in Sources */ = {isa = PBXBuildFile; fileRef = 07EB8CCDB93AA8CED99BD78A /* vim9generics.c */; };
+		E894E0DC3A21A4BE7141E55D /* vim9instr.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D04D38B9AC40C04F56F2A /* vim9instr.c */; };
+		EDF31182498B6E4B2D1EE48B /* vim9script.c in Sources */ = {isa = PBXBuildFile; fileRef = 2139E26D09C5E1710C8C965F /* vim9script.c */; };
+		F534A1B036FDFBD707260B08 /* vim9type.c in Sources */ = {isa = PBXBuildFile; fileRef = 013DDA45D3645BDE20FC3006 /* vim9type.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3666,11 +3700,11 @@
 		DEA0C8032347276C00F3E794 /* tbl2inc_c.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = tbl2inc_c.pl; sourceTree = "<group>"; };
 		DEA0C8052347276C00F3E794 /* unicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = unicode.c; sourceTree = "<group>"; };
 		DEA0C8062347276C00F3E794 /* vterm_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vterm_internal.h; sourceTree = "<group>"; };
-		DEA0C8072347276C00F3E794 /* termmouse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = termmouse.c; sourceTree = "<group>"; };
+		DEA0C8072347276C00F3E794 /* mouse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mouse.c; sourceTree = "<group>"; };
 		DEA0C8082347276C00F3E794 /* keyboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = keyboard.c; sourceTree = "<group>"; };
 		DEA0C8092347276C00F3E794 /* state.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = state.c; sourceTree = "<group>"; };
 		DEA0C80A2347276C00F3E794 /* vterm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vterm.c; sourceTree = "<group>"; };
-		DEA0C80B2347276C00F3E794 /* termscreen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = termscreen.c; sourceTree = "<group>"; };
+		DEA0C80B2347276C00F3E794 /* screen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = screen.c; sourceTree = "<group>"; };
 		DEA0C80D2347276C00F3E794 /* uk.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = uk.inc; sourceTree = "<group>"; };
 		DEA0C80E2347276C00F3E794 /* DECdrawing.tbl */ = {isa = PBXFileReference; lastKnownFileType = text; path = DECdrawing.tbl; sourceTree = "<group>"; };
 		DEA0C80F2347276C00F3E794 /* DECdrawing.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = DECdrawing.inc; sourceTree = "<group>"; };
@@ -3715,6 +3749,41 @@
 		DEF17D8820B3BEBF00FE0693 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		DEFB9C93237A5BF100BAEDC8 /* network_ios.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = network_ios.framework; path = Frameworks/network_ios.framework; sourceTree = "<group>"; };
 		DEFC96F62388CFAC000F22CE /* text.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = text.xcframework; path = Frameworks/text.xcframework; sourceTree = "<group>"; };
+		DCDF112887BAC727B014AECB /* alloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = alloc.c; sourceTree = "<group>"; };
+		A7F5171FC03BD0A27BE0163D /* cindent.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cindent.c; sourceTree = "<group>"; };
+		A3E550F92628CD85FCEB4B9C /* clientserver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = clientserver.c; sourceTree = "<group>"; };
+		67827AECA134C0F7B57ABF51 /* clipboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = clipboard.c; sourceTree = "<group>"; };
+		A877E4F085828C17F24C7844 /* float.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = float.c; sourceTree = "<group>"; };
+		E30E473130F195DFF7624FA8 /* fuzzy.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fuzzy.c; sourceTree = "<group>"; };
+		40DC45817677158A08435EE7 /* gc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gc.c; sourceTree = "<group>"; };
+		C97BA33007495C7860881AED /* gui_xim.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gui_xim.c; sourceTree = "<group>"; };
+		B638980A8E4DE07E71F5C7B3 /* hardcopy_postscript.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hardcopy_postscript.c; sourceTree = "<group>"; };
+		783060DE6D2E36D9D684B1F8 /* help.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = help.c; sourceTree = "<group>"; };
+		9296931D18F501D945C0B568 /* job.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = job.c; sourceTree = "<group>"; };
+		B638052C9B8C3A0D832FDEF3 /* kitty.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = kitty.c; sourceTree = "<group>"; };
+		D21D1FE97AA4DDF06B070532 /* linematch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = linematch.c; sourceTree = "<group>"; };
+		E7073A88615EF14ACEFCB9E2 /* locale.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = locale.c; sourceTree = "<group>"; };
+		900C8BB5BBEF9C1B99D76867 /* logfile.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = logfile.c; sourceTree = "<group>"; };
+		A0E3FB572A7040DD7C13498A /* match.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = match.c; sourceTree = "<group>"; };
+		FA2E9BAE76F69E4CD3D43C77 /* sixel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sixel.c; sourceTree = "<group>"; };
+		775E61DA39CD7604F4F22254 /* socketserver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = socketserver.c; sourceTree = "<group>"; };
+		1E8520B8BDDA484D2104B766 /* sound.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sound.c; sourceTree = "<group>"; };
+		0E0544330ED7728ABC734F9B /* strings.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = strings.c; sourceTree = "<group>"; };
+		EE90664E93F822626CBE578C /* tabpanel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tabpanel.c; sourceTree = "<group>"; };
+		A8CEFF615E66306E3B8ED36D /* textformat.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = textformat.c; sourceTree = "<group>"; };
+		67916D251E9E2E95EC3A4FC3 /* textobject.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = textobject.c; sourceTree = "<group>"; };
+		0BAEABBC016739B0151C1D13 /* time.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = time.c; sourceTree = "<group>"; };
+		3C9B38FADE98444039DFA342 /* tuple.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tuple.c; sourceTree = "<group>"; };
+		FACCB82C0CBAAA04C4AF42DC /* typval.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = typval.c; sourceTree = "<group>"; };
+		53E3E26260146C9B70B2D0FA /* vim9class.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9class.c; sourceTree = "<group>"; };
+		D055137117DA181A1D4E7926 /* vim9cmds.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9cmds.c; sourceTree = "<group>"; };
+		C713A68338E3C463FCE65711 /* vim9compile.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9compile.c; sourceTree = "<group>"; };
+		53FD945F7471A772EC423E0D /* vim9execute.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9execute.c; sourceTree = "<group>"; };
+		AE74523B6CD73CA726BF4AA8 /* vim9expr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9expr.c; sourceTree = "<group>"; };
+		07EB8CCDB93AA8CED99BD78A /* vim9generics.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9generics.c; sourceTree = "<group>"; };
+		2C4D04D38B9AC40C04F56F2A /* vim9instr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9instr.c; sourceTree = "<group>"; };
+		2139E26D09C5E1710C8C965F /* vim9script.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9script.c; sourceTree = "<group>"; };
+		013DDA45D3645BDE20FC3006 /* vim9type.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vim9type.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6925,6 +6994,41 @@
 		DEA0C3402347275C00F3E794 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				DCDF112887BAC727B014AECB /* alloc.c */,
+				A7F5171FC03BD0A27BE0163D /* cindent.c */,
+				A3E550F92628CD85FCEB4B9C /* clientserver.c */,
+				67827AECA134C0F7B57ABF51 /* clipboard.c */,
+				A877E4F085828C17F24C7844 /* float.c */,
+				E30E473130F195DFF7624FA8 /* fuzzy.c */,
+				40DC45817677158A08435EE7 /* gc.c */,
+				C97BA33007495C7860881AED /* gui_xim.c */,
+				B638980A8E4DE07E71F5C7B3 /* hardcopy_postscript.c */,
+				783060DE6D2E36D9D684B1F8 /* help.c */,
+				9296931D18F501D945C0B568 /* job.c */,
+				B638052C9B8C3A0D832FDEF3 /* kitty.c */,
+				D21D1FE97AA4DDF06B070532 /* linematch.c */,
+				E7073A88615EF14ACEFCB9E2 /* locale.c */,
+				900C8BB5BBEF9C1B99D76867 /* logfile.c */,
+				A0E3FB572A7040DD7C13498A /* match.c */,
+				FA2E9BAE76F69E4CD3D43C77 /* sixel.c */,
+				775E61DA39CD7604F4F22254 /* socketserver.c */,
+				1E8520B8BDDA484D2104B766 /* sound.c */,
+				0E0544330ED7728ABC734F9B /* strings.c */,
+				EE90664E93F822626CBE578C /* tabpanel.c */,
+				A8CEFF615E66306E3B8ED36D /* textformat.c */,
+				67916D251E9E2E95EC3A4FC3 /* textobject.c */,
+				0BAEABBC016739B0151C1D13 /* time.c */,
+				3C9B38FADE98444039DFA342 /* tuple.c */,
+				FACCB82C0CBAAA04C4AF42DC /* typval.c */,
+				53E3E26260146C9B70B2D0FA /* vim9class.c */,
+				D055137117DA181A1D4E7926 /* vim9cmds.c */,
+				C713A68338E3C463FCE65711 /* vim9compile.c */,
+				53FD945F7471A772EC423E0D /* vim9execute.c */,
+				AE74523B6CD73CA726BF4AA8 /* vim9expr.c */,
+				07EB8CCDB93AA8CED99BD78A /* vim9generics.c */,
+				2C4D04D38B9AC40C04F56F2A /* vim9instr.c */,
+				2139E26D09C5E1710C8C965F /* vim9script.c */,
+				013DDA45D3645BDE20FC3006 /* vim9type.c */,
 				DEA0C3412347275C00F3E794 /* dict.c */,
 				DEA0C3422347275C00F3E794 /* scriptfile.c */,
 				DEA0C3432347275C00F3E794 /* tee */,
@@ -8438,11 +8542,11 @@
 			children = (
 				DEA0C8052347276C00F3E794 /* unicode.c */,
 				DEA0C8062347276C00F3E794 /* vterm_internal.h */,
-				DEA0C8072347276C00F3E794 /* termmouse.c */,
+				DEA0C8072347276C00F3E794 /* mouse.c */,
 				DEA0C8082347276C00F3E794 /* keyboard.c */,
 				DEA0C8092347276C00F3E794 /* state.c */,
 				DEA0C80A2347276C00F3E794 /* vterm.c */,
-				DEA0C80B2347276C00F3E794 /* termscreen.c */,
+				DEA0C80B2347276C00F3E794 /* screen.c */,
 				DEA0C80C2347276C00F3E794 /* encoding */,
 				DEA0C8112347276C00F3E794 /* rect.h */,
 				DEA0C8122347276C00F3E794 /* pen.c */,
@@ -8749,6 +8853,41 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89D2E3AF173BD8AAC9912F95 /* alloc.c in Sources */,
+				4BE248D4164C768D3C5850D7 /* cindent.c in Sources */,
+				9E80BD725E9F9FBE9258C3AE /* clientserver.c in Sources */,
+				71CD7CF60662905EE4C763A3 /* clipboard.c in Sources */,
+				DC0E112E6EFD988C0ACE4387 /* float.c in Sources */,
+				EA09A37FC0A643A3B3CC3B01 /* fuzzy.c in Sources */,
+				9B4E3C90492E590B62E9BDE1 /* gc.c in Sources */,
+				AB9AA1B2D464657E90BF2697 /* gui_xim.c in Sources */,
+				F1726F36AA7DEF9AE9809F7C /* hardcopy_postscript.c in Sources */,
+				5E44F2DA228C262123755A64 /* help.c in Sources */,
+				BC4F9AF08B2FF998411A8ECA /* job.c in Sources */,
+				27056362A53A343D90FC8A02 /* kitty.c in Sources */,
+				7352847F6BE7F66CC920A4E1 /* linematch.c in Sources */,
+				A7653FBAFABBE8157A0B648D /* locale.c in Sources */,
+				ABE5AD17CBA3CECBB6147D85 /* logfile.c in Sources */,
+				4CBD68735418035636EA0A67 /* match.c in Sources */,
+				7CBB33772BAA8DC2D24D01BF /* sixel.c in Sources */,
+				B1CC39E4BC2144C060D39353 /* socketserver.c in Sources */,
+				46F294F992E9742A03255FFD /* sound.c in Sources */,
+				473B6C7B157937BC979C0F8C /* strings.c in Sources */,
+				68CCF6A3DD81F36D51FB8FBF /* tabpanel.c in Sources */,
+				D51FC48F2ED6B899C84248EC /* textformat.c in Sources */,
+				DE9746A8F27FB7A8231C98D2 /* textobject.c in Sources */,
+				FAA43A26A8597A49CD35C486 /* time.c in Sources */,
+				09FD8698BF9B15B9E07DC4DC /* tuple.c in Sources */,
+				DD753155CE2184FD92A60885 /* typval.c in Sources */,
+				A86EE25A4A597ED537B6DBE1 /* vim9class.c in Sources */,
+				EAB79D120A335DFDBE5B6256 /* vim9cmds.c in Sources */,
+				3418762C0B4C46CD835AFEE7 /* vim9compile.c in Sources */,
+				1F278C4EF97F37B45464E937 /* vim9execute.c in Sources */,
+				B07C0C9FBBB60554CCBE4219 /* vim9expr.c in Sources */,
+				BD1DC03EB82B69B491CAC68F /* vim9generics.c in Sources */,
+				E894E0DC3A21A4BE7141E55D /* vim9instr.c in Sources */,
+				EDF31182498B6E4B2D1EE48B /* vim9script.c in Sources */,
+				F534A1B036FDFBD707260B08 /* vim9type.c in Sources */,
 				DEC1D03923475CED008DB801 /* eval.c in Sources */,
 				DE5C51B31F6E16DC00373B92 /* debug.c in Sources */,
 				DE855E56236BF4F600A0EB7E /* profiler.c in Sources */,
@@ -8763,7 +8902,6 @@
 				DEC1D02F23474577008DB801 /* gui_ios.m in Sources */,
 				DEC1D07A2347841B008DB801 /* termlib.c in Sources */,
 				DEC1D06F23477AD2008DB801 /* ex_docmd.c in Sources */,
-				DEBE7EBA237137CB00FC887E /* harness.c in Sources */,
 				DEC1D08D234788EC008DB801 /* memfile.c in Sources */,
 				DE5C51AB1F6E16A000373B92 /* perl.c in Sources */,
 				DE5C51861F6E140C00373B92 /* ctags_ios.m in Sources */,
@@ -8805,7 +8943,7 @@
 				DEC1D079234783DB008DB801 /* term.c in Sources */,
 				DE7BA7931F21A75400705E67 /* VimAppDelegate.swift in Sources */,
 				DE5C519A1F6E160200373B92 /* scheme.c in Sources */,
-				DEBE7EBB237137EE00FC887E /* termscreen.c in Sources */,
+				DEBE7EBB237137EE00FC887E /* screen.c in Sources */,
 				DE5C51981F6E15EA00373B92 /* slang.c in Sources */,
 				DE5C51B21F6E16D700373B92 /* ant.c in Sources */,
 				DEC1D07F23478776008DB801 /* ex_cmds.c in Sources */,
@@ -8943,7 +9081,7 @@
 				DE5C51961F6E15DF00373B92 /* make.c in Sources */,
 				DE5C518D1F6E157100373B92 /* vstring.c in Sources */,
 				DE5C51AF1F6E16BE00373B92 /* sql.c in Sources */,
-				DEBE7EC2237138F700FC887E /* termmouse.c in Sources */,
+				DEBE7EC2237138F700FC887E /* mouse.c in Sources */,
 				DEC1D06623477899008DB801 /* regexp.c in Sources */,
 				DEEB2EB623482FDE00C8EF70 /* drawline.c in Sources */,
 				DEC1D047234772A6008DB801 /* mbyte.c in Sources */,

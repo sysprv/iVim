@@ -1,4 +1,4 @@
-/* gui_x11.c */
+// gui_x11.c
 void gui_x11_key_hit_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init_check(void);
@@ -23,7 +23,6 @@ void gui_mch_free_font(GuiFont font);
 void gui_mch_free_fontset(GuiFontset fontset);
 GuiFontset gui_mch_get_fontset(char_u *name, int giveErrorIfMissing, int fixed_width);
 int fontset_height(XFontSet fs);
-int fontset_height2(XFontSet fs);
 guicolor_T gui_mch_get_color(char_u *name);
 guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);
@@ -70,4 +69,4 @@ void gui_mch_destroy_sign(void *sign);
 void gui_mch_mousehide(int hide);
 void mch_set_mouse_shape(int shape);
 void gui_mch_menu_set_tip(vimmenu_T *menu);
-/* vim: set ft=c : */
+// vim: ft=c

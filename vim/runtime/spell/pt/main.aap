@@ -1,5 +1,5 @@
 # Aap recipe for Portuguese Vim spell files.
-# See ftp://ftp.vim.org/pub/vim/runtime/spell/README.txt
+# See https://github.com/vim/vim/blob/master/runtime/spell/README.txt
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -59,7 +59,7 @@ pt_PT.aff pt_PT.dic: {buildcheck=}
         :delete {f} description.xml
         :delete {f} dictionaries.xcu
         :delete {f} LICENSES.txt
-        # Remove grammer items and the duplicates this causes
+        # Remove grammar items and the duplicates this causes
         :sys $VIM pt_PT.dic -u NONE -e -c "%s/\t.*//" -c "2,$$ sort u" -c update -c q
         :sys $VIM pt_PT.aff -u NONE -e -c "%s/\S\+=\S\+$$//" -c update -c q
         @if not os.path.exists('pt_PT.orig.aff'):

@@ -2,18 +2,35 @@
 
 func Test_modeline_invalid()
   " This was reading allocated memory in the past.
-  call writefile(['vi:0', 'nothing'], 'Xmodeline')
+  call writefile(['vi:0', 'nothing'], 'Xmodeline', 'D')
   let modeline = &modeline
   set modeline
   call assert_fails('split Xmodeline', 'E518:')
 
+  " Missing end colon (ignored).
+  call writefile(['// vim: set ts=2'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Missing colon at beginning (ignored).
+  call writefile(['// vim set ts=2:'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Missing space after vim (ignored).
+  call writefile(['// vim:ts=2:'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
   let &modeline = modeline
   bwipe!
-  call delete('Xmodeline')
 endfunc
 
 func Test_modeline_filetype()
-  call writefile(['vim: set ft=c :', 'nothing'], 'Xmodeline_filetype')
+  call writefile(['vim: set ft=c :', 'nothing'], 'Xmodeline_filetype', 'D')
   let modeline = &modeline
   set modeline
   filetype plugin on
@@ -23,51 +40,142 @@ func Test_modeline_filetype()
   call assert_equal("ccomplete#Complete", &ofu)
 
   bwipe!
-  call delete('Xmodeline_filetype')
   let &modeline = modeline
   filetype plugin off
 endfunc
 
 func Test_modeline_syntax()
-  call writefile(['vim: set syn=c :', 'nothing'], 'Xmodeline_syntax')
+  call writefile(['vim: set syn=c :', 'nothing'], 'Xmodeline_syntax', 'D')
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   syntax enable
   split Xmodeline_syntax
   call assert_equal("c", &syntax)
   call assert_equal("c", b:current_syntax)
 
   bwipe!
-  call delete('Xmodeline_syntax')
   let &modeline = modeline
+  set modelinestrict
   syntax off
 endfunc
 
 func Test_modeline_keymap()
-  if !has('keymap')
-    return
-  endif
-  call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap')
+  CheckFeature keymap
+  call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap', 'D')
   let modeline = &modeline
-  set modeline
+  set modeline nomodelinestrict
   split Xmodeline_keymap
   call assert_equal("greek", &keymap)
   call assert_match('greek\|grk', b:keymap_name)
 
   bwipe!
-  call delete('Xmodeline_keymap')
   let &modeline = modeline
+  set modelinestrict
   set keymap= iminsert=0 imsearch=-1
 endfunc
 
+func Test_modeline_version()
+  let modeline = &modeline
+  set modeline
+
+  " Test with vim:{vers}: (version {vers} or later).
+  call writefile(['// vim' .. v:version .. ': ts=2:'], 'Xmodeline_version', 'D')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bw!
+
+  " Test with vim>{vers}: (version after {vers}).
+  call writefile(['// vim>' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim>' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim>' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Test with vim<{vers}: (version before {vers}).
+  call writefile(['// vim<' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim<' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim<' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  " Test with vim={vers}: (version {vers} only).
+  call writefile(['// vim=' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim=' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim=' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  let &modeline = modeline
+endfunc
+
+func Test_modeline_colon()
+  let modeline = &modeline
+  let modelinestrict = &modelinestrict
+  set modeline nomodelinestrict
+
+  call writefile(['// vim: set showbreak=\: ts=2: sw=2'], 'Xmodeline_colon', 'D')
+  edit Xmodeline_colon
+
+  " backlash colon should become colon.
+  call assert_equal(':', &showbreak)
+
+  " 'ts' should be set.
+  " 'sw' should be ignored because it is after the end colon.
+  call assert_equal(2, &ts)
+  call assert_equal(8, &sw)
+
+  let &modeline = modeline
+  let &modelinestrict = modelinestrict
+endfunc
+
 func s:modeline_fails(what, text, error)
+  " Don't use CheckOption(), it would skip the whole test
+  " just for a single un-supported option
   if !exists('+' .. a:what)
     return
   endif
   let fname = "Xmodeline_fails_" . a:what
-  call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname)
+  call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname, 'D')
   let modeline = &modeline
-  set modeline
+  let modelinestrict = &modelinestrict
+  set modeline nomodelinestrict
   filetype plugin on
   syntax enable
   call assert_fails('split ' . fname, a:error)
@@ -75,8 +183,8 @@ func s:modeline_fails(what, text, error)
   call assert_equal("", &syntax)
 
   bwipe!
-  call delete(fname)
   let &modeline = modeline
+  let &modelinestrict = modelinestrict
   filetype plugin off
   syntax off
 endfunc
@@ -104,6 +212,7 @@ func Test_modeline_fails_always()
   call s:modeline_fails('equalprg', 'equalprg=Something()', 'E520:')
   call s:modeline_fails('errorfile', 'errorfile=Something()', 'E520:')
   call s:modeline_fails('exrc', 'exrc=Something()', 'E520:')
+  call s:modeline_fails('findfunc', 'findfunc=Something', 'E520:')
   call s:modeline_fails('formatprg', 'formatprg=Something()', 'E520:')
   call s:modeline_fails('fsync', 'fsync=Something()', 'E520:')
   call s:modeline_fails('grepprg', 'grepprg=Something()', 'E520:')
@@ -158,15 +267,455 @@ endfunc
 
 func Test_modeline_fails_modelineexpr()
   call s:modeline_fails('balloonexpr', 'balloonexpr=Something()', 'E992:')
+  call s:modeline_fails('complete', "complete=FSomething", 'E992:')
   call s:modeline_fails('foldexpr', 'foldexpr=Something()', 'E992:')
   call s:modeline_fails('foldtext', 'foldtext=Something()', 'E992:')
   call s:modeline_fails('formatexpr', 'formatexpr=Something()', 'E992:')
   call s:modeline_fails('guitablabel', 'guitablabel=Something()', 'E992:')
+  call s:modeline_fails('guitabtooltip', 'guitabtooltip=Something()', 'E992:')
   call s:modeline_fails('iconstring', 'iconstring=Something()', 'E992:')
   call s:modeline_fails('includeexpr', 'includeexpr=Something()', 'E992:')
   call s:modeline_fails('indentexpr', 'indentexpr=Something()', 'E992:')
+  call s:modeline_fails('printheader', 'printheader=Something()', 'E992:')
   call s:modeline_fails('rulerformat', 'rulerformat=Something()', 'E992:')
   call s:modeline_fails('statusline', 'statusline=Something()', 'E992:')
   call s:modeline_fails('tabline', 'tabline=Something()', 'E992:')
   call s:modeline_fails('titlestring', 'titlestring=Something()', 'E992:')
 endfunc
+
+func Test_modeline_complete_uses_sandbox()
+  let modeline = &modeline
+  let modelineexpr = &modelineexpr
+  let modelinestrict = &modelinestrict
+
+  func! ModelineCompletePwnFindstart(findstart, base)
+    if a:findstart
+      call writefile(['findstart'], 'Xmodeline_complete_proof')
+      return 0
+    endif
+    return ['match']
+  endfunc
+
+  func! ModelineCompletePwnMatches(findstart, base)
+    if a:findstart
+      return 0
+    endif
+    call writefile(['matches'], 'Xmodeline_complete_proof')
+    return ['match']
+  endfunc
+
+  try
+    set modeline modelineexpr nomodelinestrict
+
+    call writefile([
+          \ 'vim: set complete=FModelineCompletePwnFindstart :',
+          \ 'body',
+          \ ], 'Xmodeline_complete_attack', 'D')
+    call delete('Xmodeline_complete_proof')
+    edit Xmodeline_complete_attack
+    call cursor(2, 1)
+    call assert_fails('call feedkeys("i\<C-N>\<Esc>", "xt")', 'E48:')
+    call assert_false(filereadable('Xmodeline_complete_proof'))
+    bwipe!
+
+    call writefile([
+          \ 'vim: set complete=FModelineCompletePwnMatches :',
+          \ 'body',
+          \ ], 'Xmodeline_complete_attack', 'D')
+    call delete('Xmodeline_complete_proof')
+    edit Xmodeline_complete_attack
+    call cursor(2, 1)
+    call assert_fails('call feedkeys("i\<C-N>\<Esc>", "xt")', 'E48:')
+    call assert_false(filereadable('Xmodeline_complete_proof'))
+    bwipe!
+  finally
+    let &modeline = modeline
+    let &modelineexpr = modelineexpr
+    let &modelinestrict = modelinestrict
+    call delete('Xmodeline_complete_proof')
+    delfunc ModelineCompletePwnFindstart
+    delfunc ModelineCompletePwnMatches
+  endtry
+endfunc
+
+func Test_modeline_setoption_verbose()
+  let modeline = &modeline
+  set modeline
+
+  let lines =<< trim END
+  1 vim:ts=2
+  2 two
+  3 three
+  4 four
+  5 five
+  6 six
+  7 seven
+  8 eight
+  END
+  call writefile(lines, 'Xmodeline', 'D')
+  edit Xmodeline
+  let info = split(execute('verbose set tabstop?'), "\n")
+  call assert_match('^\s*Last set from modeline line 1$', info[-1])
+  bwipe!
+
+  let lines =<< trim END
+  1 one
+  2 two
+  3 three
+  4 vim:ts=4
+  5 five
+  6 six
+  7 seven
+  8 eight
+  END
+  call writefile(lines, 'Xmodeline')
+  edit Xmodeline
+  let info = split(execute('verbose set tabstop?'), "\n")
+  call assert_match('^\s*Last set from modeline line 4$', info[-1])
+  bwipe!
+
+  let lines =<< trim END
+  1 one
+  2 two
+  3 three
+  4 four
+  5 five
+  6 six
+  7 seven
+  8 vim:ts=8
+  END
+  call writefile(lines, 'Xmodeline')
+  edit Xmodeline
+  let info = split(execute('verbose set tabstop?'), "\n")
+  call assert_match('^\s*Last set from modeline line 8$', info[-1])
+  bwipe!
+
+  let &modeline = modeline
+endfunc
+
+" Test for the 'modeline' default value in compatible and non-compatible modes
+" for root and non-root accounts
+func Test_modeline_default()
+  set compatible
+  call assert_false(&modeline)
+  set nocompatible
+  call assert_equal(IsRoot() ? 0 : 1, &modeline)
+  set compatible&vi
+  call assert_false(&modeline)
+  set compatible&vim
+  call assert_equal(IsRoot() ? 0 : 1, &modeline)
+  set compatible& modeline&
+endfunc
+
+" Some options cannot be set from the modeline when 'diff' option is set
+func Test_modeline_diff_buffer()
+  set nomodelinestrict
+  call writefile(['vim: diff foldmethod=marker wrap'], 'Xmdifile', 'D')
+  set foldmethod& nowrap
+  new Xmdifile
+  call assert_equal('manual', &foldmethod)
+  call assert_false(&wrap)
+  set wrap&
+  set modelinestrict
+  bw
+endfunc
+
+func Test_modeline_disable()
+  set modeline nomodelinestrict
+  call writefile(['vim: sw=2', 'vim: nomodeline', 'vim: sw=3'], 'Xmodeline_disable', 'D')
+  edit Xmodeline_disable
+  call assert_equal(2, &sw)
+  set modelinestrict
+endfunc
+
+" If 'nowrap' is set from a modeline, '>' is used forcibly as lcs-extends.
+func Test_modeline_nowrap_lcs_extends()
+  call writefile([
+        \ 'aaa',
+        \ 'bbb',
+        \ 'ccc                    evil',
+        \ 'ddd                    vim: nowrap',
+        \ ], 'Xmodeline_nowrap', 'D')
+  set noequalalways
+  set nomodelinestrict
+  11new | 20vsplit
+
+  func Check_modeline_nowrap(expect_insecure, expect_secure, set_cmd)
+    edit Xmodeline_nowrap
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+
+    5split
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+    call assert_equal(a:expect_insecure, ScreenLines([7, 11], 20))
+
+    exe a:set_cmd 'nowrap'
+    call assert_equal(a:expect_secure, ScreenLines([1, 5], 20))
+    call assert_equal(a:expect_insecure, ScreenLines([7, 11], 20))
+
+    close
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+
+    setglobal nowrap
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+    setglobal wrap
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+
+    exe a:set_cmd 'nowrap'
+    call assert_equal(a:expect_secure, ScreenLines([1, 5], 20))
+
+    exe 'sandbox' a:set_cmd 'nowrap'
+    call assert_equal(a:expect_insecure, ScreenLines([1, 5], 20))
+
+    exe a:set_cmd 'nowrap'
+    call assert_equal(a:expect_secure, ScreenLines([1, 5], 20))
+  endfunc
+
+  setlocal nolist listchars=
+  let expect_insecure = [
+        \ 'aaa                 ',
+        \ 'bbb                 ',
+        \ 'ccc                >',
+        \ 'ddd                >',
+        \ '~                   ',
+        \ ]
+  let expect_secure = [
+        \ 'aaa                 ',
+        \ 'bbb                 ',
+        \ 'ccc                 ',
+        \ 'ddd                 ',
+        \ '~                   ',
+        \ ]
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'setlocal')
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'set')
+
+  setlocal list listchars=extends:+
+  let expect_secure = [
+        \ 'aaa                 ',
+        \ 'bbb                 ',
+        \ 'ccc                +',
+        \ 'ddd                +',
+        \ '~                   ',
+        \ ]
+  call assert_equal(expect_secure, ScreenLines([1, 5], 20))
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'setlocal')
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'set')
+
+  " Other 'listchars' flags are not affected.
+  call writefile([
+        \ "aa\ta",
+        \ "bb\tb",
+        \ "cc\tc              evil",
+        \ "dd\td              vim: nowrap lcs=tab\\:<->",
+        \ ], 'Xmodeline_nowrap')
+  let expect_insecure = [
+        \ 'aa<---->a           ',
+        \ 'bb<---->b           ',
+        \ 'cc<---->c          >',
+        \ 'dd<---->d          >',
+        \ '~                   ',
+        \ ]
+  let expect_secure = [
+        \ 'aa<---->a           ',
+        \ 'bb<---->b           ',
+        \ 'cc<---->c           ',
+        \ 'dd<---->d           ',
+        \ '~                   ',
+        \ ]
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'setlocal')
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'set')
+
+  " Same behavior even if modeline sets "extends" to a space.
+  call writefile([
+        \ "aa\ta",
+        \ "bb\tb",
+        \ "cc\tc              evil",
+        \ "dd\td              vim: nowrap lcs=tab\\:<->",
+        \ ], 'Xmodeline_nowrap')
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'setlocal')
+  call Check_modeline_nowrap(expect_insecure, expect_secure, 'set')
+
+  sandbox setglobal nowrap
+  setglobal list listchars=eol:$
+  setlocal bufhidden=wipe
+  enew!
+  call setline(1, ['aaa                    bbb'])
+  call assert_equal(['aaa                >'], ScreenLines(1, 20))
+  setglobal nowrap
+  call assert_equal(['aaa                >'], ScreenLines(1, 20))
+  setlocal nowrap
+  call assert_equal(['aaa                 '], ScreenLines(1, 20))
+  normal! 20zl
+  call assert_equal(['   bbb$             '], ScreenLines(1, 20))
+  setlocal bufhidden=wipe
+  enew!
+  call setline(1, ['ccc                    ddd'])
+  call assert_equal(['ccc                 '], ScreenLines(1, 20))
+  normal! 20zl
+  call assert_equal(['   ddd$             '], ScreenLines(1, 20))
+
+  bwipe!
+  delfunc Check_modeline_nowrap
+  set equalalways&
+endfunc
+
+func Test_modeline_strict_allowed()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " Whitelisted options should work
+  call writefile(['vim: set ts=2 sw=4 et foldmarker=[,]:'], 'Xmodeline_strict', 'D')
+  split Xmodeline_strict
+  call assert_equal(2, &ts)
+  call assert_equal(4, &sw)
+  call assert_equal(1, &et)
+  call assert_equal('[,]', &foldmarker)
+  bwipe!
+
+  " 'filetype' should work
+  call writefile(['vim: set ft=python :'], 'Xmodeline_strict')
+  filetype plugin on
+  split Xmodeline_strict
+  call assert_equal("python", &filetype)
+  bwipe!
+  filetype plugin off
+
+  " 'spell' and 'spelllang' should work
+  call writefile(['vim: set spell spelllang=de :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(1, &spell)
+  call assert_equal("de", &spelllang)
+  bwipe!
+
+  " 'foldmethod' should work
+  call writefile(['vim: set fdm=marker :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal("marker", &foldmethod)
+  bwipe!
+
+  " 'autoindent' and 'cindent' should work
+  call writefile(['vim: set ai cin :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(1, &ai)
+  call assert_equal(1, &cin)
+  bwipe!
+
+  " 'textwidth'
+  call writefile(['vim: set tw=10 :'], 'Xmodeline_strict')
+  split Xmodeline_strict
+  call assert_equal(10, &textwidth)
+  bwipe!
+
+  let &modeline = modeline
+  set modelinestrict
+endfunc
+
+func Test_modeline_strict_blocked()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " 'wrap' is not whitelisted, should be silently skipped
+  set wrap
+  call writefile(['vim: set nowrap :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(1, &wrap)
+  bwipe!
+
+  " 'number' is not whitelisted, should be silently skipped
+  set nonumber
+  call writefile(['vim: set number :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(0, &number)
+  bwipe!
+
+  " Whitelisted options still work alongside blocked ones
+  set wrap nonumber
+  call writefile(['vim: set nowrap ts=3 number :'], 'Xmodeline_strict_fail')
+  split Xmodeline_strict_fail
+  call assert_equal(1, &wrap)
+  call assert_equal(3, &ts)
+  call assert_equal(0, &number)
+  bwipe!
+
+  let &modeline = modeline
+endfunc
+
+func Test_modeline_strict_off()
+  let modeline = &modeline
+  set modeline nomodelinestrict
+
+  " With modelinestrict off, non-whitelisted options should work
+  call writefile(['vim: set number :'], 'Xmodeline_strict_off', 'D')
+  split Xmodeline_strict_off
+  call assert_equal(1, &number)
+  bwipe!
+
+  let &modeline = modeline
+  set modelinestrict&
+endfunc
+
+func Test_modeline_strict_cannot_be_set_from_modeline()
+  let modeline = &modeline
+  set modeline modelinestrict
+
+  " 'modelinestrict' itself cannot be set from a modeline (P_SECURE)
+  call writefile(['vim: set nomodelinestrict :'], 'Xmodeline_strict_ml', 'D')
+  call assert_fails('split Xmodeline_strict_ml', 'E520:')
+  call assert_equal(1, &modelinestrict)
+  bwipe!
+
+  let &modeline = modeline
+endfunc
+
+func Test_modeline_nomodeline_with_modelinestrict()
+	let modeline = &modeline
+	let modelinestrict = &modelinestrict
+	let modelines = &modelines
+	set modelinestrict modeline modelines=5
+	let ml_before = &g:modeline
+
+	call writefile(['# vim: set nomodeline:', 'line2'], 'Xnoml', 'D')
+	split Xnoml
+	call assert_equal(0, &l:modeline, 'b_p_ml should be off')
+	call assert_equal(ml_before, &g:modeline, 'global p_ml must not change')
+	bwipe!
+
+	" A fresh buffer must still inherit the unchanged global default
+	new
+	call assert_equal(ml_before, &l:modeline,
+				\ 'new buffer should inherit unchanged global')
+	bwipe!
+
+	let &modeline = modeline
+	let &modelinestrict = modelinestrict
+	let &modelines = modelines
+endfunc
+
+func Test_modeline_nomodeline_skips_trailing_modelines()
+	let modeline = &modeline
+	let modelinestrict = &modelinestrict
+	let ts_save = &ts
+	set modeline modelinestrict ts=8
+
+	" Line 1 disables modelines; the trailing modeline must therefore
+	" never execute even though 'tabstop' is whitelisted.
+	call writefile([
+				\ '# vim: set nomodeline :',
+				\ 'middle line 1',
+				\ 'middle line 2',
+				\ 'middle line 3',
+				\ '# vim: set ts=99 :',
+				\ ], 'Xmodeline_disable_top', 'D')
+	split Xmodeline_disable_top
+
+	call assert_equal(0, &l:modeline,
+				\ 'top modeline must have disabled b_p_ml')
+	call assert_equal(8, &ts,
+				\ 'trailing modeline must not have run after nomodeline')
+
+	bwipe!
+	let &modeline = modeline
+	let &modelinestrict = modelinestrict
+	let &ts = ts_save
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

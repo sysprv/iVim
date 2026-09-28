@@ -3,6 +3,7 @@
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
 " Version:     16.0
 " Last Change: 2017 Oct 15
+" 2025 Nov 11 by Vim project: only set 'omnifunc' if dbext script was loaded #18716
 " Homepage:    http://www.vim.org/scripts/script.php?script_id=1572
 " Usage:       For detailed help
 "              ":help sql.txt"
@@ -17,7 +18,7 @@
 "       and complete it.
 "
 " Version 16.0 (Dec 2015)
-"     - NF: If reseting the cache and table, procedure or view completion
+"     - NF: If resetting the cache and table, procedure or view completion
 "           had been used via dbext, have dbext delete or recreate the 
 "           dictionary so that new objects are picked up for the 
 "           next completion.
@@ -98,12 +99,11 @@
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
 " sourced directly instead of using the autoload feature.
-if exists('&omnifunc')
-    " Do not set the option if already set since this
-    " results in an E117 warning.
-    if &omnifunc == ""
-        setlocal omnifunc=sqlcomplete#Complete
-    endif
+"
+" Do not set the option if already set since this
+" results in an E117 warning.
+if exists('&omnifunc') && &omnifunc == "" && exists('g:loaded_dbext')
+    setlocal omnifunc=sqlcomplete#Complete
 endif
 
 if exists('g:loaded_sql_completion')
@@ -554,7 +554,7 @@ function! sqlcomplete#PreCacheSyntax(...)
         let syn_group_arr = g:omni_sql_precache_syntax_groups
     endif
     " For each group specified in the list, precache all
-    " the sytnax items.
+    " the syntax items.
     if !empty(syn_group_arr)
         for group_name in syn_group_arr
             let syn_items = extend( syn_items, s:SQLCGetSyntaxList(group_name) )
@@ -577,7 +577,7 @@ function! sqlcomplete#ResetCacheSyntax(...)
         let syn_group_arr = g:omni_sql_precache_syntax_groups
     endif
     " For each group specified in the list, precache all
-    " the sytnax items.
+    " the syntax items.
     if !empty(syn_group_arr)
         for group_name in syn_group_arr
             let list_idx = index(s:syn_list, group_name, 0, &ignorecase)
@@ -617,7 +617,7 @@ function! sqlcomplete#DrillIntoTable()
     else
 	" If the popup is not visible, simple perform the normal
 	" key behaviour.
-	" Must use exec since they key must be preceeded by "\"
+	" Must use exec since the key must be preceded by "\"
 	" or feedkeys will simply push each character of the string
 	" rather than the "key press".
         exec 'call feedkeys("\'.g:ftplugin_sql_omni_key_right.'", "n")'
@@ -634,7 +634,7 @@ function! sqlcomplete#DrillOutOfColumns()
     else
 	" If the popup is not visible, simple perform the normal
 	" key behaviour.
-	" Must use exec since they key must be preceeded by "\"
+	" Must use exec since the key must be preceded by "\"
 	" or feedkeys will simply push each character of the string
 	" rather than the "key press".
         exec 'call feedkeys("\'.g:ftplugin_sql_omni_key_left.'", "n")'
@@ -843,7 +843,7 @@ function! s:SQLCGetColumns(table_name, list_type)
          let curline    = line(".")
          let curcol     = col(".")
 
-         " Do not let searchs wrap
+         " Do not let searches wrap
          setlocal nowrapscan
          " If . was entered, look at the word just before the .
          " We are looking for something like this:
@@ -863,7 +863,7 @@ function! s:SQLCGetColumns(table_name, list_type)
          " Search forward until one of the following:
          "     1.  Another select/update/delete statement
          "     2.  A ; at the end of a line (the delimiter)
-         "     3.  The end of the file (incase no delimiter)
+         "     3.  The end of the file (in case no delimiter)
          " Yank the visually selected text into the "y register.
          exec 'silent! normal! vl/\c\(\<select\>\|\<update\>\|\<delete\>\|;\s*$\|\%$\)'."\n".'"yy'
 

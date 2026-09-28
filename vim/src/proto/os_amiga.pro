@@ -1,11 +1,11 @@
-/* os_amiga.c */
+// os_amiga.c
 void win_resize_on(void);
 void win_resize_off(void);
 void mch_write(char_u *p, int len);
 int mch_inchar(char_u *buf, int maxlen, long time, int tb_change_cnt);
 int mch_char_avail(void);
 long_u mch_avail_mem(int special);
-void mch_delay(long msec, int ignoreinput);
+void mch_delay(long msec, int flags);
 void mch_suspend(void);
 void mch_init(void);
 int mch_check_win(int argc, char **argv);
@@ -15,6 +15,7 @@ void mch_settitle(char_u *title, char_u *icon);
 void mch_restore_title(int which);
 int mch_can_restore_title(void);
 int mch_can_restore_icon(void);
+void mch_setmouse(int on);
 int mch_get_user_name(char_u *s, int len);
 void mch_get_host_name(char_u *s, int len);
 long mch_get_pid(void);
@@ -30,17 +31,16 @@ int mch_can_exe(char_u *name, char_u **path, int use_path);
 int mch_nodetype(char_u *name);
 void mch_early_init(void);
 void mch_exit(int r);
-void mch_settmode(int tmode);
-int mch_screenmode(char_u *arg);
+void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int mch_call_shell(char_u *cmd, int options);
 void mch_breakcheck(int force);
-long Chk_Abort(void);
 int mch_expandpath(garray_T *gap, char_u *pat, int flags);
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
 char_u *mch_getenv(char_u *var);
 int mch_setenv(char *var, char *value, int x);
-/* vim: set ft=c : */
+int mch_get_random(char_u *buf, int len);
+// vim: ft=c

@@ -1,9 +1,8 @@
 " Test WinBar
 
-source check.vim
 CheckFeature menu
 
-source shared.vim
+source util/screendump.vim
 
 func Test_add_remove_menu()
   new
@@ -18,7 +17,7 @@ func Test_add_remove_menu()
   call assert_equal(12, g:did_cont)
 
   wincmd w
-  call assert_fails('emenu WinBar.Next', 'E334')
+  call assert_fails('emenu WinBar.Next', 'E334:')
   wincmd p
 
   aunmenu WinBar.Next
@@ -121,3 +120,99 @@ func Test_redraw_after_scroll()
   bwipe!
 endfunc
 
+func Test_winbar_not_visible()
+  CheckScreendump
+
+  let lines =<< trim END
+      split
+      nnoremenu WinBar.Test :test
+      set winminheight=0
+      wincmd j
+      wincmd _
+  END
+  call writefile(lines, 'XtestWinbarNotVisible', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarNotVisible', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_winbar_not_visible', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunction
+
+func Test_winbar_not_visible_custom_statusline()
+  CheckScreendump
+
+  let lines =<< trim END
+      split
+      nnoremenu WinBar.Test :test
+      set winminheight=0
+      set statusline=abcde
+      wincmd j
+      wincmd _
+  END
+  call writefile(lines, 'XtestWinbarNotVisible', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarNotVisible', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_winbar_not_visible_custom_statusline', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunction
+
+" The vertical separator on the WinBar row must follow VertSplit/VertSplitNC
+" when the current window changes.
+func Test_winbar_vsep_highlight_after_focus_change()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      wincmd s
+      wincmd v
+      wincmd v
+      wincmd j
+      wincmd v
+      nnoremenu 1.10 WinBar.Step :Step<CR>
+      nnoremenu 1.20 WinBar.Next :Next<CR>
+      nnoremenu 1.30 WinBar.Finish :Finish<CR>
+      nnoremenu 1.40 WinBar.Cont :Continue<CR>
+      hi Vertsplit term=reverse ctermfg=111
+      hi VertsplitNC term=reverse ctermfg=16
+  END
+  call writefile(lines, 'XtestWinbarVsep', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarVsep', #{rows: 20, cols: 60})
+
+  call VerifyScreenDump(buf, 'Test_winbar_vsep_active', {})
+
+  call term_sendkeys(buf, "\<C-W>k")
+  call VerifyScreenDump(buf, 'Test_winbar_vsep_inactive', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_drag_statusline_with_winbar()
+  call SetupWinbar()
+  let save_mouse = &mouse
+  set mouse=a
+  set laststatus=2
+
+  call test_setmouse(&lines - 1, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(&lines - 2, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(2, &cmdheight)
+
+  call test_setmouse(&lines - 2, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(&lines - 3, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(3, &cmdheight)
+
+  call test_setmouse(&lines - 3, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call test_setmouse(&lines - 1, 1)
+  call feedkeys("\<LeftDrag>", 'xt')
+  call assert_equal(1, &cmdheight)
+
+  let &mouse = save_mouse
+  set laststatus&
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

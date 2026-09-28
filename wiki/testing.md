@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 # Testing
 
@@ -19,10 +19,13 @@ dropped spaces, the app sent to the home screen). Instead:
    typeahead while a command runs), `term_getline()`, `term_getstatus()`.
 4. Write results with `writefile(..., 'a')` to a file in Documents and read
    it from the Mac.
-5. Restore `.vimrc`, delete the test files.
+5. Restore `.vimrc`, delete the test files. Clear
+   `Library/ivim/scenes/` (auto-restore session) when a test leaves windows
+   behind, or the next launch restores them.
 
-Vim is 8.1: no default-argument lambdas (`{a, b = x -> ...}`), use
-`function('s:F', [args])` partials; wrap steps in try/catch (an error
+Vim is 9.2 ([vim-upgrade](vim-upgrade.md)); when a test must also run on
+an old 8.1 build, avoid 9.x-only syntax and options (`silent! set`, source
+vim9script files behind `has('vim9script')`). Wrap steps in try/catch (an error
 silently aborts a timer callback); `term_getjob()` of a finished terminal
 is null. On the device, copy the script there only with the owner's OK and
 per [device](device.md).
