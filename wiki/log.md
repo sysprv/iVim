@@ -60,3 +60,7 @@ Dropped iVim's settings cache: vim's upstream `setenv()` calls stay, and
 `copy_command_environment()` hands `environ` to `storeEnvironment()`.
 Found and documented the concurrent-start race. fixes, known-issues,
 vim-upgrade updated.
+
+## [2026-09-28] update | TestFlight build 5
+
+Uploaded build 5 (command environment); build 4 marked verified.
