@@ -22,3 +22,7 @@ vim-upgrade; fixes (vim 9.2 section), known-issues (downgrade junk files,
 ## [2026-09-28] update | TestFlight build 3
 
 Uploaded build 3 (vim 9.2) from `vim9-rebase`; release-testflight history.
+
+## [2026-09-28] update | Build 3 verified
+
+Owner confirmed TestFlight build 3 (vim 9.2) works on the phone.
