@@ -18,7 +18,7 @@ statusline and command line hidden behind the keyboard. Fixed and verified
 on the owner's iPhone (iOS 27). Since then, also working: `:terminal` with
 ivish and external commands ([ios-system](ios-system.md), [ivish](ivish.md)),
 `:q`, the cursor with `blinkon0`, `guifont` sizes. All fixes with root
-causes: [fixes](fixes.md). Vim 9.2.1135 (branch `vim9-rebase`)
+causes: [fixes](fixes.md). Vim 9.2.1135 ([vim-upgrade](vim-upgrade.md))
 works on the simulator and on the phone (TestFlight build 3). Open problems: [known-issues](known-issues.md).
 
 ## Identity and decisions

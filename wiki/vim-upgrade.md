@@ -5,7 +5,7 @@ updated: 2026-09-28
 
 `vim/` holds vim **9.2.1135** (upstream tag `v9.2.1135`), with iVim's
 patches on top. Upstream iVim shipped 8.1.2110; the fork moved to 9.2 on
-branch `vim9-rebase` (2026-09-28). `src/` and `runtime/` are plain upstream
+branch `vim9-rebase`, merged into `ios27-keyboard-fix` (2026-09-28). `src/` and `runtime/` are plain upstream
 except for the patches listed here; upstream dotfiles (`.github` etc.) are
 left out.
 

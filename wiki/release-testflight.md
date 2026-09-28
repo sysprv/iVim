@@ -45,5 +45,5 @@ team B9Y5MBFAT8 (see [overview](overview.md)). Version 2.15.
 
 - Build 1: first upload. Build 2: [guifont fix](fixes.md#guifont-sizes),
   verified on the phone.
-- Build 3 (2026-09-28, branch `vim9-rebase`): vim 9.2.1135
+- Build 3 (2026-09-28): vim 9.2.1135
   ([vim-upgrade](vim-upgrade.md)); verified on the phone.

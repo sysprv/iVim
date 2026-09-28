@@ -34,3 +34,8 @@ One guard name (`FEAT_GUI_IOS`), smaller hunks (CoreText out of `gui.h`,
 redundant hunks dropped), dead `ios_term_translate_msg` removed. Same
 `:version` features and test results as build 3. vim-upgrade, fixes,
 build updated.
+
+## [2026-09-28] update | vim9-rebase merged
+
+Fast-forwarded `ios27-keyboard-fix` to `vim9-rebase` and deleted the
+branch; overview, vim-upgrade, release-testflight updated.
