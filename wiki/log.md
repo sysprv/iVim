@@ -18,3 +18,7 @@ Rebased iVim's vim patches onto vim 9.2.1135 (branch `vim9-rebase`),
 tested on the simulator against the 8.1 build as baseline. New page
 vim-upgrade; fixes (vim 9.2 section), known-issues (downgrade junk files,
 `false`), overview, sources, testing updated.
+
+## [2026-09-28] update | TestFlight build 3
+
+Uploaded build 3 (vim 9.2) from `vim9-rebase`; release-testflight history.
