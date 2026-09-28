@@ -180,54 +180,31 @@ static NSString *process_progname(pid_t pid)
     return ret;
 }
 
-typedef NSMutableDictionary<NSString *, NSString *> EnvCache;
-static EnvCache *child_env(void)
-{
-    static EnvCache *env;
-    if (env == nil) {
-        env = [EnvCache dictionary];
-    }
-    
-    return env;
-}
-
-static NSString *env_str_from(const char *cstr)
-{
-    return [NSString stringWithUTF8String:cstr];
-}
-
 extern char **environ;
-void storeEnvironment(char *envp[]);  // ios_system
 
 /*
- * the environment for the next command: vim's own with the child settings
- * (ios_term_setenv()) applied; empties the settings cache
+ * a copy of the environment for the next command
  *
- * The settings go into the process environment (ivish reads COLUMNS with
- * libc getenv()), but ios_system copies a new command's environment from
- * the command started last, not from environ: the result goes to
- * storeEnvironment() right before the command starts.
+ * ios_system copies a new command's environment from the command started
+ * last, not from environ, so vim's setenv() doesn't reach commands: the
+ * copy goes to storeEnvironment() right before the command starts.
  */
-static char **take_command_environment(void)
+static char **copy_command_environment(void)
 {
-    EnvCache *cache = child_env();
-    for (NSString *name in cache) {
-        setenv([name UTF8String], [cache[name] UTF8String], 1);
-    }
-    [cache removeAllObjects];
     // ios_system sets CLICOLOR=1 for the whole app, and its ls takes the
-    // pipe vim reads from for a tty
+    // pipe vim reads from (TERM=dumb: :!, jobs) for a tty
     const char *term = getenv("TERM");
     BOOL no_colors = term != NULL && strcmp(term, "dumb") == 0;
+    static const char clicolor[] = "CLICOLOR=";
     size_t count = 0;
     while (environ[count] != NULL) {
         count++;
     }
     char **envp = calloc(count + 1, sizeof(char *));
-    size_t n = 0;
-    for (size_t i = 0; i < count; i++) {
-        if (!(no_colors && strncmp(environ[i], "CLICOLOR=", 9) == 0)) {
-            envp[n++] = strdup(environ[i]);
+    char **dst = envp;
+    for (char **e = environ; *e != NULL; e++) {
+        if (!(no_colors && strncmp(*e, clicolor, sizeof(clicolor) - 1) == 0)) {
+            *dst++ = strdup(*e);
         }
     }
     return envp;
@@ -239,13 +216,6 @@ static void free_environment(char **envp)
         free(*e);
     }
     free(envp);
-}
-
-void ios_term_setenv(const char *name, const char *value)
-{
-    EnvCache *env = child_env();
-    [env setValue:env_str_from(value)
-           forKey:env_str_from(name)];
 }
 
 typedef NSArray<NSNumber *> SignalList;
@@ -438,7 +408,7 @@ static void ios_term_run(char_u *name,
     }
     
     BOOL is_ivish = [progname isEqualToString:@"ivish"];
-    char **envp = take_command_environment();
+    char **envp = copy_command_environment();
     // start command asynchronously
     dispatch_async(cmd_queue, ^{
         __block NSString *session_id = nil;

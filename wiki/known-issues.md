@@ -26,6 +26,11 @@ updated: 2026-09-28
   build; harmless, delete the files.
 - **`system('false')`** gives 127: `false` isn't an ios_system command
   (same on 8.1).
+- **Commands started at the same instant** (e.g. two `job_start()` calls
+  in a row) can get each other's or ios_system's default environment
+  (then `ls` colours again): ios_system keeps one "next environment" slot
+  and `ios_system()` blocks for the whole command, so iVim can't lock
+  across store and copy. Seen in about 1 of 5 runs of a back-to-back test.
 - **Restoring a long file from vim's own `Session.vim`** (iVim's
   auto-restore is off on the phone) can leave the last line near the top
   of the window with the rest empty; `ggG` fixes it. The saved values are

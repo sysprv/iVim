@@ -37,7 +37,7 @@ grep for it. Keep it that way: one name, and keep hunks minimal.
 | File | What |
 |---|---|
 | `gui_ios.m`, `proto/gui_ios.pro` | the iOS GUI (iVim's own file) |
-| `os_unix.c` | the ios_system process model: fork runs both branches, `ios_term_*` hooks, no pty, env via `ios_term_setenv` (`setenv` macro), `waitpid` → `ios_term_waitpid`, `mch_exit` → `ios_term_exit_process`, no shell wildcard expansion; see [ios-system](ios-system.md) |
+| `os_unix.c` | the ios_system process model: fork runs both branches, `ios_term_*` hooks, no pty, `waitpid` → `ios_term_waitpid`, `mch_exit` → `ios_term_exit_process`, no shell wildcard expansion; see [ios-system](ios-system.md) |
 | `channel.c`, `job.c` | register channels with the GUI; terminal input via `ios_term_handle_channel_input`; `ivim_read_channel`, `ivim_cleanup_existing_jobs` (split across both files since 9.x moved jobs to `job.c`) |
 | `getchar.c` | calls `ivim_cleanup_existing_jobs()` |
 | `ex_cmds.h`, `ex_cmdidxs.h`, `cmdexpand.c` | the `:i…` commands (`:ifont`, `:ishare`, …) |

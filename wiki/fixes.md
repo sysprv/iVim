@@ -116,12 +116,13 @@ while porting, all checked on the simulator:
   the command started last (`current_pid` in `libc_replacement.c`), not
   from `environ`; iVim only did `setenv()`. And ios_system sets
   `CLICOLOR=1` app-wide while its `ls` takes vim's pipe for a tty.
-- Fix (`ios_term.m`, `take_command_environment()`): the settings still go
-  into the process environment (ivish is Swift and reads `COLUMNS` with
-  libc `getenv()`; without it, `atoi(NULL)` kills ivish on its first
-  command), then a copy of `environ` is handed to `storeEnvironment()`
-  right before the command starts; with `TERM=dumb` (`:!`, `:r !`, jobs)
-  without `CLICOLOR`. `:terminal` keeps colours. `system()` still sees
+- Fix (`ios_term.m`, `copy_command_environment()`): vim's own `setenv()`
+  calls stay as upstream (the process environment must have them anyway:
+  ivish is Swift and reads `COLUMNS` with libc `getenv()`; without it,
+  `atoi(NULL)` kills ivish on its first command); a copy of `environ` is
+  handed to `storeEnvironment()` right before the command starts, with
+  `TERM=dumb` (`:!`, `:r !`, jobs) without `CLICOLOR`. iVim's old settings
+  cache (`ios_term_setenv()`) and its `os_unix.c` hunks are gone. `:terminal` keeps colours. `system()` still sees
   `TERM=xterm` (upstream sets no child environment there), but its output
   isn't a tty for ls.
 

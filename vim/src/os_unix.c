@@ -49,9 +49,8 @@ static int selinux_enabled = -1;
 
 #ifdef FEAT_GUI_IOS
 # include <ios_error.h>
-// no child processes: ios_term.m keeps the process table and environment
+// no child processes: ios_term.m keeps the process table
 # define waitpid ios_term_waitpid
-# define setenv(name, value, overwrite) ios_term_setenv(name, value)
 #endif
 
 #ifdef __CYGWIN__
@@ -5365,7 +5364,6 @@ mch_call_shell_fork(
 	     * to the X/Wayland server (esp. with GTK, which uses atexit()).
 	     */
 # ifdef FEAT_GUI_IOS
-	    vim_setenv((char_u *)"TERM", (char_u *)"xterm");
 	    ios_term_run_shell_cmd(cmd, pid, fd_toshell[0], fd_fromshell[1]);
 # else
 	    execvp(argv[0], argv);
@@ -6362,12 +6360,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
 
-# ifdef FEAT_GUI_IOS
-		    ios_term_setenv((char *)hi->hi_key,
-					       (char *)tv_get_string(item));
-# else
 		    vim_setenv(hi->hi_key, tv_get_string(item));
-# endif
 		    --todo;
 		}
 	}

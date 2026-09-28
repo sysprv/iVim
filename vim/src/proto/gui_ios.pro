@@ -117,7 +117,6 @@ void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);
 void scenes_keeper_stash(void);
 // ios_term.m
 void ios_term_register_process_signal_handlers(pid_t pid);
-void ios_term_setenv(const char *name, const char *value);
 void ios_term_cmd_execv(const char *path, char * const argv[], pid_t pid, int in_fd, int out_fd, int err_fd, channel_T *channel);
 void ios_term_run_shell_cmd(char_u *cmd, pid_t pid, int toshell_fd, int fromshell_fd);
 int ios_term_null_fd(void);

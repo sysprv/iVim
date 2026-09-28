@@ -53,3 +53,10 @@ session scroll after restoring `Session.vim`. Both in known-issues.
 
 Commands now get vim's child environment via `storeEnvironment()`; no more
 `ls` colour codes in `:!` output. fixes, ios-system, known-issues updated.
+
+## [2026-09-28] update | Simplify pass on the command environment
+
+Dropped iVim's settings cache: vim's upstream `setenv()` calls stay, and
+`copy_command_environment()` hands `environ` to `storeEnvironment()`.
+Found and documented the concurrent-start race. fixes, known-issues,
+vim-upgrade updated.
