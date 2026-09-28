@@ -64,3 +64,7 @@ vim-upgrade updated.
 ## [2026-09-28] update | TestFlight build 5
 
 Uploaded build 5 (command environment); build 4 marked verified.
+
+## [2026-09-28] update | Build 5 verified
+
+Owner confirmed build 5 works on the phone.
