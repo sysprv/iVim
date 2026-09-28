@@ -21,6 +21,9 @@ TestFlight app "iVim sysprv fork". Details live in the wiki (below); read
   See `wiki/device.md`.
 - TestFlight: raise `CURRENT_PROJECT_VERSION` (all four entries) before
   every upload; steps in `wiki/release-testflight.md`.
+- `vim/` is vim 9.2.1135 plus iVim's patches, all guarded by
+  `FEAT_GUI_IOS`; keep them minimal. Patch list and upgrade steps:
+  `wiki/vim-upgrade.md`.
 - Everything runs in one process via ios_system, whose upstream
   `exit()`, `ios_progname()` and sessions behave differently from what
   iVim expected: read `wiki/ios-system.md` before touching `ios_term.m`,

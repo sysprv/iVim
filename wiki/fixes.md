@@ -122,9 +122,9 @@ while porting, all checked on the simulator:
   `atoi(NULL)` kills ivish on its first command); a copy of `environ` is
   handed to `storeEnvironment()` right before the command starts, with
   `TERM=dumb` (`:!`, `:r !`, jobs) without `CLICOLOR`. iVim's old settings
-  cache (`ios_term_setenv()`) and its `os_unix.c` hunks are gone. `:terminal` keeps colours. `system()` still sees
-  `TERM=xterm` (upstream sets no child environment there), but its output
-  isn't a tty for ls.
+  cache (`ios_term_setenv()`) and its `os_unix.c` hunks are gone.
+  `:terminal` keeps colours. `system()` still sees `TERM=xterm` (upstream
+  sets no child environment there), but its output isn't a tty for ls.
 
 ## Smaller
 

@@ -14,10 +14,11 @@ work for me.
 
 What changed: the vim window stays between the top of the screen and the
 keyboard, the cursor no longer flickers with `blinkon0`, `:q` quits
-again, and `:terminal`/ivish and external commands build against the
-current upstream ios_system (see "Building this fork" below). It's built
-for personal side-loading with a free Apple developer account (own
-bundle ids, no App Group or iCloud); Python isn't included yet.
+again, `:terminal`/ivish and external commands build against the
+current upstream ios_system (see "Building this fork" below) and get
+vim's environment for commands, and vim itself is updated from 8.1 to
+9.2. It's built for my own use (own bundle ids, no App Group or iCloud,
+distributed to myself via TestFlight); Python isn't included yet.
 
 Type `:help ios` in iVim for more detailed information.
 
