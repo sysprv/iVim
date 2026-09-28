@@ -39,3 +39,7 @@ build updated.
 
 Fast-forwarded `ios27-keyboard-fix` to `vim9-rebase` and deleted the
 branch; overview, vim-upgrade, release-testflight updated.
+
+## [2026-09-28] update | TestFlight build 4
+
+Uploaded build 4 (simplified vim 9.2 patches); release-testflight history.

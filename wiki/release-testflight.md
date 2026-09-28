@@ -47,3 +47,5 @@ team B9Y5MBFAT8 (see [overview](overview.md)). Version 2.15.
   verified on the phone.
 - Build 3 (2026-09-28): vim 9.2.1135
   ([vim-upgrade](vim-upgrade.md)); verified on the phone.
+- Build 4 (2026-09-28): the simplify pass on the vim 9.2 patches;
+  uploaded, not yet checked on the phone (check session auto-restore).
