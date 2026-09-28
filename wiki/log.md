@@ -43,3 +43,8 @@ branch; overview, vim-upgrade, release-testflight updated.
 ## [2026-09-28] update | TestFlight build 4
 
 Uploaded build 4 (simplified vim 9.2 patches); release-testflight history.
+
+## [2026-09-28] update | Two nits from build 4
+
+`:!ls` colour escapes traced to ios_system's per-command environment;
+session scroll after restoring `Session.vim`. Both in known-issues.

@@ -26,6 +26,21 @@ updated: 2026-09-28
   build; harmless, delete the files.
 - **`system('false')`** gives 127: `false` isn't an ios_system command
   (same on 8.1).
+- **Commands don't get vim's child environment.** ios_system gives each
+  command its own environment, copied from the environment of the most
+  recently started command (`current_pid` in `libc_replacement.c`), or
+  from the process environment when that has none. iVim's
+  `deploy_env_cache()` sets vim's values (`TERM=dumb` for `:!`/jobs,
+  `COLUMNS`, `VIM_TERMINAL`, `job_start()`'s `env`) with libc `setenv()`,
+  so they often don't arrive: jobs and `system()` see `TERM=xterm` and
+  ios_system's app-wide `CLICOLOR=1`. Visible symptom: `:!ls` shows ANSI
+  colour escapes (same on 8.1). A fix would pass an explicit environment
+  per command (`storeEnvironment()` / `ios_execve()`); not done yet.
+- **Restoring a long file from vim's own `Session.vim`** (iVim's
+  auto-restore is off on the phone) can leave the last line near the top
+  of the window with the rest empty; `ggG` fixes it. The saved values are
+  right (cursor row 43 of 44); probably the window is tiny when the
+  session's `zt` runs. Not reproduced on the simulator; owner parked it.
 - **dSYM warning** for ivish.framework on upload (harmless,
   [release-testflight](release-testflight.md)).
 - **`WARNING_CFLAGS`** also softens implicit-declaration errors in iVim's
