@@ -234,7 +234,7 @@
 
 // The Mac conversion stuff doesn't work under X11.
 #if defined(MACOS_X_DARWIN) \
-    && !defined(TARGET_OS_IPHONE) && !defined(TARGET_OS_SIMULATOR)
+    && !defined(FEAT_GUI_IOS)
 # define MACOS_CONVERT
 #endif
 
@@ -267,7 +267,7 @@
 
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
-    || (defined(TARGET_OS_IPHONE) || defined(TARGET_OS_SIMULATOR))
+    || defined(FEAT_GUI_IOS)
 # include "os_unix.h"	    // bring lots of system header files
 #elif !defined(PROTO)
   // For all non-Unix systems: use old-fashioned signal().
@@ -1803,7 +1803,7 @@ void *vim_memset(void *, int, size_t);
  * (vim_strchr() and vim_strrchr() are now in strings.c)
  */
 #define STRLEN(s)	    strlen((char *)(s))
-#ifdef TARGET_OS_IPHONE
+#ifdef FEAT_GUI_IOS
 // keep the compiler from checking the destination size
 # define STRCPY(d, s)	    istrcpy((char *)(d), (char *)(s))
 #else

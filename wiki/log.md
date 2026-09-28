@@ -26,3 +26,11 @@ Uploaded build 3 (vim 9.2) from `vim9-rebase`; release-testflight history.
 ## [2026-09-28] update | Build 3 verified
 
 Owner confirmed TestFlight build 3 (vim 9.2) works on the phone.
+
+## [2026-09-28] update | Simplify pass on the vim 9.2 patches
+
+One guard name (`FEAT_GUI_IOS`), smaller hunks (CoreText out of `gui.h`,
+`-fno-modules` for xpatience.c instead of a rename, `setenv` macro,
+redundant hunks dropped), dead `ios_term_translate_msg` removed. Same
+`:version` features and test results as build 3. vim-upgrade, fixes,
+build updated.

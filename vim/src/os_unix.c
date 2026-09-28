@@ -26,11 +26,6 @@
 
 #include "os_unixx.h"	    // unix includes for os_unix.c only
 
-#ifdef FEAT_GUI_IOS
-# undef HAVE_SELECT
-# include <sys/poll.h>
-#endif
-
 #ifdef USE_XSMP
 # include <X11/SM/SMlib.h>
 #endif
@@ -52,12 +47,11 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
-#if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
-# include <dlfcn.h>  // for dlopen()/dlsym()/dlclose()
+#ifdef FEAT_GUI_IOS
 # include <ios_error.h>
-// access() always returns -1 on iOS.
-# define S_ISXXX(m) ((m) & (S_IXUSR | S_IXGRP | S_IXOTH))
+// no child processes: ios_term.m keeps the process table and environment
 # define waitpid ios_term_waitpid
+# define setenv(name, value, overwrite) ios_term_setenv(name, value)
 #endif
 
 #ifdef __CYGWIN__
@@ -3430,9 +3424,10 @@ executable_file(char_u *name)
 	    vms_executable = 1;
     }
     return vms_executable;
-#elif defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#elif defined(FEAT_GUI_IOS)
     // access() always returns -1 on iOS.
-    return S_ISREG(st.st_mode) && S_ISXXX(st.st_mode);
+    return S_ISREG(st.st_mode)
+			&& (st.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) != 0;
 #else
     return S_ISREG(st.st_mode) && mch_access((char *)name, X_OK) == 0;
 #endif
@@ -3522,7 +3517,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     }
 
     vim_free(buf);
-#if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#ifdef FEAT_GUI_IOS
     // iOS: not found in $PATH; is it one of the "internal commands" from
     // ios_system?
     if (retval != TRUE && ios_executable((char *)name))
@@ -4744,28 +4739,7 @@ set_child_environment(
 #  endif
 # endif
 
-# if defined(FEAT_GUI_IOS)
-    ios_term_setenv("TERM", term);
-    sprintf((char *)envbuf, "%ld", rows);
-    ios_term_setenv("ROWS", (char *)envbuf);
-    sprintf((char *)envbuf, "%ld", rows);
-    ios_term_setenv("LINES", (char *)envbuf);
-    sprintf((char *)envbuf, "%ld", columns);
-    ios_term_setenv("COLUMNS", (char *)envbuf);
-    sprintf((char *)envbuf, "%d", t_colors);
-    ios_term_setenv("COLORS", (char *)envbuf);
-#  ifdef FEAT_TERMINAL
-    if (is_terminal)
-    {
-	sprintf((char *)envbuf, "%ld",  (long)get_vim_var_nr(VV_VERSION));
-	ios_term_setenv("VIM_TERMINAL", (char *)envbuf);
-    }
-#  endif
-#  ifdef FEAT_CLIENTSERVER
-    ios_term_setenv("VIM_SERVERNAME",
-			serverName == NULL ? "" : (char *)serverName);
-#  endif
-# elif defined(HAVE_SETENV)
+# ifdef HAVE_SETENV
     setenv("TERM", term, 1);
     sprintf((char *)envbuf, "%ld", rows);
     setenv("ROWS", (char *)envbuf, 1);
@@ -5145,7 +5119,7 @@ mch_call_shell_fork(
     int		fd_fromshell[2] = {-1, -1};
     int		pipe_error = FALSE;
     int		did_settmode = FALSE;	// settmode(TMODE_RAW) called
-#if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#ifdef FEAT_GUI_IOS
     int		got_interrupt = FALSE;
 #endif
 
@@ -5176,7 +5150,7 @@ mch_call_shell_fork(
 	 * If this works, open the slave pty.
 	 * If the slave can't be opened, close the master pty.
 	 */
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 	// open_pty succeeds on iOS 9 but not on 12 or 13
 	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
 	    open_pty(&pty_master_fd, &pty_slave_fd, NULL, NULL);
@@ -5237,7 +5211,7 @@ mch_call_shell_fork(
 		}
 	    }
 	}
-# if defined(FEAT_GUI_IOS)
+# ifdef FEAT_GUI_IOS
 	// with iOS, we go through both branches
 	ios_term_register_process_signal_handlers(pid);
 # else
@@ -5257,7 +5231,7 @@ mch_call_shell_fork(
 
 	    if (!show_shell_mess || (options & SHELL_EXPAND))
 	    {
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 		// on iOS, we can't close stdin/stdout/stderr.
 		int fd;
 
@@ -5358,7 +5332,7 @@ mch_call_shell_fork(
 		else
 # endif
 		{
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 		    // set up stdin for the child
 		    close(fd_toshell[1]);
 		    close(0);
@@ -5379,7 +5353,7 @@ mch_call_shell_fork(
 			vim_ignored = dup(1);
 		    }
 # endif
-# endif // !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# endif // !defined(FEAT_GUI_IOS)
 		}
 	    }
 
@@ -5390,7 +5364,7 @@ mch_call_shell_fork(
 	     * Call _exit() instead of exit() to avoid closing the connection
 	     * to the X/Wayland server (esp. with GTK, which uses atexit()).
 	     */
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	    vim_setenv((char_u *)"TERM", (char_u *)"xterm");
 	    ios_term_run_shell_cmd(cmd, pid, fd_toshell[0], fd_fromshell[1]);
 # else
@@ -5398,7 +5372,7 @@ mch_call_shell_fork(
 	    _exit(EXEC_FAILED);	    // exec failed, return failure code
 # endif
 	}
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 	// with iOS, we go through both branches
 	else			// parent
 # endif
@@ -5410,7 +5384,7 @@ mch_call_shell_fork(
 	    catch_signals(SIG_IGN, SIG_ERR);
 	    catch_int_signal();
 	    UNBLOCK_SIGNALS(&curset);
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	    // ignore SIGINT for interrupting cmd thread
 	    signal(SIGINT, SIG_IGN);
 # endif
@@ -5454,7 +5428,7 @@ mch_call_shell_fork(
 		else
 # endif
 		{
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 		    close(fd_toshell[0]);
 		    close(fd_fromshell[1]);
 # endif
@@ -5596,7 +5570,7 @@ mch_call_shell_fork(
 		      }
 		      if (ta_len > 0 || len > 0)
 		      {
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 			ios_term_readline(ta_buf, len, &got_interrupt, pid,
 								 &toshell_fd);
 # else
@@ -5805,11 +5779,7 @@ mch_call_shell_fork(
 		     * typed characters (otherwise we would lose typeahead).
 		     */
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-		    if ((wait_pid == (pid_t)-1
-# ifdef ECHILD
-				&& errno == ECHILD
-# endif
-				)
+		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
 			// Don't break the loop yet, try reading more
@@ -5884,11 +5854,7 @@ finished:
 			got_int = FALSE;
 		    }
 		    wait_pid = waitpid(pid, &status, WNOHANG);
-		    if ((wait_pid == (pid_t)-1
-# ifdef ECHILD
-				&& errno == ECHILD
-# endif
-				)
+		    if ((wait_pid == (pid_t)-1 && errno == ECHILD)
 			    || (wait_pid == pid && WIFEXITED(status)))
 		    {
 			wait_pid = pid;
@@ -5937,7 +5903,7 @@ finished:
 		close(pty_slave_fd);
 # endif
 
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 	    // Make sure the child that writes to the external program is
 	    // dead.
 	    if (wpid > 0)
@@ -6236,7 +6202,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
     // default is to fail
     job->jv_status = JOB_FAILED;
 
-# if !defined(FEAT_GUI_IOS)
+# ifndef FEAT_GUI_IOS
     // iOS: no pty
     if (options->jo_pty
 	    && (!(use_file_for_in || use_null_for_in)
@@ -6323,7 +6289,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	UNBLOCK_SIGNALS(&curset);
 	goto failed;
     }
-# if defined(FEAT_GUI_IOS)
+# ifdef FEAT_GUI_IOS
     // with iOS, we go through both branches
     ios_term_register_process_signal_handlers(pid);
 # else
@@ -6336,7 +6302,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	// child
 	reset_signals();		// handle signals normally
 	UNBLOCK_SIGNALS(&curset);
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	mch_signal(SIGWINCH, sig_winch);
 # endif
 
@@ -6396,7 +6362,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
 
-# if defined(FEAT_GUI_IOS)
+# ifdef FEAT_GUI_IOS
 		    ios_term_setenv((char *)hi->hi_key,
 					       (char *)tv_get_string(item));
 # else
@@ -6408,7 +6374,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	{
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	    null_fd = ios_term_null_fd();
 # else
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
@@ -6431,7 +6397,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 # endif
 	}
 
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	int ios_in_fd;
 	int ios_out_fd;
 	int ios_err_fd;
@@ -6523,7 +6489,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    _exit(EXEC_FAILED);
 
 	// See above for type of argv.
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 	ios_term_cmd_execv(argv[0], argv, pid, ios_in_fd, ios_out_fd,
 							   ios_err_fd, channel);
 # else
@@ -6546,7 +6512,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
     job->jv_status = JOB_STARTED;
     job->jv_channel = channel;  // ch_refcount was set above
 
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
     if (pty_master_fd >= 0)
 	close(pty_slave_fd); // not used in the parent
     // close child stdin, stdout and stderr
@@ -6582,7 +6548,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
     }
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
     else
     {
 	if (fd_in[1] >= 0)
@@ -6700,7 +6666,7 @@ mch_detect_ended_job(job_T *job_list)
 	return NULL;
 # endif
 
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
     // No access to the entire list of processes on iOS, just scan the list
     // of jobs.
     for (job = job_list; job != NULL; job = job->jv_next)
@@ -7438,7 +7404,7 @@ mch_expand_wildcards(
 
     *num_file = 0;	// default: no files found
     *file = NULL;
-#if defined(FEAT_GUI_IOS)
+#ifdef FEAT_GUI_IOS
     // don't handle wildcards expansion with the shell
     return FAIL;
 #endif

@@ -49,6 +49,7 @@ Distribution: [release-testflight](release-testflight.md).
 - Vim's `.c` files are listed one by one in the iVim target; keep them in
   sync with `src/Makefile` when upgrading vim ([vim-upgrade](vim-upgrade.md)).
   libvterm's `screen.c`/`mouse.c` share names with vim's; Xcode handles it.
+  `xdiff/xpatience.c` has a per-file `-fno-modules` ([vim-upgrade](vim-upgrade.md)).
 - `vim/src/proto/gui_ios.pro` hides a BOOL/block prototype from plain C
   files with `#ifdef __OBJC__`.
 - Xcode dependency tracking doesn't notice changes in `__has_include`

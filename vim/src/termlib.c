@@ -13,7 +13,7 @@
 #include "vim.h"
 #include "termlib.pro"
 
-#if !defined(AMIGA) && !defined(VMS) && !defined(IOS)
+#if !defined(AMIGA) && !defined(VMS) && !defined(FEAT_GUI_IOS)
 # include <sgtty.h>
 #endif
 

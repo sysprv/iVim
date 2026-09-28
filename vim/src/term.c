@@ -25,7 +25,7 @@
 
 #include "vim.h"
 
-#if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+#ifdef FEAT_GUI_IOS
 # include "termlib.pro"
 #endif
 

@@ -2649,9 +2649,8 @@ parse_queued_messages(void)
 # endif
 
 # if defined(FEAT_JOB_CHANNEL) && defined(FEAT_GUI_IOS)
-        if (gui.in_use) {
-            ivim_cleanup_existing_jobs();
-        }
+	if (gui.in_use)
+	    ivim_cleanup_existing_jobs();
 # endif
 
 # ifdef FEAT_NETBEANS_INTG

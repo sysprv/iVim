@@ -33,7 +33,7 @@
 // && defined(HAVE_CURSE)
 // The curses.h from MacOS X provides by default some BACKWARD compatibility
 // definition which can cause us problem later on. So we undefine a few of them.
-# if defined(TARGET_OS_SIMULATOR) || defined(TARGET_OS_IPHONE)
+# ifdef FEAT_GUI_IOS
 #  include <string.h>
 #  include <ctype.h>
 #  include <fcntl.h>
@@ -245,7 +245,7 @@
 # define HAVE_SYS_WAIT_H 1 // Attempt
 # define HAVE_TERMIOS_H 1
 # define SYS_SELECT_WITH_SYS_TIME 1
-# if !defined(TARGET_OS_SIMULATOR) && !defined(TARGET_OS_IPHONE)
+# ifndef FEAT_GUI_IOS
 #  define HAVE_SELECT 1
 # endif
 # define HAVE_SYS_SELECT_H 1

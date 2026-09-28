@@ -2257,7 +2257,6 @@ im_set_position(int row, int col)
 
 #if defined(FEAT_JOB_CHANNEL)
 // ----------------- Channel and job support ------------------
-void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);
 typedef NSMutableDictionary<NSString *, NSDictionary *> ChannelTable;
 static NSString *kVCIChannelPointer = @"ch_ptr";
 static NSString *kVCIChannelPart = @"ch_part";

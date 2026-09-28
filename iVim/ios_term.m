@@ -470,57 +470,6 @@ void ios_term_exit_process(int status)
     _Exit(status);
 }
 
-static char *replacing_in(const char *ori,
-                          const char *old,
-                          const char *new)
-{
-    char *ret = (char *)ori;
-    int i;
-    int cnt = 0;
-    size_t old_len = strlen(old);
-    size_t new_len = strlen(new);
-    
-    // count old occurrences
-    for (i = 0; ori[i] != '\0'; i++) {
-        if (strncmp(&ori[i], new, new_len) == 0) {
-            // if new word found first, don't count it
-            i += new_len - 1;
-        } else if (strncmp(&ori[i], old, old_len) == 0) {
-            cnt++;
-            // jump to after the matched old
-            i += old_len - 1;
-        }
-    }
-    
-    // if found any, do the replacement
-    if (cnt > 0) {
-        // allocate memory for the result
-        ret = (char *)malloc(i + cnt * (new_len - old_len) + 1);
-        i = 0;
-        while (*ori) {
-            if (strncmp(ori, new, new_len) == 0) {
-                strcpy(&ret[i], new);
-                i += new_len;
-                ori += new_len;
-            } else if (strncmp(ori, old, old_len) == 0) {
-                strcpy(&ret[i], new);
-                i += new_len;
-                ori += old_len;
-            } else {
-                ret[i++] = *ori++;
-            }
-        }
-        ret[i] = '\0';
-    }
-    
-    return ret;
-}
-
-char_u *ios_term_translate_msg(char_u *msg)
-{
-    return (char_u *)replacing_in((char *)msg, "\n", "\r\n");
-}
-
 __attribute__ ((optnone)) pid_t ios_term_waitpid(pid_t pid,
                                                  int *stat_loc,
                                                  int options)

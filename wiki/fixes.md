@@ -92,8 +92,13 @@ while porting, all checked on the simulator:
 - `:terminal` line endings: 9.x converts lone NL to CR NL itself for
   `PART_ERR`; on iOS (no pty) this now applies to all parts, replacing
   iVim's `ios_term_translate_msg()` (which also doubled existing CRs).
-- Compile fixes: `extend()` in `list.c` clashes with an enum constant from
-  `MacTypes.h` (renamed via a macro); removed `FEAT_TITLE`/`FEAT_MBYTE`
+- Compile fixes: `extend()` in `list.c` clashed with an enum constant from
+  `MacTypes.h`, which `gui.h` pulled into every file via
+  `<CoreText/CoreText.h>`; `gui.h` now only forward-declares `CTFontRef`
+  (`gui_ios.pro` imports `<objc/objc.h>` for `BOOL`, which used to come
+  along). `xdiff/xpatience.c`'s `struct entry` clashes with Darwin's
+  `search.h` under clang modules; that file is built with `-fno-modules`.
+  Removed `FEAT_TITLE`/`FEAT_MBYTE`
   guards in `gui_ios.m` (the latter had silently disabled the wide cursor
   over double-width characters since 8.1.0733); new
   `gui_mch_get_scrollbar_{x,y}padding()` stubs; API renames

@@ -33,7 +33,7 @@ typedef union {
     char_u   uc[8];
 } block8;
 
-#if defined(MSWIN) || defined(TARGET_OS_IPHONE) || defined(TARGET_OS_SIMULATOR)
+#if defined(MSWIN) || defined(FEAT_GUI_IOS)
   // MS-Windows is always little endian
 #else
 # if defined(HAVE_CONFIG_H) || defined(WORDS_BIGENDIAN) || defined(AMIGA)

@@ -47,7 +47,7 @@
  */
 struct hashmap {
 	int nr, alloc;
-	struct xdfentry {
+	struct entry {
 		unsigned long hash;
 		/*
 		 * 0 = unused entry, 1 = first line, 2 = second, etc.
@@ -60,7 +60,7 @@ struct hashmap {
 		 * sequence;
 		 * initially, "next" reflects only the order in file1.
 		 */
-		struct xdfentry *next, *previous;
+		struct entry *next, *previous;
 
 		/*
 		 * If 1, this entry can serve as an anchor. See
@@ -166,8 +166,8 @@ static int fill_hashmap(xpparam_t const *xpp, xdfenv_t *env,
  * Find the longest sequence with a smaller last element (meaning a smaller
  * line2, as we construct the sequence with entries ordered by line1).
  */
-static int binary_search(struct xdfentry **sequence, int longest,
-		struct xdfentry *entry)
+static int binary_search(struct entry **sequence, int longest,
+		struct entry *entry)
 {
 	int left = -1, right = longest;
 
@@ -192,11 +192,11 @@ static int binary_search(struct xdfentry **sequence, int longest,
  * item per sequence length: the sequence with the smallest last
  * element (in terms of line2).
  */
-static int find_longest_common_sequence(struct hashmap *map, struct xdfentry **res)
+static int find_longest_common_sequence(struct hashmap *map, struct entry **res)
 {
-	struct xdfentry **sequence;
+	struct entry **sequence;
 	int longest = 0, i;
-	struct xdfentry *entry;
+	struct entry *entry;
 
 	/*
 	 * If not -1, this entry in sequence must never be overridden.
@@ -254,7 +254,7 @@ static int match(struct hashmap *map, int line1, int line2)
 static int patience_diff(xpparam_t const *xpp, xdfenv_t *env,
 		int line1, int count1, int line2, int count2);
 
-static int walk_common_sequence(struct hashmap *map, struct xdfentry *first,
+static int walk_common_sequence(struct hashmap *map, struct entry *first,
 		int line1, int count1, int line2, int count2)
 {
 	int end1 = line1 + count1, end2 = line2 + count2;
@@ -325,7 +325,7 @@ static int patience_diff(xpparam_t const *xpp, xdfenv_t *env,
 		int line1, int count1, int line2, int count2)
 {
 	struct hashmap map;
-	struct xdfentry *first;
+	struct entry *first;
 	int result = 0;
 
 	/* trivial case: one side is empty */

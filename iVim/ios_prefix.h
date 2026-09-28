@@ -41,7 +41,7 @@
 #define MODIFIED_BY "Boogaloo"
 
 // for libvterm to display emoji correctly (vim: 6d0826d)
-#define INLINE ""
+#define INLINE
 #define VSNPRTINTF vim_vsnprintf
 #define IS_COMBINING_FUNCTION utf_iscomposing_uint
 #define WCWIDTH_FUNCTION utf_uint2cells

@@ -31,22 +31,24 @@ A three-way merge in a scratch git repo, so git finds the iVim hunks:
 
 ## The iVim patches in vim's sources
 
-Grep for `FEAT_GUI_IOS`, `TARGET_OS_IPHONE` / `TARGET_OS_SIMULATOR`.
+All fork hunks are guarded by `FEAT_GUI_IOS` (defined in `ios_prefix.h`);
+grep for it. Keep it that way: one name, and keep hunks minimal.
 
 | File | What |
 |---|---|
 | `gui_ios.m`, `proto/gui_ios.pro` | the iOS GUI (iVim's own file) |
-| `os_unix.c` | the ios_system process model: fork runs both branches, `ios_term_*` hooks, no pty, env via `ios_term_setenv`, `waitpid` → `ios_term_waitpid`, `mch_exit` → `ios_term_exit_process`, no shell wildcard expansion; see [ios-system](ios-system.md) |
+| `os_unix.c` | the ios_system process model: fork runs both branches, `ios_term_*` hooks, no pty, env via `ios_term_setenv` (`setenv` macro), `waitpid` → `ios_term_waitpid`, `mch_exit` → `ios_term_exit_process`, no shell wildcard expansion; see [ios-system](ios-system.md) |
 | `channel.c`, `job.c` | register channels with the GUI; terminal input via `ios_term_handle_channel_input`; `ivim_read_channel`, `ivim_cleanup_existing_jobs` (split across both files since 9.x moved jobs to `job.c`) |
 | `getchar.c` | calls `ivim_cleanup_existing_jobs()` |
 | `ex_cmds.h`, `ex_cmdidxs.h`, `cmdexpand.c` | the `:i…` commands (`:ifont`, `:ishare`, …) |
 | `evalfunc.c` | `has('ios')`, `has('ivim')`, `has('gui_ios')`; `mac`/`osx` off |
-| `feature.h`, `vim.h`, `gui.h`, `os_mac.h` | GUI enablement, CTFont as `GuiFont`, no curses/select, no socketserver, IME hooks, `STRCPY` → `istrcpy` |
+| `feature.h`, `vim.h`, `gui.h`, `os_mac.h` | GUI enablement, CTFont as `GuiFont` (forward-declared, no CoreText include), no curses/select, no socketserver, IME hooks, `STRCPY` → `istrcpy` |
 | `version.c`, `main.c` | version text, `VimMain` entry point |
-| `list.c`, `xdiff/xpatience.c`, `blowfish.c`, `term.c`, `termlib.c`, `highlight.c`, `gui.c`, `libvterm/include/vterm.h` | small compile fixes (name clashes with Darwin headers, endianness, termlib) |
+| `blowfish.c`, `term.c`, `termlib.c`, `highlight.c`, `gui.c` | small fixes (endianness, termlib, italic, default colours) |
 | `runtime/doc/` | `os_ios.txt`, `ios_commands.txt`, … plus index/tags entries |
 
-Feature defines live in `iVim/ios_prefix.h` (no autoconf).
+Feature defines live in `iVim/ios_prefix.h` (no autoconf). `xdiff/xpatience.c`
+is compiled with `-fno-modules` (per-file flag in the project).
 
 ## Things vim 9 changed that mattered on iOS
 

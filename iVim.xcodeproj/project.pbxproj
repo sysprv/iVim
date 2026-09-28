@@ -218,7 +218,7 @@
 		DEC1D08D234788EC008DB801 /* memfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3A32347275C00F3E794 /* memfile.c */; };
 		DEC1D08E23478904008DB801 /* session.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C37A2347275C00F3E794 /* session.c */; };
 		DEC1D08F2347891B008DB801 /* pty.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C4A02347275F00F3E794 /* pty.c */; };
-		DEC1D09023478939008DB801 /* xpatience.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3582347275C00F3E794 /* xpatience.c */; };
+		DEC1D09023478939008DB801 /* xpatience.c in Sources */ = {isa = PBXBuildFile; fileRef = DEA0C3582347275C00F3E794 /* xpatience.c */; settings = {COMPILER_FLAGS = "-fno-modules"; }; };
 		DED04866209EA7B900D744EE /* ModifiersArranger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED04865209EA7B900D744EE /* ModifiersArranger.swift */; };
 		DEE31E911F4BCDEA000CA9E8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DEE31E901F4BCDEA000CA9E8 /* Settings.bundle */; };
 		DEE31E951F4BF712000CA9E8 /* CommandTokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE31E931F4BF711000CA9E8 /* CommandTokenizer.swift */; };

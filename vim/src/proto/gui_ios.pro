@@ -96,6 +96,7 @@ void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);
 void ex_ios_cmds(exarg_T *eap);
 
 #ifdef __OBJC__
+# include <objc/objc.h>
 void enumerate_bufs_with_corrected(void (^task)(buf_T *, char_u *, BOOL));
 #endif
 void ivim_append_shell_cmds_matching(char_u *pat, garray_T *matches);
@@ -111,6 +112,7 @@ void gui_ivim_add_channel(channel_T *channel, ch_part_T part);
 void gui_ivim_remove_channel(channel_T *channel, ch_part_T part);
 void ivim_cleanup_existing_jobs(void);
 void ivim_cleanup_job_channel(channel_T *channel);
+void ivim_read_channel(channel_T *channel, ch_part_T part, char *func);
 
 void scenes_keeper_stash(void);
 // ios_term.m
@@ -121,7 +123,6 @@ void ios_term_run_shell_cmd(char_u *cmd, pid_t pid, int toshell_fd, int fromshel
 int ios_term_null_fd(void);
 void ios_term_exit_process(int status);
 void ios_term_readline(char_u *ta_buf, int len, int *got_int, pid_t pid, int *toshell_fd);
-char_u *ios_term_translate_msg(char_u *msg);
 pid_t ios_term_waitpid(pid_t pid, int *stat_loc, int options);
 int ios_term_handle_channel_input(channel_T *channel, char_u *buf, size_t len);
 /* vim: set ft=c : */

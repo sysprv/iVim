@@ -47,7 +47,8 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 #endif
 
 #ifdef FEAT_GUI_IOS
-# include <CoreText/CoreText.h>
+// not <CoreText/CoreText.h>: it drags MacTypes.h into every file
+typedef const struct __CTFont *CTFontRef;
 #endif
 
 #ifdef FEAT_GUI_PHOTON

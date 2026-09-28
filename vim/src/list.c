@@ -13,11 +13,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_GUI_IOS
-// MacTypes.h (via the Darwin module) has an enum constant "extend"
-# define extend ios_list_extend
-#endif
-
 #if defined(FEAT_EVAL)
 
 // List heads for garbage collection.
