@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 # Fixes: symptoms and root causes
 
@@ -18,6 +18,24 @@ in the three squashed commits on `ios27-keyboard-fix` plus later ones.
   bottom safe area). Manual frame code removed.
 - Note: the old code also works on the iOS 26 simulator; the bug only
   showed on iOS 27, verified fixed on the phone.
+
+## Taps near the bottom land ~30 lines too high
+
+- Symptom: with the software keyboard up and the cursor near the end of a
+  long file, a tap (cursor, visual mode) sometimes put the cursor about a
+  keyboard's height of lines above the tapped line; the screen flickered
+  on every tap.
+- Cause: `click()` called `resetKeyboard()` (resign + become first
+  responder) on every tap, to make the keyboard drop an IME composition or
+  dictation (iVim's `inputDelegate` is a stub, so there is no gentler
+  way). With the [keyboard layout guide](#keyboard-layout-the-original-bug)
+  the brief hide resizes vim (37 → 70 → 68 → 37 lines on the iPhone 17 Pro
+  simulator); growing near the end of the buffer moves the top line up
+  ~30 lines. The click carries a screen row, so when vim handles it before
+  the shrink back, the row maps to a line ~30 lines higher. A timing race;
+  the simulator always won it.
+- Fix: reset only while there is marked text or dictation.
+- Reproduced with a UI test tapping via XCUITest ([testing](testing.md)).
 
 ## Cursor flicker with `blinkon0`
 

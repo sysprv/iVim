@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 # Testing
 
@@ -29,6 +29,17 @@ vim9script files behind `has('vim9script')`). Wrap steps in try/catch (an error
 silently aborts a timer callback); `term_getjob()` of a finished terminal
 is null. On the device, copy the script there only with the owner's OK and
 per [device](device.md).
+
+## Taps (XCUITest)
+
+For touch input, a temporary test in `iVimUITests` works:
+`xcodebuild test ... -only-testing:iVimUITests/iVimUITests/<test>` with
+`win.coordinate(withNormalizedOffset: .zero).withOffset(...).tap()`.
+`app.keyboards.element.frame` excludes the extended bar (~100 pt above
+it), so tap above that. XCTest closes the app at the end: take screenshots
+from the test (`XCUIScreen.main.screenshot()`, written to a Mac path).
+Each run reinstalls the app, which moves the data container (files move
+along; get the path again).
 
 ## Diagnosing
 

@@ -165,7 +165,9 @@ final class VimViewController: UIViewController, UIKeyInput, UITextInput, UIText
     }
     
     @objc func click(_ sender: UITapGestureRecognizer) {
-        if self.isFirstResponder {
+        // only to drop an IME composition or dictation: a reset hides and
+        // shows the keyboard, resizing vim before the click is handled
+        if self.isFirstResponder && (self.markedInfo != nil || self.isInDictation) {
             self.resetKeyboard()
         }
         self.unmarkText()

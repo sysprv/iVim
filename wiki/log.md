@@ -73,3 +73,9 @@ Owner confirmed build 5 works on the phone.
 
 README (vim 9.2, TestFlight), CLAUDE.md (pointer to vim-upgrade), fixes
 formatting.
+
+## [2026-10-06] update | Tap lands ~30 lines too high
+
+Reproduced the cause in the simulator (keyboard reset on tap resizes vim
+before the click is handled); fix in fixes.md, XCUITest taps in
+testing.md; TestFlight build 6.

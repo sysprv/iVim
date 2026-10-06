@@ -282,7 +282,7 @@ extension VimViewController {
         }
     }
     
-    private var isInDictation: Bool {
+    var isInDictation: Bool {
         return self.dictationHypothesis != nil ||
             (self.textInputMode?.primaryLanguage?.hasPrefix("dictation") ?? false)
     }
