@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27
+updated: 2026-10-06
 ---
 # The owner's setup
 
@@ -21,6 +21,12 @@ updated: 2026-09-27
   harmless.
 - The config's normal-mode Enter mapping runs a search (E486 on stray
   Enters).
+- A "blank, unreachable row" above the statusline after `G` is vim's
+  end-of-buffer `~` filler: the colorscheme's `EndOfBuffer` (`#242940`)
+  is nearly invisible. It appears when the line above the top line wraps
+  into more rows than are left; `number` changes wrapping, so it comes
+  and goes. Plain vim behaviour; `smoothscroll` removes it (tested on the
+  simulator, 2026-10-06).
 - Files: Working Copy links repos into iVim's folder via the Files app
   (`UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`). An empty
   or dot-files-only Documents folder doesn't show up in Files.

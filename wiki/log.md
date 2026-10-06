@@ -79,3 +79,8 @@ formatting.
 Reproduced the cause in the simulator (keyboard reset on tap resizes vim
 before the click is handled); fix in fixes.md, XCUITest taps in
 testing.md; TestFlight build 6.
+
+## [2026-10-06] query | Blank row above the statusline at EOF
+
+Vim's `~` filler in a near-invisible colour, not an iVim bug; noted in
+user-setup.md.
