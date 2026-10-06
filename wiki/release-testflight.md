@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 # Release via TestFlight
 
@@ -51,3 +51,5 @@ team B9Y5MBFAT8 (see [overview](overview.md)). Version 2.15.
   verified on the phone.
 - Build 5 (2026-09-28): commands get vim's child environment (no `ls`
   colour codes in `:!`); verified on the phone.
+- Build 6 (2026-10-06): no keyboard reset on taps
+  ([fix](fixes.md#taps-near-the-bottom-land-30-lines-too-high)).
