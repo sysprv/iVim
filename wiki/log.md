@@ -84,3 +84,7 @@ testing.md; TestFlight build 6.
 
 Vim's `~` filler in a near-invisible colour, not an iVim bug; noted in
 user-setup.md.
+
+## [2026-10-06] update | Build 6 verified
+
+Owner confirmed taps land correctly on the phone; overview status updated.

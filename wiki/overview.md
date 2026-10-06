@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 # Overview
 
@@ -17,9 +17,10 @@ The trigger: on iOS 27 the App Store iVim drew vim full-screen, with the
 statusline and command line hidden behind the keyboard. Fixed and verified
 on the owner's iPhone (iOS 27). Since then, also working: `:terminal` with
 ivish and external commands ([ios-system](ios-system.md), [ivish](ivish.md)),
-`:q`, the cursor with `blinkon0`, `guifont` sizes. All fixes with root
+`:q`, the cursor with `blinkon0`, `guifont` sizes, taps near the bottom
+of the window (build 6). All fixes with root
 causes: [fixes](fixes.md). Vim 9.2.1135 ([vim-upgrade](vim-upgrade.md))
-works on the simulator and on the phone (TestFlight build 3). Open problems: [known-issues](known-issues.md).
+works on the simulator and on the phone (since TestFlight build 3). Open problems: [known-issues](known-issues.md).
 
 ## Identity and decisions
 
