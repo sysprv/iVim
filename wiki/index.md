@@ -24,6 +24,6 @@ LLM-maintained knowledge base for this fork; conventions are in
 
 ## People and sources
 
-- [user-setup](user-setup.md) — the owner's vim config and environment
+- [user-setup](user-setup.md) — the user's vim config and environment
 - [sources](sources.md) — upstream repos and other raw sources
 - [log](log.md) — chronological record of wiki changes

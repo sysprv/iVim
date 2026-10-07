@@ -1,10 +1,10 @@
 ---
-updated: 2026-09-28
+updated: 2026-10-07
 ---
 # Known issues
 
 - **`:q` with a running `:terminal` hangs** (tested: >30 s). Vim waits for
-  the job to stop. Owner accepted it: exit terminals first. Not
+  the job to stop. User accepted it: exit terminals first. Not
   investigated further.
 - **Programs that need a tty / raw mode** (`less`, full-screen or
   REPL-style programs) don't work properly; **Ctrl-C** is imprecise. Both
@@ -31,11 +31,6 @@ updated: 2026-09-28
   (then `ls` colours again): ios_system keeps one "next environment" slot
   and `ios_system()` blocks for the whole command, so iVim can't lock
   across store and copy. Seen in about 1 of 5 runs of a back-to-back test.
-- **Restoring a long file from vim's own `Session.vim`** (iVim's
-  auto-restore is off on the phone) can leave the last line near the top
-  of the window with the rest empty; `ggG` fixes it. The saved values are
-  right (cursor row 43 of 44); probably the window is tiny when the
-  session's `zt` runs. Not reproduced on the simulator; owner parked it.
 - **dSYM warning** for ivish.framework on upload (harmless,
   [release-testflight](release-testflight.md)).
 - **`WARNING_CFLAGS`** also softens implicit-declaration errors in iVim's

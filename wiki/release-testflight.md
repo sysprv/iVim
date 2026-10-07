@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 # Release via TestFlight
 
@@ -25,7 +25,7 @@ team B9Y5MBFAT8 (see [overview](overview.md)). Version 2.15.
    `<opts>`: plist with `method` = `app-store-connect`, `destination` =
    `upload` (or `export` to write an .ipa), `teamID` = B9Y5MBFAT8,
    `signingStyle` = `automatic`, `manageAppVersionAndBuildNumber` = false.
-4. Processing takes 5–30 min; the owner adds the build to the internal
+4. Processing takes 5–30 min; the user adds the build to the internal
    testing group if it isn't added automatically, and installs from the
    TestFlight app. TestFlight builds last 90 days.
 

@@ -55,4 +55,4 @@ Distribution: [release-testflight](release-testflight.md).
 - Xcode dependency tracking doesn't notice changes in `__has_include`
   results: clean-build after adding or removing frameworks.
 - Xcode re-sorts build settings and writes `xcuserdata/` (ignored) when the
-  owner opens the project; that's noise, not a change.
+  user opens the project; that's noise, not a change.

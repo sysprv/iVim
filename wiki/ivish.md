@@ -34,5 +34,5 @@ notices the changed patch).
 - ivish has its own line editor, so its `termmode` must be `raw` in
   `commandPersonalities.plist`; in `line` mode iVim also edits/echoes input
   and sends `\n`, which ivish doesn't treat as Enter.
-- The terminal starts in vim's cwd; with the owner's `sesdir` session
+- The terminal starts in vim's cwd; with the user's `sesdir` session
   option that was iVim's `Library/ivim/scenes` ([user-setup](user-setup.md)).

@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 # Fixes: symptoms and root causes
 
@@ -75,7 +75,7 @@ in the three squashed commits on `ios27-keyboard-fix` plus later ones.
 
 ## guifont sizes
 
-- Symptom: `:set guifont=Menlo:h9.0` did nothing; the owner's config
+- Symptom: `:set guifont=Menlo:h9.0` did nothing; the user's config
   (`Menlo:h10.0`) never applied, so the default font at 14 pt was used.
 - Causes: sizes parsed with `NumberFormatter()` in the phone's region
   format (Norway: decimal comma, so `9.0` → nil; whole numbers worked);

@@ -25,7 +25,7 @@ Uploaded build 3 (vim 9.2) from `vim9-rebase`; release-testflight history.
 
 ## [2026-09-28] update | Build 3 verified
 
-Owner confirmed TestFlight build 3 (vim 9.2) works on the phone.
+User confirmed TestFlight build 3 (vim 9.2) works on the phone.
 
 ## [2026-09-28] update | Simplify pass on the vim 9.2 patches
 
@@ -67,7 +67,7 @@ Uploaded build 5 (command environment); build 4 marked verified.
 
 ## [2026-09-28] update | Build 5 verified
 
-Owner confirmed build 5 works on the phone.
+User confirmed build 5 works on the phone.
 
 ## [2026-09-28] update | End-of-session doc pass
 
@@ -87,4 +87,15 @@ user-setup.md.
 
 ## [2026-10-06] update | Build 6 verified
 
-Owner confirmed taps land correctly on the phone; overview status updated.
+User confirmed taps land correctly on the phone; overview status updated.
+
+## [2026-10-07] update | Session.vim restore scroll explained
+
+The last lines at the top after restoring a long file come from sourcing
+`Session.vim` in the vimrc, before the GUI screen exists; sourcing it from
+VimEnter restores the saved view. Moved from known-issues to user-setup.
+
+## [2026-10-07] update | "user" instead of "owner"
+
+Wiki and CLAUDE.md now call the person who uses and directs the fork the
+user.

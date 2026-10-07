@@ -11,11 +11,11 @@ TestFlight app "iVim sysprv fork". Details live in the wiki (below); read
   patched ivish into `Frameworks/`; the project doesn't build without it).
 - Build: `xcodebuild -project iVim.xcodeproj -scheme iVim` for
   `platform=iOS Simulator,name=iPhone 17 Pro` or the device
-  (`-allowProvisioningUpdates`). Only iOS 26 simulators; the owner's
+  (`-allowProvisioningUpdates`). Only iOS 26 simulators; the user's
   iPhone runs iOS 27. More: `wiki/build.md`.
 - Test behaviour with vim scripts sourced from the app's `.vimrc`, not
   osascript keystrokes; see `wiki/testing.md`.
-- Ask the owner before writing anything to the phone
+- Ask the user before writing anything to the phone
   (`devicectl device copy to`): it has destroyed data before and there is
   no undo. Never use `--remove-existing-content` on the app container.
   See `wiki/device.md`.
@@ -44,9 +44,9 @@ Commit messages: minimal, scoped format, no Co-Authored-By trailer, e.g.
 ## Wiki (`wiki/`)
 
 An LLM-maintained knowledge base after Karpathy's "LLM Wiki" pattern. The
-LLM writes and maintains it; the owner reads it and directs.
+LLM writes and maintains it; the user reads it and directs.
 
-- Layers: raw sources (upstream repos, the owner's vimrc, sessions; listed
+- Layers: raw sources (upstream repos, the user's vimrc, sessions; listed
   in `wiki/sources.md`, never copied or modified) → wiki pages → this file
   (the schema).
 - Pages: one topic each, lowercase-hyphenated file names, YAML front

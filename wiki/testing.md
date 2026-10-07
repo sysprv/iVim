@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 # Testing
 
@@ -27,7 +27,7 @@ Vim is 9.2 ([vim-upgrade](vim-upgrade.md)); when a test must also run on
 an old 8.1 build, avoid 9.x-only syntax and options (`silent! set`, source
 vim9script files behind `has('vim9script')`). Wrap steps in try/catch (an error
 silently aborts a timer callback); `term_getjob()` of a finished terminal
-is null. On the device, copy the script there only with the owner's OK and
+is null. On the device, copy the script there only with the user's OK and
 per [device](device.md).
 
 ## Taps (XCUITest)
@@ -57,9 +57,9 @@ along; get the path again).
 
 - Keep I/O > Keyboard > Connect Hardware Keyboard **on**: off drops Mac
   keystrokes entirely. Cmd-K toggles the software keyboard.
-- The simulator's region is `en_US@rg=nozzzz` (Norway), like the owner's
+- The simulator's region is `en_US@rg=nozzzz` (Norway), like the user's
   phone; it matters for locale bugs ([guifont](fixes.md#guifont-sizes)).
 - Set `com.apple.keyboard.preferences DidShowContinuousPathIntroduction`
   to true to skip the keyboard tutorial overlay.
-- The owner's config is installed with its `INSTALL` script, `HOME`
+- The user's config is installed with its `INSTALL` script, `HOME`
   pointed at the app's Documents ([user-setup](user-setup.md)).

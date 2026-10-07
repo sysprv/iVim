@@ -9,7 +9,7 @@ updated: 2026-09-27
     xcrun devicectl device info files --device <id> --domain-type appDataContainer \
       --domain-identifier io.github.sysprv.ivim [--json-output f.json]
 
-- Launch fails with "Locked" while the phone is locked: ask the owner to
+- Launch fails with "Locked" while the phone is locked: ask the user to
   open the app.
 - After the app is deleted, iOS drops trust in the developer certificate
   (when it was the last app from that developer): Settings > General > VPN &
@@ -22,7 +22,7 @@ updated: 2026-09-27
 
 ## Copying files to the phone: pitfalls
 
-There is no remove command, so mistakes can't be undone. Ask the owner
+There is no remove command, so mistakes can't be undone. Ask the user
 before any `devicectl device copy to`. Learned the hard way:
 
 - With a single `--source`, `--destination Documents/` is taken as the
@@ -31,7 +31,7 @@ before any `devicectl device copy to`. Learned the hard way:
   (its contents are owned by the app, uid 501). The app can read it but
   can't create anything in it: vim's `mkdir()` fails with E739, undo files
   with E828. Copy files only, into directories the app created, or let the
-  owner copy via Files / Working Copy.
+  user copy via Files / Working Copy.
 - `--remove-existing-content true` wipes the **whole domain** (all of the
   app's container), not just the destination folder — confirmed in the
   `temporary` domain. Never use it on the app container.
